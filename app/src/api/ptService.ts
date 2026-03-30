@@ -22,7 +22,7 @@ export interface CreatePTData{
 }
 
 export interface UpdatePTData {
-  admin_id: number;
+  pt_id: number;
   nome?: string;
   numero_agente:string;
   localizacao:string;

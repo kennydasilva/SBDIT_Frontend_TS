@@ -7,16 +7,17 @@ import type {
   PT
 } from "../../api/ptService";
 import { set } from "zod";
+import { useAuth } from "../../hooks/useAuth";
 
 
 
 
-export default function Admins() {
-  const [admins, setAdmins] = useState<Admin[]>([]);
+export default function PTs() {
+  const [pts, setPts] = useState<PT[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
+  const [selectedPt, setSelectedPt] = useState<PT | null>(null);
   const [loading, setLoading]= useState(true);
   const [submitting, setSubmitting]= useState(false);
   const [error, setError]= useState<string | null>(null);
@@ -24,25 +25,25 @@ export default function Admins() {
     nome: "",
     email: "",
     senha: "",
-    posto: "Comando Geral",
-    status: "Ativo" as "Ativo" | "Inativo"
+    numero_agente: "",
+    localizacao: "Maputo"
   });
 
   useEffect(() =>{
-    carregarAdmins();
+    carregarPts();
   }, []);
 
 
-  const carregarAdmins= async() =>{
+  const carregarPts= async() =>{
     try{
       setLoading(true);
       setError(null);
-      const data= await adminService.listarAdmins();
-      setAdmins(data);
+      const data= await ptService.listarPT();
+      setPts(data);
     }
     catch(error: any){
-      console.error("Erro ao carregar administradores: ", error);
-      setError(error.response?.data?.message || "Erro ao carregar administradores");
+      console.error("Erro ao carregar Policias: ", error);
+      setError(error.response?.data?.message || "Erro ao carregar Policias");
 
     }
     finally{
@@ -50,34 +51,44 @@ export default function Admins() {
     }
   }
 
-  const filteredAdmins = admins.filter(admin =>
-    admin.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    admin.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPoliciais = pts.filter(pts =>
+    pts.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    pts.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleCreate = async() => {
+    const {user, loading}= useAuth();
+
+    
+      
+    
 
     try{
-      setSubmitting(true);
 
-      const createData: CreateAdminData = {
-        nome: formData.nome,
-        email: formData.email,
-        password: formData.senha,
-        posto: formData.posto,
-     
-      };
+      if(loading && user!== null){
+        setSubmitting(true);
+
+        const createData: CreatePTData = {
+          nome: formData.nome,
+          email: formData.email,
+          password: formData.senha,
+          numero_agente: formData.numero_agente,
+          localizacao: formData.localizacao,
+          admin_id: user.id
+      
+        };
 
 
-      await adminService.criarAdmin(createData);
-      await carregarAdmins();
-      setShowCreateModal(false);
-      resetForm();
+        await ptService.criarPT(createData);
+        await carregarPts();
+        setShowCreateModal(false);
+        resetForm();
+    }
   
   }catch(error){
-      console.error("Erro ao criar administrador: ", error);
+      console.error("Erro ao criar Policia: ", error);
       
-      let errorMessage = "Erro ao criar administrador";
+      let errorMessage = "Erro ao criar policia";
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as { response?: { data?: { message?: string } } };
         errorMessage = axiosError.response?.data?.message || errorMessage;
@@ -90,40 +101,41 @@ export default function Admins() {
   }
   };
 
-  const handleEdit = (admin: Admin) => {
-    setSelectedAdmin(admin);
+  const handleEdit = (pt: PT) => {
+    setSelectedPt(pt);
     setFormData({
-      nome: admin.nome,
-      email: admin.email,
+      nome: pt.nome,
+      email: pt.email,
       senha: "",
-      posto: admin.posto,
-      status: (admin.status ==="Inativo" ? "Inativo" : "Ativo") as "Ativo" | "Inativo"
+      numero_agente: pt.numero_agente,
+      localizacao:pt.localizacao,
     });
     setShowCreateModal(true);
   };
 
   const handleUpdate = async () => {
-    if (!selectedAdmin) return;
+    if (!selectedPt) return;
 
     try{
       setSubmitting(true);
 
-      const updateData: UpdateAdminData={
-        admin_id: selectedAdmin.id,
+      const updateData: UpdatePTData={
+        pt_id: selectedPt.id,
         nome: formData.nome,
-        posto: formData.posto,
+        numero_agente: formData.numero_agente,
+        localizacao: formData.localizacao,
       }
 
-      adminService.atualizarAdmin(updateData);
-      await carregarAdmins();
+      ptService.atualizarPT(updateData);
+      await carregarPts();
       setShowCreateModal(false);
-      setSelectedAdmin(null);
+      setSelectedPt(null);
       resetForm();
 
     }
     catch(error: any){
-      console.error("Erro ao atualizar administrador: ", error);
-      alert(error.response?.data?.message || "Erro ao atualizar administrador");
+      console.error("Erro ao atualizar Policia: ", error);
+      alert(error.response?.data?.message || "Erro ao atualizar Policia");
 
     }
     finally{
@@ -132,17 +144,17 @@ export default function Admins() {
   };
 
   const handleDelete = async () => {
-    if (!selectedAdmin) return;
+    if (!selectedPt) return;
 
     try{
       setSubmitting(true);
-      await adminService.apagarAdmin(selectedAdmin.id);
-      await carregarAdmins();
+      await ptService.apagarPT(selectedPt.id);
+      await carregarPts();
       setShowDeleteModal(false);
-      setSelectedAdmin(null);
+      setSelectedPt(null);
     }catch(error: any){
-      console.error("Erro ao excluir administrador: ", error);
-      alert(error.response?.data?.message || "Erro ao excluir administrador");
+      console.error("Erro ao excluir Policia: ", error);
+      alert(error.response?.data?.message || "Erro ao excluir Policia");
     }
     finally{
       setSubmitting(false);
@@ -154,8 +166,8 @@ export default function Admins() {
       nome: "",
       email: "",
       senha: "",
-      posto: "Comando Geral",
-      status: "Ativo"
+      numero_agente:"",
+      localizacao:"Maputo"
     });
   };
 
@@ -174,7 +186,7 @@ export default function Admins() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarAdmins}
+            onClick={carregarPts}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -188,17 +200,17 @@ export default function Admins() {
     <div className="p-8">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Administradores</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Gestão de Policias</h1>
         <button
           onClick={() => {
-            setSelectedAdmin(null);
+            setSelectedPt(null);
             resetForm();
             setShowCreateModal(true);
           }}
           className="flex items-center gap-2 bg-[#2563EB] text-white px-4 py-2 rounded-lg hover:bg-[#1E40AF] transition-colors"
         >
           <Plus size={20} />
-          Novo Administrador
+          Novo Policia
         </button>
       </div>
 
@@ -224,39 +236,29 @@ export default function Admins() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Posto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Criação</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Numero do Agente</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localizacao</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredAdmins.length === 0 ? (
+            {filteredPoliciais.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                  Nenhum administrador encontrado
+                  Nenhum policia encontrado
                 </td>
               </tr>
             ) : (
-              filteredAdmins.map((admin) => (
-                <tr key={admin.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{admin.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{admin.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.posto}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.dataCriacao || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      admin.status === "Ativo"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
-                    }`}>
-                      {admin.status || "Ativo"}
-                    </span>
-                  </td>
+              filteredPoliciais.map((pts) => (
+                <tr key={pts.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pts.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pts.nome}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.numero_agente}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.localizacao}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
-                      onClick={() => handleEdit(admin)}
+                      onClick={() => handleEdit(pts)}
                       className="text-[#2563EB] hover:text-[#1E40AF] mr-3"
                       disabled={submitting}
                     >
@@ -264,7 +266,7 @@ export default function Admins() {
                     </button>
                     <button
                       onClick={() => {
-                        setSelectedAdmin(admin);
+                        setSelectedPt(pts);
                         setShowDeleteModal(true);
                       }}
                       className="text-red-600 hover:text-red-800"
@@ -285,7 +287,7 @@ export default function Admins() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {selectedAdmin ? "Editar Administrador" : "Criar Novo Administrador"}
+              {selectedPt ? "Editar Administrador" : "Criar Novo Administrador"}
             </h2>
 
             <div className="space-y-4">
@@ -307,14 +309,14 @@ export default function Admins() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting || !!selectedAdmin}
+                  disabled={submitting || !!selectedPt}
                 />
-                {selectedAdmin && (
+                {selectedPt && (
                   <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
                 )}
               </div>
 
-              {!selectedAdmin && (
+              {!selectedPt && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
                   <input
@@ -328,10 +330,21 @@ export default function Admins() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Posto/Localização</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Numero do agente</label>
+                <input
+                  type="text"
+                  value={formData.numero_agente}
+                  onChange={(e) => setFormData({ ...formData, numero_agente: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={submitting}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
                 <select
-                  value={formData.posto}
-                  onChange={(e) => setFormData({ ...formData, posto: e.target.value })}
+                  value={formData.localizacao}
+                  onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
                 >
@@ -341,40 +354,14 @@ export default function Admins() {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="Ativo"
-                      checked={formData.status === "Ativo"}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as "Ativo" })}
-                      className="mr-2"
-                      disabled={submitting}
-                    />
-                    Ativo
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      value="Inativo"
-                      checked={formData.status === "Inativo"}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value as "Inativo" })}
-                      className="mr-2"
-                      disabled={submitting}
-                    />
-                    Inativo
-                  </label>
-                </div>
-              </div>
+             
             </div>
 
             <div className="flex gap-3 mt-6">
               <button
                 onClick={() => {
                   setShowCreateModal(false);
-                  setSelectedAdmin(null);
+                  setSelectedPt(null);
                   resetForm();
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
@@ -383,7 +370,7 @@ export default function Admins() {
                 Cancelar
               </button>
               <button
-                onClick={selectedAdmin ? handleUpdate : handleCreate}
+                onClick={selectedPt ? handleUpdate : handleCreate}
                 className="flex-1 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1E40AF] transition-colors disabled:opacity-50"
                 disabled={submitting}
               >
@@ -399,7 +386,7 @@ export default function Admins() {
       )}
 
       {/* Delete Modal */}
-      {showDeleteModal && selectedAdmin && (
+      {showDeleteModal && selectedPt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
@@ -408,14 +395,14 @@ export default function Admins() {
 
             <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Confirmar Exclusão</h2>
             <p className="text-gray-600 text-center mb-6">
-              Tem certeza que deseja excluir o administrador <strong>{selectedAdmin.nome}</strong>?
+              Tem certeza que deseja excluir o policia <strong>{selectedPt.nome}</strong>?
             </p>
 
             <div className="flex gap-3">
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
-                  setSelectedAdmin(null);
+                  setSelectedPt(null);
                 }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 disabled={submitting}

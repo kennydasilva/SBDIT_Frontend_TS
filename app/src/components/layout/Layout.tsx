@@ -8,7 +8,7 @@ import {
   FileText,
   Settings
 } from "lucide-react";
-
+import { useAuth } from "../../hooks/useAuth";
 const menuItems = [
   { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admins", icon: Users, label: "Administradores" },
@@ -21,6 +21,14 @@ const menuItems = [
 export default function Layout() {
   const location = useLocation();
 
+  const {user, loading}= useAuth();
+
+
+
+  if(loading){
+    return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -28,6 +36,7 @@ export default function Layout() {
         {/* Logo */}
         <div className="p-6 border-b border-blue-800">
           <h1 className="text-xl font-bold">SGDIT</h1>
+          
           <p className="text-sm text-blue-200">Sistema de Gestão</p>
         </div>
 
@@ -64,7 +73,9 @@ export default function Layout() {
             </div>
             <div>
               <p className="font-medium">Super Admin</p>
-              <p className="text-xs text-blue-200">admin@sgdit.com</p>
+              {user &&(
+              <p className="text-xs text-blue-200">{user.email}</p>
+              )}
             </div>
           </div>
         </div>
