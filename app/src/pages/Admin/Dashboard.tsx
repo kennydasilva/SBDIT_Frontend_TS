@@ -1,9 +1,7 @@
 import { Users, Shield, UserCircle, AlertTriangle } from "lucide-react";
 
 const stats = [
-  { label: "Total de Administradores", value: "12", icon: Users, color: "bg-blue-500" },
   { label: "Total de Policiais", value: "48", icon: Shield, color: "bg-indigo-500" },
-  { label: "Total de Cidadãos", value: "2,345", icon: UserCircle, color: "bg-purple-500" },
   { label: "Total de Denúncias", value: "567", icon: AlertTriangle, color: "bg-orange-500" },
 ];
 
@@ -40,7 +38,6 @@ export default function Dashboard() {
             { action: "Nova denúncia registrada", time: "Há 5 minutos", user: "João Silva" },
             { action: "Policial cadastrado", time: "Há 15 minutos", user: "Admin Regional" },
             { action: "Denúncia resolvida", time: "Há 1 hora", user: "PT-123" },
-            { action: "Novo administrador criado", time: "Há 2 horas", user: "Super Admin" },
           ].map((activity, index) => (
             <div key={index} className="flex items-center justify-between py-3 border-b last:border-b-0">
               <div>

@@ -1,3 +1,4 @@
+// api/axios.ts
 import axios from "axios";
 import type { AxiosInstance, InternalAxiosRequestConfig, AxiosError } from "axios";
 
@@ -14,7 +15,8 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 }
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  const token = localStorage.getItem("token");
+  // CORREÇÃO: Usar "access" em vez de "token" para ser consistente com o login
+  const token = localStorage.getItem("access");
   
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -33,19 +35,25 @@ api.interceptors.response.use(
       
       try {
         const refresh = localStorage.getItem("refresh");
+        
+        if (!refresh) {
+          throw new Error("No refresh token");
+        }
+        
         const response = await axios.post(
           "http://127.0.0.1:8000/api/token/refresh/",
           { refresh: refresh }
         );
         
         if (response.data.access) {
-          localStorage.setItem("token", response.data.access);
+          localStorage.setItem("access", response.data.access);
           originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        localStorage.removeItem("token");
+        localStorage.removeItem("access");
         localStorage.removeItem("refresh");
+        localStorage.removeItem("user");
         window.location.href = "/login";
         return Promise.reject(refreshError);
       }

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useAuth } from "../../hooks/useAuth";
 
 import {
   Form,
@@ -45,26 +46,29 @@ export default function LoginPage() {
     try {
       const response = await login(data.email, data.password);
 
-      localStorage.setItem("access", response.access);
-      localStorage.setItem("refresh", response.refresh);
-
-
-      if(response.user.role==="SUPER_ADMIN"){
-
-          navigate("/dashboard");
-      }
-      else {
-        if (response.user.role==="ADMIN"){
-          navigate("/dashboard-admin");
-        }
-        else if(response.user.role==="policial"){
-          navigate("/dashboard-policial");
-        }
-
-        else{
-          navigate("/dashboard-cidadao");
-        }
-      }
+      console.log("Login successful:", response);
+      console.log("User role:", response.user.role);
+      
+      
+      const userRole = response.user.role;
+    
+      switch (userRole ){
+      case "SUPER_ADMIN":
+        navigate("/super-admin/dashboard");
+        break;
+      case "ADMIN":
+        navigate("/admin/dashboard");
+        break;
+      case "PT":
+        navigate("/policial/dashboard");
+        break;
+      case "CIDADAO":
+        navigate("/cidadao/dashboard");
+        break;
+      default:
+        navigate("/login");
+    }
+  
       
 
       

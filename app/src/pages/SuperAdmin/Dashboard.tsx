@@ -1,5 +1,6 @@
 import { Users, Shield, UserCircle, AlertTriangle } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+
 const stats = [
   { label: "Total de Administradores", value: "12", icon: Users, color: "bg-blue-500" },
   { label: "Total de Policiais", value: "48", icon: Shield, color: "bg-indigo-500" },

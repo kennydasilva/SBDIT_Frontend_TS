@@ -1,12 +1,13 @@
+// api/authService.ts
 import api from "./axios";
 
 interface LoginResponse {
   access: string;
   refresh: string;
-  user:{
-    id:number;
-    email:string;
-    role:string;
+  user: {
+    id: number;
+    email: string;
+    role: string;
   }
 }
 
@@ -17,26 +18,33 @@ interface SignupData {
   [key: string]: any;
 }
 
-interface UserData{
+interface UserData {
   id: number;
-  email:string;
-  role:string;
+  email: string;
+  role: string;
 }
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
-  const response = await api.post<LoginResponse>("/login/", {
-    email: email,
-    password: password,
-  });
+  try {
+    const response = await api.post<LoginResponse>("/login/", {
+      email: email,
+      password: password,
+    });
 
-  if (response.data.access && response.data.refresh) {
-    localStorage.setItem("token", response.data.access);
-    localStorage.setItem("refresh", response.data.refresh);
-    
-    localStorage.setItem("user", JSON.stringify(response.data.user));
+    console.log("Login API response:", response.data); // Para debug
+
+    if (response.data.access && response.data.refresh) {
+      // Salvar tokens com as chaves corretas
+      localStorage.setItem("access", response.data.access);
+      localStorage.setItem("refresh", response.data.refresh);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Login API error:", error);
+    throw error;
   }
-
-  return response.data;
 };
 
 export const refreshToken = async (): Promise<{ access: string }> => {
@@ -51,7 +59,7 @@ export const refreshToken = async (): Promise<{ access: string }> => {
   });
   
   if (response.data.access) {
-    localStorage.setItem("token", response.data.access);
+    localStorage.setItem("access", response.data.access);
   }
   
   return response.data;
@@ -62,22 +70,20 @@ export const signup = async (data: SignupData): Promise<any> => {
   return response.data;
 };
 
-export const getUserData=(): UserData | null =>{
-  const userStr=localStorage.getItem("user");
+export const getUserData = (): UserData | null => {
+  const userStr = localStorage.getItem("user");
 
   if (!userStr) return null;
 
-  try{
+  try {
     return JSON.parse(userStr);
-  }
-  catch{
+  } catch {
     return null;
   }
 };
 
-
-export const logout=(): void =>{
-  localStorage.removeItem("token");
+export const logout = (): void => {
+  localStorage.removeItem("access");
   localStorage.removeItem("refresh");
   localStorage.removeItem("user");
-}
+};
