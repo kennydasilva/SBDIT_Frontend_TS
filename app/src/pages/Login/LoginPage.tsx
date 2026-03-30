@@ -15,7 +15,7 @@ import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { login } from "../../api/authService";
 
-// Schema de validação com Zod
+
 const loginSchema = z.object({
   email: z
     .string()
@@ -27,7 +27,7 @@ const loginSchema = z.object({
     .min(6, "A senha deve ter no mínimo 6 caracteres"),
 });
 
-// Tipo inferido do schema
+
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
@@ -48,10 +48,29 @@ export default function LoginPage() {
       localStorage.setItem("access", response.access);
       localStorage.setItem("refresh", response.refresh);
 
-      navigate("/dashboard");
+
+      if(response.user.role==="SUPER_ADMIN"){
+
+          navigate("/dashboard");
+      }
+      else {
+        if (response.user.role==="ADMIN"){
+          navigate("/dashboard-admin");
+        }
+        else if(response.user.role==="policial"){
+          navigate("/dashboard-policial");
+        }
+
+        else{
+          navigate("/dashboard-cidadao");
+        }
+      }
+      
+
+      
     } catch (error) {
       alert("Erro ao fazer login. Verifique suas credenciais.");
-      // Limpar o formulário após erro
+      
       form.reset();
     }
   };

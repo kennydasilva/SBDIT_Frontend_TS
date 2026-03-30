@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
-import { adminService } from "../../api/superAdminService";
+import { ptService} from "../../api/ptService";
 import type { 
-  CreateAdminData, 
-  UpdateAdminData, 
-  Admin
-} from "../../api/superAdminService";
+  CreatePTData,
+  UpdatePTData,
+  PT
+} from "../../api/ptService";
 import { set } from "zod";
 
 

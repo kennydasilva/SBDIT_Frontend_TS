@@ -3,6 +3,11 @@ import api from "./axios";
 interface LoginResponse {
   access: string;
   refresh: string;
+  user:{
+    id:number;
+    email:string;
+    role:string;
+  }
 }
 
 interface SignupData {
@@ -10,6 +15,12 @@ interface SignupData {
   email: string;
   password: string;
   [key: string]: any;
+}
+
+interface UserData{
+  id: number;
+  email:string;
+  role:string;
 }
 
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
@@ -21,6 +32,8 @@ export const login = async (email: string, password: string): Promise<LoginRespo
   if (response.data.access && response.data.refresh) {
     localStorage.setItem("token", response.data.access);
     localStorage.setItem("refresh", response.data.refresh);
+    
+    localStorage.setItem("user", JSON.stringify(response.data.user));
   }
 
   return response.data;
@@ -48,3 +61,23 @@ export const signup = async (data: SignupData): Promise<any> => {
   const response = await api.post("/cidadaos/registrar/", data);
   return response.data;
 };
+
+export const getUserData=(): UserData | null =>{
+  const userStr=localStorage.getItem("user");
+
+  if (!userStr) return null;
+
+  try{
+    return JSON.parse(userStr);
+  }
+  catch{
+    return null;
+  }
+};
+
+
+export const logout=(): void =>{
+  localStorage.removeItem("token");
+  localStorage.removeItem("refresh");
+  localStorage.removeItem("user");
+}
