@@ -9,15 +9,18 @@ import {
   Settings
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-const menuItems = [
-  { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/admins", icon: Users, label: "Administradores" },
-  { path: "/policiais", icon: Shield, label: "Policiais (PT)" },
-  { path: "/cidadaos", icon: UserCircle, label: "Cidadãos" },
-  { path: "/denuncias", icon: AlertTriangle, label: "Denúncias" },
-  { path: "/relatorios", icon: FileText, label: "Relatórios" },
-];
 
+
+
+const menuItems = [
+  { path: "/super-admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/super-admin/admins", icon: Users, label: "Administradores" },
+  { path: "/super-admin/policiais", icon: Shield, label: "Policiais" },
+  { path: "/super-admin/cidadaos", icon: UserCircle, label: "Cidadãos" },
+  { path: "/super-admin/denuncias", icon: AlertTriangle, label: "Denúncias" },
+  { path: "/super-admin/relatorios", icon: FileText, label: "Relatórios" },
+  { path: "/super-admin/configuracoes", icon: Settings, label: "Configurações" },
+];
 export default function Layout() {
   const location = useLocation();
 

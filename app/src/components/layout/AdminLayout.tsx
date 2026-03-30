@@ -11,13 +11,14 @@ import {
 
 import { useAuth } from "../../hooks/useAuth";
 
-const menuItems = [
-  { path: "/dashboardAdmin", icon: LayoutDashboard, label: "admin" },
-  { path: "/policiais", icon: Shield, label: "Policiais (PT)" },
-  { path: "/denuncias", icon: AlertTriangle, label: "Denúncias" },
-  { path: "/relatorios", icon: FileText, label: "Relatórios" },
-];
 
+const menuItems = [
+  { path: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/admin/policiais", icon: Shield, label: "Policiais" },
+  { path: "/admin/cidadaos", icon: UserCircle, label: "Cidadãos" },
+  { path: "/admin/denuncias", icon: AlertTriangle, label: "Denúncias" },
+  { path: "/admin/relatorios", icon: FileText, label: "Relatórios" },
+];
 export default function Layout() {
   const location = useLocation();
 
