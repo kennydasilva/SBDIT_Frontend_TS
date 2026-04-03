@@ -6,11 +6,15 @@ export default function RouteGuard() {
  
   const {user, loading}= useAuth();
 
-   if(loading || user === null){
-    return <Navigate to="/login" replace />;
+  
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
 
   
   const currentPath = window.location.pathname;
@@ -35,13 +39,13 @@ export default function RouteGuard() {
   if (!hasPermission()) {
     
     switch (user.role) {
-      case "super_admin":
+      case "SUPER_ADMIN":
         return <Navigate to="/super-admin/dashboard" replace />;
-      case "admin":
+      case "ADMIN":
         return <Navigate to="/admin/dashboard" replace />;
-      case "policial":
+      case "PT":
         return <Navigate to="/policial/dashboard" replace />;
-      case "cidadao":
+      case "CIDADAO":
         return <Navigate to="/cidadao/dashboard" replace />;
       default:
         return <Navigate to="/login" replace />;

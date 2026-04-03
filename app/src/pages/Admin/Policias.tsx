@@ -13,6 +13,8 @@ import { useAuth } from "../../hooks/useAuth";
 
 
 export default function PTs() {
+
+  const { user, loading: authLoading } = useAuth();
   const [pts, setPts] = useState<PT[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -28,28 +30,32 @@ export default function PTs() {
     numero_agente: "",
     localizacao: "Maputo"
   });
+  
 
-  useEffect(() =>{
-    carregarPts();
-  }, []);
+  useEffect(() => {
+    if (!authLoading && user) {
+      carregarPts();
+    }
+  }, [authLoading, user]);
 
 
-  const carregarPts= async() =>{
-    try{
+  const carregarPts = async () => {
+    if (!user) return;
+
+    try {
       setLoading(true);
       setError(null);
-      const data= await ptService.listarPT();
-      setPts(data);
-    }
-    catch(error: any){
-      console.error("Erro ao carregar Policias: ", error);
-      setError(error.response?.data?.message || "Erro ao carregar Policias");
 
-    }
-    finally{
+      const data = await ptService.listarPT(user.id);
+      setPts(data);
+
+    } catch (error: any) {
+      console.error("Erro ao carregar Policias:", error);
+      setError(error.response?.data?.message || "Erro ao carregar Policias");
+    } finally {
       setLoading(false);
     }
-  }
+  };
 
   const filteredPoliciais = pts.filter(pts =>
     pts.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,15 +63,14 @@ export default function PTs() {
   );
 
   const handleCreate = async() => {
-    const {user, loading}= useAuth();
-
-    
-      
-    
+    if (!user) {
+        alert("Usuário não autenticado.");
+        return;
+    }
 
     try{
 
-      if(loading && user!== null){
+      
         setSubmitting(true);
 
         const createData: CreatePTData = {
@@ -83,7 +88,7 @@ export default function PTs() {
         await carregarPts();
         setShowCreateModal(false);
         resetForm();
-    }
+    
   
   }catch(error){
       console.error("Erro ao criar Policia: ", error);
@@ -99,6 +104,7 @@ export default function PTs() {
   finally{
     setSubmitting(false);
   }
+  
   };
 
   const handleEdit = (pt: PT) => {

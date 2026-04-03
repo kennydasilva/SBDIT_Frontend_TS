@@ -41,19 +41,14 @@ export interface PTResponse {
 
 export const ptService={
 
-    async listarPT(): Promise<PT[]> {
+    async listarPT(adminId: number): Promise<PT[]> {
         try{
-            const response= await api.get<PTResponse[]>("/pts/");
 
-            return response.data.map(pt => ({
-                id: pt.id,
-                nome: pt.nome,
-                email: pt.email,
-                numero_agente: pt.numero_agente,
-                localizacao: pt.localizacao,
-                admin_id:pt.admin_id,
-                
-            }));
+            alert("id do admin 1: " + adminId); 
+        
+            const response= await api.get<PT[]>(`/pts/admin/${adminId}/`);
+
+            return response.data;
 
         }
         catch(error)
@@ -67,6 +62,8 @@ export const ptService={
 
     async criarPT(data: CreatePTData): Promise<{message: string; id:number}>{
         try{
+
+             alert("id do admin 2: " + data.admin_id);
             const response= await api.post("/pts/", data);
             return response.data;
         }
@@ -79,7 +76,7 @@ export const ptService={
 
     async atualizarPT(data: UpdatePTData): Promise<{message:string}>{
         try{
-            const response=await api.put("/pts/", data);
+            const response=await api.put(`/pts/${data.pt_id}/`, data);
             return response.data;
         }
         catch(error){
@@ -90,8 +87,8 @@ export const ptService={
 
     async apagarPT(id: number): Promise<{message:string}>{
         try{
-            const response=await api.delete("/pts/", {data: {id: id}
-            });
+            const response=await api.delete(`/pts/${id}/`);
+            
             return response.data;
 
         }
