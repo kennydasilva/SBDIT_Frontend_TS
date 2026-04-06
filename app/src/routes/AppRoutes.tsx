@@ -15,6 +15,12 @@ import SuperAdminDenuncias from "../pages/SuperAdmin/Denuncias";
 import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/Admin/Dashboard";
 import AdminPoliciais from "../pages/Admin/Policias";
+import CidadaoLayout from "../components/layout/CidadaoLayout";
+import CidadaoDashboard from "../pages/cidadao/CidadaoDashboard";
+import CriarDenuncia from "../pages/cidadao/CriarDenuncia";
+import DetalhesDenuncia from "../pages/cidadao/DetalhesDenuncia";
+import MinhasDenuncias from "../pages/cidadao/MinhasDenuncias";
+import CidadaoPerfil from "../pages/cidadao/CidadaoPerfil";
 /*import AdminDenuncias from "../pages/Admin/Denuncias";
 
 // Policial Layout e Pages
@@ -56,11 +62,15 @@ export default function AppRoutes() {
           <Route path="/policial/denuncias" element={<PolicialDenuncias />} />
         </Route>*/}
 
-        {/* Cidadão Routes 
+        {/* Cidadão Routes */}
         <Route element={<CidadaoLayout />}>
           <Route path="/cidadao/dashboard" element={<CidadaoDashboard />} />
-          <Route path="/cidadao/nova-denuncia" element={<CidadaoNovaDenuncia />} />
-        </Route>*/}
+          <Route path="/cidadao/criar-denuncia" element={<CriarDenuncia />} />
+          <Route path="/cidadao/detalhes-denuncia" element={<DetalhesDenuncia />} />
+          <Route path="/cidadao/minhas-denuncias" element={<MinhasDenuncias />} />
+          <Route path="/cidadao/perfil" element={<CidadaoPerfil />} />
+
+        </Route>
       </Route>
 
       <Route path="/" element={<Navigate to="/login" replace />} />
