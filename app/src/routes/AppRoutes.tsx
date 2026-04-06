@@ -66,7 +66,7 @@ export default function AppRoutes() {
         <Route element={<CidadaoLayout />}>
           <Route path="/cidadao/dashboard" element={<CidadaoDashboard />} />
           <Route path="/cidadao/criar-denuncia" element={<CriarDenuncia />} />
-          <Route path="/cidadao/detalhes-denuncia" element={<DetalhesDenuncia />} />
+          <Route path="/cidadao/denuncias/:id" element={<DetalhesDenuncia />} />
           <Route path="/cidadao/minhas-denuncias" element={<MinhasDenuncias />} />
           <Route path="/cidadao/perfil" element={<CidadaoPerfil />} />
 

@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 const menuItems = [
-  { path: "/cidadao", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/cidadao/criar-denuncia", icon: PlusCircle, label: "Criar Denúncia" },
   { path: "/cidadao/minhas-denuncias", icon: FileText, label: "Minhas Denúncias" },
   { path: "/cidadao/perfil", icon: User, label: "Perfil" },
