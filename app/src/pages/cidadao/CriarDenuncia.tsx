@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Upload, X, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
+import { denunciaService } from "../../api/denunciaService";
+import { useAuth } from "../../hooks/useAuth";
+const { user } = useAuth();
 
 export default function CriarDenuncia() {
   const navigate = useNavigate();
@@ -15,6 +18,19 @@ export default function CriarDenuncia() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  const mapTipoInfracao = (tipo: string) => {
+  switch (tipo) {
+    case "Contramão":
+      return "CONTRAMAO";
+    case "Veículo Parado":
+      return "PARADO";
+    case "Excesso de Velocidade":
+      return "VELOCIDADE";
+    default:
+      return "";
+  }
+};
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -44,18 +60,44 @@ export default function CriarDenuncia() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    // Simular envio
-    await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    setIsLoading(false);
-    setShowSuccess(true);
+    if (!videoFile){
+      alert("Por favor, faça upload de um vídeo da infração.");
+      return;
+    }
 
-    // Redirecionar após 2 segundos
-    setTimeout(() => {
-      navigate("/cidadao/minhas-denuncias");
-    }, 2000);
+    try{
+      setIsLoading(true);
+
+      await denunciaService.criar({
+        cidadao_id: user?.id || 0,
+        matricula: formData.matricula,
+        descricao: formData.descricao,
+        tipo_infracao: mapTipoInfracao(formData.tipoInfracao),
+        localizacao: formData.localizacao,
+        sentido_direccao:
+          formData.tipoInfracao === "Contramão" 
+          ? formData.sentidoPermitido 
+          : "",
+        caminho_ficheiro: videoFile,
+      });
+
+      setShowSuccess(true);
+      setTimeout(() => {
+        navigate("/cidadao/minhas-denuncias");
+      }, 2000);
+
+    }
+    catch(error){
+      console.error(error);
+      alert("Erro ao enviar denúncia");
+
+    }
+    finally{
+      setIsLoading(false);
+    }
+    
   };
 
   const handleCancel = () => {

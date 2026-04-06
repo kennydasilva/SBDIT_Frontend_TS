@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { User, Mail, Phone, MapPin, Calendar, Save } from "lucide-react";
 
-export default function Perfil() {
+export default function CidadaoPerfil() {
   const [isEditing, setIsEditing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({

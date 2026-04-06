@@ -53,7 +53,7 @@ export const denunciaService = {
             
             formData.append("caminho_ficheiro", data.caminho_ficheiro);
 
-            const response=await api.post("/denuncias", formData, {
+            const response=await api.post("/denuncias/", formData, {
                 headers:{
                     "Content-Type":"multipart/form-data",
                 }
