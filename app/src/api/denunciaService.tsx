@@ -97,5 +97,17 @@ export const denunciaService = {
             throw error;
         }
     }
+,
+
+    async obterPorId(id: number): Promise<DenunciaDetalhada>{
+        try{
+            const response= await api.get(`/denuncias/${id}`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao obter denúncia por ID:", error);
+            throw error;
+        }
+    }
 
 }
