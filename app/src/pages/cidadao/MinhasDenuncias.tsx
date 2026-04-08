@@ -1,51 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Eye } from "lucide-react";
 import { Link } from "react-router";
+import { useAuth } from "../../hooks/useAuth";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
-const denunciasData = [
-  {
-    id: 1,
-    matricula: "AB-12-CD",
-    tipo: "Contramão",
-    data: "2026-04-05",
-    estado: "Pendente",
-  },
-  {
-    id: 2,
-    matricula: "EF-34-GH",
-    tipo: "Veículo Parado",
-    data: "2026-04-03",
-    estado: "Validada",
-  },
-  {
-    id: 3,
-    matricula: "IJ-56-KL",
-    tipo: "Excesso de Velocidade",
-    data: "2026-04-01",
-    estado: "Aprovada",
-  },
-  {
-    id: 4,
-    matricula: "MN-78-OP",
-    tipo: "Contramão",
-    data: "2026-03-28",
-    estado: "Rejeitada",
-  },
-  {
-    id: 5,
-    matricula: "QR-90-ST",
-    tipo: "Veículo Parado",
-    data: "2026-03-25",
-    estado: "Arquivada",
-  },
-  {
-    id: 6,
-    matricula: "UV-11-WX",
-    tipo: "Excesso de Velocidade",
-    data: "2026-03-20",
-    estado: "Aprovada",
-  },
-];
+
 
 const estados = [
   "Todos",
@@ -74,10 +33,38 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function MinhasDenuncias() {
+  const { user, loading: authLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEstado, setSelectedEstado] = useState("Todos");
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
+ 
 
-  const filteredDenuncias = denunciasData.filter((denuncia) => {
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      carregarDenuncias();
+    }
+  }, [authLoading, user]);
+
+
+  const carregarDenuncias = async () => {
+    if (!user) return;
+    try{
+      setLoading(true);
+      setError(null);
+
+      const data= await denunciaService.listarPorCidadao(user.id);
+      setDenuncias(data);
+    } catch (err) {
+      setError("Erro ao carregar denúncias.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredDenuncias = denuncias.filter((denuncia) => {
     const matchesSearch =
       denuncia.matricula.toLowerCase().includes(searchTerm.toLowerCase()) ||
       denuncia.estado.toLowerCase().includes(searchTerm.toLowerCase());
@@ -178,10 +165,10 @@ export default function MinhasDenuncias() {
                       {denuncia.matricula}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {denuncia.tipo}
+                      {denuncia.tipo_infracao}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.data}
+                      {denuncia.data_captura}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -215,7 +202,7 @@ export default function MinhasDenuncias() {
           <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
             <p className="text-sm text-gray-600">
               Mostrando {filteredDenuncias.length} de{" "}
-              {denunciasData.length} denúncias
+              {denuncias.length} denúncias
             </p>
             <div className="flex gap-2">
               <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">

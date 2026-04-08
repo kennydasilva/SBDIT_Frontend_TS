@@ -34,6 +34,24 @@ export interface DenunciaResponse{
     descricao:string;
 }
 
+export interface DenunciaDetalhada {
+    id: number;
+    matricula: string;
+    estado: string;
+    descricao: string;
+    tipo_infracao: string;
+    localizacao: string;
+    sentido_direccao: string;
+
+    ficheiro_processado: string | null;
+    ficheiro_original: string | null;
+
+    data_captura: string | null;
+    codigo_legal: string | null;
+    confianca: number | null;
+    data_analise: string | null;
+}
+
 export const denunciaService = {
 
     async criar (data:CreateDenunciaData):Promise<{message:string; id:number}>{
@@ -66,5 +84,18 @@ export const denunciaService = {
             console.error("Erro ao criar denúncia:", error);
             throw error;
         }
+    },
+
+
+    async listarPorCidadao(cidadaoId: number): Promise<DenunciaDetalhada[]>{
+        try{
+            const response= await api.get(`/denuncias/cidadao/${cidadaoId}`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar denúncias por cidadão:", error);
+            throw error;
+        }
     }
+
 }

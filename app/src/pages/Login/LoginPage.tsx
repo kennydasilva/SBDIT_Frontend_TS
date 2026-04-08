@@ -74,7 +74,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
       <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-xl">
-        {/* Logo/Header */}
+      
         <div className="text-center">
           <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1E40AF] shadow-lg">
             <span className="text-3xl font-bold text-white">SGDIT</span>
@@ -139,7 +139,7 @@ export default function LoginPage() {
               {form.formState.isSubmitting ? "Entrando..." : "Entrar no Sistema"}
             </Button>
 
-            {/* Link para recuperar senha */}
+          
             <div className="text-center">
               <a 
                 href="/recuperar-senha" 
@@ -149,7 +149,7 @@ export default function LoginPage() {
               </a>
             </div>
 
-            {/* Link para cadastro (opcional) */}
+            
             <div className="text-center text-sm text-gray-600">
               Não tem uma conta?{" "}
               <a 
