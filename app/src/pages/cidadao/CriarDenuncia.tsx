@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Upload, X, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
-const { user } = useAuth();
+
 
 export default function CriarDenuncia() {
   const navigate = useNavigate();
@@ -18,6 +18,7 @@ export default function CriarDenuncia() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const { user, loading: authLoading } = useAuth();
 
   const mapTipoInfracao = (tipo: string) => {
   switch (tipo) {
@@ -67,11 +68,16 @@ export default function CriarDenuncia() {
       return;
     }
 
+    if (!user) {
+      alert("Usuário não autenticado");
+      return;
+    }
+
     try{
       setIsLoading(true);
 
       await denunciaService.criar({
-        cidadao_id: user?.id || 0,
+        cidadao_id: user.id,
         matricula: formData.matricula,
         descricao: formData.descricao,
         tipo_infracao: mapTipoInfracao(formData.tipoInfracao),
@@ -103,6 +109,12 @@ export default function CriarDenuncia() {
   const handleCancel = () => {
     navigate("/cidadao");
   };
+
+  useEffect(() => {
+      if (!authLoading && user) {
+        alert("teste")
+      }
+    }, [authLoading, user]);
 
   return (
     <div className="p-8">

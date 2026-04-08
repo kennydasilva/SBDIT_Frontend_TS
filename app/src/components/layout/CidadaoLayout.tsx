@@ -52,10 +52,12 @@ export default function CidadaoLayout() {
           })}
 
           {/* Logout */}
-          <button className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full">
-            <LogOut size={20} />
-            <span>Sair</span>
-          </button>
+          <Link to="/login">
+            <button className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full">
+              <LogOut size={20} />
+              <span>Sair</span>
+            </button>
+          </Link>
         </nav>
 
         {/* User */}
