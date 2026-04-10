@@ -70,7 +70,7 @@ const getStatusColor = (estado: string) => {
   }
 };
 
-export default function MinhasDecisoes() {
+export default function MinhasDecisoesPt() {
   const totalDecisoes = decisoesData.length;
   const aprovadas = decisoesData.filter((d) => d.estado === "Aprovada").length;
   const arquivadas = decisoesData.filter((d) => d.estado === "Arquivada").length;

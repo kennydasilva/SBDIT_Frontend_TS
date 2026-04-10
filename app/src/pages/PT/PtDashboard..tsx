@@ -76,7 +76,7 @@ const getStatusColor = (estado: string) => {
   }
 };
 
-export default function Dashboard() {
+export default function DashboardPt() {
   return (
     <div className="p-8">
       {/* Header */}

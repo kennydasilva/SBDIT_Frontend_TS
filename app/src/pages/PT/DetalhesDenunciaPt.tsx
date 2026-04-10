@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-export default function DetalhesDenuncia() {
+export default function DetalhesDenunciaPt() {
   const { id } = useParams();
   const navigate = useNavigate();
 

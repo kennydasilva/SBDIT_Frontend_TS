@@ -77,7 +77,7 @@ const getStatusColor = (estado: string) => {
   }
 };
 
-export default function Denuncias() {
+export default function DenunciasPt() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState("todas");
 

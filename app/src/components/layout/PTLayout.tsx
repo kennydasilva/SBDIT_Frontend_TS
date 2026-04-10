@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 const menuItems = [
-  { path: "/pt", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/pt/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/pt/denuncias", icon: AlertTriangle, label: "Denúncias" },
   { path: "/pt/minhas-decisoes", icon: CheckSquare, label: "Minhas Decisões" },
   { path: "/pt/perfil", icon: User, label: "Perfil" },
