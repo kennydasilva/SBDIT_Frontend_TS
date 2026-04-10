@@ -2,7 +2,7 @@ import { useState } from "react";
 import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "lucide-react";
 import { toast } from "sonner";
 
-export default function Perfil() {
+export default function PerfilPt() {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     nome: "António Costa",
@@ -14,7 +14,7 @@ export default function Perfil() {
   });
 
   const handleSave = () => {
-    // Simulate API call
+    
     toast.success("Perfil atualizado com sucesso!");
     setIsEditing(false);
   };

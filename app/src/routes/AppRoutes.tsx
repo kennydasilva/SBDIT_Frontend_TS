@@ -22,9 +22,11 @@ import DetalhesDenuncia from "../pages/cidadao/DetalhesDenuncia";
 import MinhasDenuncias from "../pages/cidadao/MinhasDenuncias";
 import CidadaoPerfil from "../pages/cidadao/CidadaoPerfil";
 import PTLayout from "../components/layout/PTLayout";
-import DashboardPt from "../pages/PT/PtDashboard.";
+import DashboardPt from "../pages/PT/PtDashboard";
 import DenunciasPt from "../pages/PT/DenunciasPt";
 import MinhasDecisoesPt from "../pages/PT/MinhasDecisoesPt";
+import DetalhesDenunciaPt from "../pages/PT/DetalhesDenunciaPt";
+import PerfilPt from "../pages/PT/PerfilPt";
 /*import AdminDenuncias from "../pages/Admin/Denuncias";
 
 // Policial Layout e Pages
@@ -67,8 +69,9 @@ export default function AppRoutes() {
           <Route path="/pt/dashboard" element={<DashboardPt />} />
           <Route path="/pt/denuncias" element={<DenunciasPt />} />
           <Route path="/pt/minhas-decisoes" element={<MinhasDecisoesPt />} />
-          <Route path="/pt/perfil" element={<CidadaoPerfil />} />
-        </Route>*
+          <Route path="/pt/perfil" element={<PerfilPt />} />
+          <Route path="/pt/denuncias/:id" element={<DetalhesDenunciaPt />} /> 
+        </Route>
 
         {/* Cidadão Routes */}
         <Route element={<CidadaoLayout />}>

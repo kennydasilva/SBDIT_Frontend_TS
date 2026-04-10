@@ -109,6 +109,29 @@ export const denunciaService = {
             console.error("Erro ao obter denúncia por ID:", error);
             throw error;
         }
-    }
+    },
+
+    async listarPorPt(ptId: number): Promise<DenunciaDetalhada[]>{
+        try{
+            const response= await api.get(`denuncias/pt/denuncias/${ptId}`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar denúncias por Policia de Transito:", error);
+            throw error;
+        }
+    },
+
+
+    async listarValidadas(): Promise<DenunciaDetalhada[]>{
+        try{
+            const response= await api.get(`denuncias/pt/validadas/`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar denúncias validadas:", error);
+            throw error;
+        }
+    },
 
 }

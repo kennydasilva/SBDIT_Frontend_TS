@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -52,10 +52,12 @@ export default function PTLayout() {
           })}
 
           {/* Logout */}
+          <Link to="/login">
           <button className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full">
             <LogOut size={20} />
             <span>Sair</span>
           </button>
+          </Link>
         </nav>
 
         {/* User */}

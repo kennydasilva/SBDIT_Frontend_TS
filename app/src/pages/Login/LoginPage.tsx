@@ -57,7 +57,7 @@ export default function LoginPage() {
           navigate("/admin/dashboard");
           break;
         case "PT":
-          navigate("/policial/dashboard");
+          navigate("/pt/dashboard");
           break;
         case "CIDADAO":
           navigate("/cidadao/dashboard");

@@ -28,7 +28,7 @@ export default function RouteGuard() {
       return currentPath.startsWith("/admin");
     }
     if (user.role === "PT") {
-      return currentPath.startsWith("/policial");
+      return currentPath.startsWith("/pt");
     }
     if (user.role === "CIDADAO") {
       return currentPath.startsWith("/cidadao");
@@ -44,7 +44,7 @@ export default function RouteGuard() {
       case "ADMIN":
         return <Navigate to="/admin/dashboard" replace />;
       case "PT":
-        return <Navigate to="/policial/dashboard" replace />;
+        return <Navigate to="/pt/dashboard" replace />;
       case "CIDADAO":
         return <Navigate to="/cidadao/dashboard" replace />;
       default:

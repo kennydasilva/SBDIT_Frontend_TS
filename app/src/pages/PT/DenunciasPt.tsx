@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Search } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
 const denunciasData = [
   {
@@ -78,30 +80,52 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function DenunciasPt() {
+
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState("todas");
 
-  // Filtrar denúncias conforme regra de negócio
-  const filteredDenuncias = denunciasData.filter((denuncia) => {
-    // Filtro de busca por matrícula
+  useEffect(() => {
+          
+            carregarDenuncias();
+          
+    }, []);
+      
+    
+    
+    const carregarDenuncias = async () => {
+      
+  
+      try{
+        setLoading(true);
+  
+        const data= await denunciaService.listarValidadas();
+  
+        setDenuncias(data);
+      }
+      catch(error){
+        setError("Erro ao carregar denúncias.");
+      }
+      finally{
+        setLoading(false);
+      }
+    }
+
+  
+  const filteredDenuncias = denuncias.filter((denuncia) => {
+    
     const matchesSearch = denuncia.matricula
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
 
-    // Filtro por estado (regra de negócio: mostrar todas VALIDADA, apenas APROVADA/ARQUIVADA do PT logado)
     let matchesEstado = true;
     if (filterEstado === "validadas") {
-      matchesEstado = denuncia.estado === "Validada";
-    } else if (filterEstado === "aprovadas") {
-      matchesEstado = denuncia.estado === "Aprovada" && denuncia.ptId === "PT-2145";
-    } else if (filterEstado === "arquivadas") {
-      matchesEstado = denuncia.estado === "Arquivada" && denuncia.ptId === "PT-2145";
+      matchesEstado = denuncia.estado === "VALIDADA";
     } else if (filterEstado === "todas") {
-      // Mostrar todas VALIDADA + APROVADA/ARQUIVADA do PT logado
       matchesEstado =
-        denuncia.estado === "Validada" ||
-        (denuncia.estado === "Aprovada" && denuncia.ptId === "PT-2145") ||
-        (denuncia.estado === "Arquivada" && denuncia.ptId === "PT-2145");
+        denuncia.estado === "VALIDADA" ;
     }
 
     return matchesSearch && matchesEstado;
@@ -202,10 +226,10 @@ export default function DenunciasPt() {
                       {denuncia.matricula}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {denuncia.tipo}
+                      {denuncia.tipo_infracao}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.data}
+                      {denuncia.data_captura}
                     </td>
                     <td className="px-6 py-4">
                       <span

@@ -1,34 +1,48 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "../../hooks/useAuth";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
 export default function DetalhesDenunciaPt() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock data - in real app, fetch from backend
-  const [denuncia] = useState({
-    id: id,
-    matricula: "AB-12-CD",
-    tipo: "Contramão",
-    localizacao: "Avenida da Liberdade, Lisboa",
-    sentido: "Norte-Sul (sentido contrário)",
-    estado: "Validada",
-    dataCaptura: "2026-04-10 09:15:30",
-    confianca: 95,
-    infracaoDetectada: true,
-    codigoLegalSugerido: "Art. 24º - Circulação em Contramão",
-    dataAnalise: "2026-04-10 09:16:05",
-    ficheiroOriginal: "/videos/original_145.mp4",
-    ficheiroProcessado: "/videos/processed_145.mp4",
-    processamentoCompleto: true,
-  });
 
-  const [isEditing, setIsEditing] = useState(denuncia.estado === "Validada");
-  const [codigoLegal, setCodigoLegal] = useState(denuncia.codigoLegalSugerido);
+  
+  const [denuncia, setDenuncia] = useState<DenunciaDetalhada | null>(null);
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | undefined>(undefined);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [codigoLegal, setCodigoLegal] = useState("");
   const [descricao, setDescricao] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { user, loading: authLoading } = useAuth();
+  
+
+  useEffect(() => {
+      if (!authLoading && user && id) {
+        carregarDenuncia();
+      }
+  }, [authLoading, user, id]);
+
+  const carregarDenuncia = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const data=await denunciaService.obterPorId(Number(id));
+      setDenuncia(data);
+    }
+    catch(error) {
+      setError("Erro ao carregar detalhes da denúncia.");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
 
   const handleAprovar = async () => {
     if (!codigoLegal.trim()) {
@@ -61,6 +75,8 @@ export default function DetalhesDenunciaPt() {
       navigate("/pt/denuncias");
     }, 1000);
   };
+
+  const BASE_URL = "http://127.0.0.1:8000";
 
   const handleAtualizar = async () => {
     setIsSubmitting(true);
@@ -98,7 +114,7 @@ export default function DetalhesDenunciaPt() {
           Voltar às Denúncias
         </Link>
         <h1 className="text-3xl font-bold text-gray-900">
-          Análise da Denúncia #{denuncia.id}
+          Análise da Denúncia #{denuncia?.id}
         </h1>
       </div>
 
@@ -113,20 +129,20 @@ export default function DetalhesDenunciaPt() {
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-600">Matrícula</p>
-                <p className="font-medium text-gray-900">{denuncia.matricula}</p>
+                <p className="font-medium text-gray-900">{denuncia?.matricula}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Tipo de Infração</p>
-                <p className="font-medium text-gray-900">{denuncia.tipo}</p>
+                <p className="font-medium text-gray-900">{denuncia?.tipo_infracao}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Estado</p>
                 <span
                   className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    denuncia.estado
+                    denuncia?.estado || " "
                   )}`}
                 >
-                  {denuncia.estado}
+                  {denuncia?.estado}
                 </span>
               </div>
               <div className="flex items-start gap-2">
@@ -134,22 +150,22 @@ export default function DetalhesDenunciaPt() {
                 <div>
                   <p className="text-sm text-gray-600">Localização</p>
                   <p className="font-medium text-gray-900">
-                    {denuncia.localizacao}
+                    {denuncia?.localizacao}
                   </p>
                 </div>
               </div>
-              {denuncia.sentido && (
+              {denuncia?.sentido_direccao && (
                 <div>
                   <p className="text-sm text-gray-600">Sentido</p>
-                  <p className="font-medium text-gray-900">{denuncia.sentido}</p>
+                  <p className="font-medium text-gray-900">{denuncia?.sentido_direccao}</p>
                 </div>
               )}
               <div className="flex items-start gap-2">
                 <Calendar size={16} className="text-gray-400 mt-1" />
                 <div>
-                  <p className="text-sm text-gray-600">Data de Captura</p>
+                  <p className="text-sm text-gray-600">Data</p>
                   <p className="font-medium text-gray-900">
-                    {denuncia.dataCaptura}
+                    {denuncia?.data_captura}
                   </p>
                 </div>
               </div>
@@ -159,13 +175,13 @@ export default function DetalhesDenunciaPt() {
           {/* Resultado Automático */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Resultado Automático (IA)
+              Resultado Automático 
             </h2>
             <div className="space-y-3">
               <div>
                 <p className="text-sm text-gray-600">Infração Detectada</p>
                 <p className="font-medium text-gray-900">
-                  {denuncia.infracaoDetectada ? "Sim" : "Não"}
+                  {denuncia?.infracao_detectada ? "Sim" : "Não"}
                 </p>
               </div>
               <div>
@@ -174,24 +190,24 @@ export default function DetalhesDenunciaPt() {
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${denuncia.confianca}%` }}
+                      style={{ width: `${denuncia?.confianca}%` }}
                     ></div>
                   </div>
                   <span className="font-medium text-gray-900">
-                    {denuncia.confianca}%
+                    {denuncia?.confianca}%
                   </span>
                 </div>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Código Legal Sugerido</p>
                 <p className="font-medium text-gray-900">
-                  {denuncia.codigoLegalSugerido}
+                  {denuncia?.codigo_legal}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Data da Análise</p>
                 <p className="font-medium text-gray-900">
-                  {denuncia.dataAnalise}
+                  {denuncia?.data_analise}
                 </p>
               </div>
             </div>
@@ -206,7 +222,7 @@ export default function DetalhesDenunciaPt() {
               Análise de Vídeo
             </h2>
 
-            {denuncia.processamentoCompleto ? (
+            {denuncia?.ficheiro_processado ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Video Original */}
                 <div>
@@ -217,7 +233,7 @@ export default function DetalhesDenunciaPt() {
                     <video
                       controls
                       className="w-full h-full"
-                      src={denuncia.ficheiroOriginal}
+                      src={denuncia?.ficheiro_original || ""}
                     >
                       Seu navegador não suporta vídeo.
                     </video>
@@ -233,7 +249,7 @@ export default function DetalhesDenunciaPt() {
                     <video
                       controls
                       className="w-full h-full"
-                      src={denuncia.ficheiroProcessado}
+                      src={denuncia?.ficheiro_processado || ""}
                     >
                       Seu navegador não suporta vídeo.
                     </video>
@@ -255,7 +271,7 @@ export default function DetalhesDenunciaPt() {
           {/* Decision Form */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {denuncia.estado === "Validada" ? "Decisão do PT" : "Decisão Registrada"}
+              {denuncia?.estado === "VALIDADA" ? "Decisão do PT" : "Decisão Registrada"}
             </h2>
 
             <div className="space-y-4">
@@ -288,7 +304,7 @@ export default function DetalhesDenunciaPt() {
               </div>
 
               {/* Buttons */}
-              {denuncia.estado === "Validada" && (
+              {denuncia?.estado === "VALIDADA" && (
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={handleAprovar}
@@ -317,7 +333,7 @@ export default function DetalhesDenunciaPt() {
                 </div>
               )}
 
-              {(denuncia.estado === "Aprovada" || denuncia.estado === "Arquivada") && (
+              {(denuncia?.estado === "APROVADA" || denuncia?.estado === "ARQUIVADA") && (
                 <div className="pt-4">
                   {isEditing ? (
                     <div className="flex gap-3">

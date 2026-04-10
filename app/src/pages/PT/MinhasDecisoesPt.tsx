@@ -1,4 +1,7 @@
 import { Link } from "react-router";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import { useEffect, useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 
 const decisoesData = [
   {
@@ -71,9 +74,43 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function MinhasDecisoesPt() {
-  const totalDecisoes = decisoesData.length;
-  const aprovadas = decisoesData.filter((d) => d.estado === "Aprovada").length;
-  const arquivadas = decisoesData.filter((d) => d.estado === "Arquivada").length;
+  const { user, loading: authLoading } = useAuth();
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
+
+
+  useEffect(() => {
+      if (!authLoading && user) {
+        carregarDenuncias();
+      }
+  }, [authLoading, user]);
+  
+
+
+  const carregarDenuncias = async () => {
+    if (!user) return;
+
+    try{
+
+      setLoading(true)
+
+      const data= await denunciaService.listarPorPt(user.id)
+
+      setDenuncias(data);
+
+    }
+    catch(error){
+      setError("Erro ao carregar decisões.");
+    }
+    finally{
+      setLoading(false);
+    }
+    
+  }
+  const totalDecisoes = denuncias.length;
+  const aprovadas = denuncias.filter((d) => d.estado === "Aprovada").length;
+  const arquivadas = denuncias.filter((d) => d.estado === "Arquivada").length;
 
   return (
     <div className="p-8">
@@ -131,7 +168,7 @@ export default function MinhasDecisoesPt() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {decisoesData.map((decisao) => (
+              {denuncias.map((decisao) => (
                 <tr key={decisao.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-900">
                     #{decisao.id}
@@ -140,7 +177,7 @@ export default function MinhasDecisoesPt() {
                     {decisao.matricula}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {decisao.tipo}
+                    {decisao.tipo_infracao}
                   </td>
                   <td className="px-6 py-4">
                     <span
@@ -152,10 +189,10 @@ export default function MinhasDecisoesPt() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {decisao.codigoLegal}
+                    {decisao.codigo_legal}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {decisao.dataDecisao}
+                    {decisao.data_captura}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-3">
