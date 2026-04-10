@@ -10,6 +10,9 @@ import {
   AlertTriangle,
   Shield,
 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import { useAuth } from "../../hooks/useAuth";
 
 const denunciaDetalhes = {
   id: 1,
@@ -74,7 +77,63 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function DetalhesDenuncia() {
+  const { user, loading: authLoading } = useAuth();
   const { id } = useParams();
+  const [denuncia, setDenuncia] = useState<DenunciaDetalhada | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+      if (!authLoading && user && id) {
+        carregarDenuncia();
+      }
+  }, [authLoading, user, id]);
+
+  const carregarDenuncia = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      const data=await denunciaService.obterPorId(Number(id));
+      setDenuncia(data);
+    }
+    catch(error) {
+      setError("Erro ao carregar detalhes da denúncia.");
+    }
+    finally {
+      setLoading(false);
+    }
+  };
+
+  const BASE_URL = "http://127.0.0.1:8000";
+
+  
+
+  if (loading) return <div className="p-8">Carregando...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (!denuncia) return <div className="p-8">Denúncia não encontrada.</div>;
+
+  const timeline = [
+  {
+    status: "Denúncia enviada",
+    data: denuncia.data_captura,
+    concluido: true,
+    icon: FileText,
+  },
+  {
+    status: "Análise automática",
+    data: denuncia.data_analise,
+    concluido: !!denuncia.data_analise,
+    icon: AlertTriangle,
+    resultado: denuncia.estado === "VALIDADA" ? "VALIDADA" : undefined,
+  },
+  {
+    status: "Análise do PT",
+    data: denuncia.data_analise,
+    concluido: ["APROVADA", "REJEITADA"].includes(denuncia.estado),
+    icon: Shield,
+    resultado: denuncia.estado,
+  },
+];
 
   return (
     <div className="p-8">
@@ -99,10 +158,10 @@ export default function DetalhesDenuncia() {
         </div>
         <span
           className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(
-            denunciaDetalhes.estado
+            denuncia.estado
           )}`}
         >
-          {denunciaDetalhes.estado}
+          {denuncia.estado}
         </span>
       </div>
 
@@ -114,7 +173,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Matrícula</p>
           </div>
           <p className="text-xl font-bold text-gray-900">
-            {denunciaDetalhes.matricula}
+            {denuncia.matricula}
           </p>
         </div>
 
@@ -124,7 +183,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Tipo</p>
           </div>
           <p className="text-xl font-bold text-gray-900">
-            {denunciaDetalhes.tipo}
+            {denuncia.tipo_infracao}
           </p>
         </div>
 
@@ -134,7 +193,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Localização</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
-            {denunciaDetalhes.localizacao}
+            {denuncia.localizacao}
           </p>
         </div>
 
@@ -144,7 +203,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Data</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
-            {denunciaDetalhes.dataRegistro}
+            {denuncia.data_captura}
           </p>
         </div>
       </div>
@@ -160,83 +219,75 @@ export default function DetalhesDenuncia() {
             <div className="space-y-4">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Descrição</p>
-                <p className="text-gray-900">{denunciaDetalhes.descricao}</p>
+                <p className="text-gray-900">{denuncia.descricao}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600 mb-1">Código Legal</p>
                 <p className="font-medium text-gray-900">
-                  {denunciaDetalhes.codigoLegal}
+                  {denuncia.codigo_legal}
                 </p>
               </div>
-              {denunciaDetalhes.sentidoPermitido && (
+              {denuncia.sentido_direccao&& (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">
                     Sentido Permitido
                   </p>
                   <p className="font-medium text-gray-900">
-                    {denunciaDetalhes.sentidoPermitido}
+                    {denuncia.sentido_direccao}
                   </p>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Vídeos */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
-              Vídeos da Denúncia
-            </h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Vídeos da Denúncia
+              </h2>
 
-            {denunciaDetalhes.processamentoCompleto ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Vídeo Original */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    Vídeo enviado pelo cidadão
-                  </h3>
-                  <div className="bg-gray-900 rounded-lg aspect-video flex items-center justify-center">
-                    <video
-                      controls
-                      className="w-full h-full rounded-lg"
-                      poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23374151'/%3E%3Ctext x='50%25' y='50%25' fill='white' text-anchor='middle' dy='.3em' font-family='sans-serif'%3EVídeo Original%3C/text%3E%3C/svg%3E"
-                    >
-                      <source src="#" type="video/mp4" />
+              {denuncia.ficheiro_original ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                  {/* Vídeo Original */}
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      Vídeo enviado pelo cidadão
+                    </h3>
+                    <video controls className="w-full rounded-lg">
+                      <source src={`${BASE_URL}${denuncia.ficheiro_original}`} type="video/mp4" />
                     </video>
                   </div>
-                </div>
 
-                {/* Vídeo Processado */}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-700 mb-3">
-                    Vídeo processado pelo sistema
-                  </h3>
-                  <div className="bg-gray-900 rounded-lg aspect-video flex items-center justify-center">
-                    <video
-                      controls
-                      className="w-full h-full rounded-lg"
-                      poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect width='400' height='300' fill='%23374151'/%3E%3Ctext x='50%25' y='50%25' fill='white' text-anchor='middle' dy='.3em' font-family='sans-serif'%3EVídeo Processado%3C/text%3E%3C/svg%3E"
-                    >
-                      <source src="#" type="video/mp4" />
-                    </video>
-                  </div>
+                  {/* Vídeo Processado */}
+                  {denuncia.ficheiro_processado ? (
+                    <div>
+                      <h3 className="text-sm font-medium text-gray-700 mb-3">
+                        Vídeo processado pelo sistema
+                      </h3>
+                      <video controls className="w-full rounded-lg">
+                        <source src={`${BASE_URL}${denuncia.ficheiro_processado}`} type="video/mp4" />
+                      </video>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center bg-yellow-50 rounded-lg">
+                      <div className="text-center p-6">
+                        <Clock className="mx-auto text-yellow-600 mb-2" size={32} />
+                        <p>Processando vídeo...</p>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
-              </div>
-            ) : (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
-                <Clock className="mx-auto text-blue-600 mb-4" size={48} />
-                <p className="text-blue-900 font-medium mb-2">
-                  Processando análise automática...
-                </p>
-                <p className="text-blue-700 text-sm">
-                  O sistema está analisando o vídeo enviado. Isso pode levar
-                  alguns minutos.
-                </p>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="text-center p-6">
+                  <Clock className="mx-auto text-blue-600 mb-2" size={32} />
+                  <p>Sem vídeo disponível</p>
+                </div>
+              )}
+            </div>
 
           {/* Resultado da Análise Automática */}
-          {denunciaDetalhes.processamentoCompleto && (
+          {denuncia.ficheiro_processado && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 Resultado da Análise Automática
@@ -244,7 +295,7 @@ export default function DetalhesDenuncia() {
 
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
-                  {denunciaDetalhes.analiseAutomatica.infracaoDetectada ? (
+                  {denuncia.infracao_detectada ? (
                     <>
                       <CheckCircle className="text-green-600" size={24} />
                       <div>
@@ -275,14 +326,14 @@ export default function DetalhesDenuncia() {
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-sm text-gray-600">Nível de Confiança</p>
                     <p className="text-lg font-bold text-gray-900">
-                      {denunciaDetalhes.analiseAutomatica.confianca}%
+                      {denuncia.confianca}%
                     </p>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-blue-600 h-2 rounded-full"
                       style={{
-                        width: `${denunciaDetalhes.analiseAutomatica.confianca}%`,
+                        width: `${denuncia.confianca}%`,
                       }}
                     />
                   </div>
@@ -293,14 +344,14 @@ export default function DetalhesDenuncia() {
                     Descrição da Análise
                   </p>
                   <p className="text-gray-900">
-                    {denunciaDetalhes.analiseAutomatica.descricao}
+                    {denuncia.descricao}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm text-gray-600">Código Legal Aplicado</p>
                   <p className="font-medium text-gray-900">
-                    {denunciaDetalhes.codigoLegal}
+                    {denuncia.codigo_legal}
                   </p>
                 </div>
               </div>
@@ -316,9 +367,9 @@ export default function DetalhesDenuncia() {
             </h2>
 
             <div className="space-y-6">
-              {denunciaDetalhes.timeline.map((item, index) => {
+              {timeline.map((item, index) => {
                 const Icon = item.icon;
-                const isLast = index === denunciaDetalhes.timeline.length - 1;
+                const isLast = index === timeline.length - 1;
 
                 return (
                   <div key={index} className="relative">

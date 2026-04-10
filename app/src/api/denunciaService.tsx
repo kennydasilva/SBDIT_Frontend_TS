@@ -50,6 +50,7 @@ export interface DenunciaDetalhada {
     codigo_legal: string | null;
     confianca: number | null;
     data_analise: string | null;
+    infracao_detectada: boolean | null;
 }
 
 export const denunciaService = {
