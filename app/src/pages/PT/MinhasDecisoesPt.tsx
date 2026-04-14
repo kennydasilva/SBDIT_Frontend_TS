@@ -64,9 +64,9 @@ const decisoesData = [
 
 const getStatusColor = (estado: string) => {
   switch (estado) {
-    case "Aprovada":
+    case "APROVADA":
       return "bg-green-100 text-green-800";
-    case "Arquivada":
+    case "ARQUIVADA":
       return "bg-gray-100 text-gray-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -109,8 +109,8 @@ export default function MinhasDecisoesPt() {
     
   }
   const totalDecisoes = denuncias.length;
-  const aprovadas = denuncias.filter((d) => d.estado === "Aprovada").length;
-  const arquivadas = denuncias.filter((d) => d.estado === "Arquivada").length;
+  const aprovadas = denuncias.filter((d) => d.estado === "APROVADA").length;
+  const arquivadas = denuncias.filter((d) => d.estado === "ARQUIVADA").length;
 
   return (
     <div className="p-8">

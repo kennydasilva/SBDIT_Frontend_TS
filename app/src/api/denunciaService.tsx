@@ -27,6 +27,14 @@ export interface CreateDenunciaData{
     caminho_ficheiro:File;
 }
 
+export interface denunciaupdate{
+    pt_id:number;
+    descricao_pt:string;
+    codigo_legal:string;
+    denuncia_id:number;
+    estado:string;
+}
+
 export interface DenunciaResponse{
     id:number;
     matricula:string;
@@ -83,6 +91,29 @@ export const denunciaService = {
         }
         catch(error){
             console.error("Erro ao criar denúncia:", error);
+            throw error;
+        }
+    },
+
+    async actualizar (data:denunciaupdate):Promise<{message:string; id:number}>{
+
+        try{
+            const formData = new FormData();
+
+            formData.append("pt_id", String(data.pt_id));
+            formData.append("denuncia_id", String(data.denuncia_id));
+            formData.append("descricao_pt", data.descricao_pt);
+            formData.append("codigo_legal", data.codigo_legal);
+            formData.append("estado", data.estado);
+
+
+            const response=await api.patch("denuncias/pt/actualizar/", formData);
+
+            return response.data;
+
+        }
+        catch(error){
+            console.error("Erro ao actualizar denúncia:", error);
             throw error;
         }
     },

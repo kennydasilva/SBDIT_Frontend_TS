@@ -1,6 +1,9 @@
 import { CheckCircle, Archive, Clock, AlertTriangle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useAuth } from "../../hooks/useAuth";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
 const stats = [
   {
@@ -77,6 +80,42 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function DashboardPt() {
+  const { user, loading: authLoading } = useAuth();
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterEstado, setFilterEstado] = useState("todas");
+  
+  useEffect(() => {
+          if (!authLoading && user) {
+            carregarDenuncias();
+          }
+  }, [authLoading, user]);
+        
+      
+      
+  const carregarDenuncias = async () => {
+        if (!user) return;
+    
+        try{
+          setLoading(true);
+    
+          const data= await denunciaService.listarValidadas();
+    
+          setDenuncias(data);
+        }
+        catch(error){
+          setError("Erro ao carregar denúncias.");
+        }
+        finally{
+          setLoading(false);
+        }
+  }
+
+
+
+
   return (
     <div className="p-8">
       {/* Header */}

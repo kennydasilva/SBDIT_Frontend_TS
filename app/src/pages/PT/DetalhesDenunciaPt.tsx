@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
@@ -21,13 +21,20 @@ export default function DetalhesDenunciaPt() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { user, loading: authLoading } = useAuth();
-  
+  const BASE_URL = "http://127.0.0.1:8000";
 
   useEffect(() => {
       if (!authLoading && user && id) {
         carregarDenuncia();
       }
   }, [authLoading, user, id]);
+
+  useEffect(() => {
+    if (denuncia) {
+      setCodigoLegal(denuncia.codigo_legal || "");
+      setDescricao("");
+    }
+  }, [denuncia]);
 
   const carregarDenuncia = async () => {
     if (!user) return;
@@ -51,13 +58,22 @@ export default function DetalhesDenunciaPt() {
     }
 
     setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await denunciaService.actualizar({
+        pt_id: user?.id || 0,
+        descricao_pt: descricao,
+        codigo_legal: codigoLegal,
+        denuncia_id: denuncia?.id || 0,
+        estado: "APROVADA"
+      });
       toast.success("Denúncia aprovada com sucesso!");
-      setIsSubmitting(false);
       navigate("/pt/denuncias");
-    }, 1000);
+    } catch (error) {
+      toast.error("Erro ao aprovar denúncia");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleArquivar = async () => {
@@ -67,35 +83,52 @@ export default function DetalhesDenunciaPt() {
     }
 
     setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await denunciaService.actualizar({
+        pt_id: user?.id || 0,
+        descricao_pt: descricao,
+        codigo_legal: codigoLegal,
+        denuncia_id: denuncia?.id || 0,
+        estado: "ARQUIVADA"
+      });
       toast.success("Denúncia arquivada com sucesso!");
-      setIsSubmitting(false);
       navigate("/pt/denuncias");
-    }, 1000);
+    } catch (error) {
+      toast.error("Erro ao arquivar denúncia");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const BASE_URL = "http://127.0.0.1:8000";
 
   const handleAtualizar = async () => {
     setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      await denunciaService.actualizar({
+        pt_id: user?.id || 0,
+        descricao_pt: descricao,
+        codigo_legal: codigoLegal,
+        denuncia_id: denuncia?.id || 0,
+        estado: denuncia?.estado || "VALIDADA"
+      });
       toast.success("Decisão atualizada com sucesso!");
-      setIsSubmitting(false);
       setIsEditing(false);
-    }, 1000);
+    } catch (error) {
+      toast.error("Erro ao atualizar decisão");
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+  const confiancaPercent = Math.round((Number(denuncia?.confianca) || 0) * 100);
 
   const getStatusColor = (estado: string) => {
     switch (estado) {
-      case "Validada":
+      case "VALIDADA":
         return "bg-blue-100 text-blue-800";
-      case "Aprovada":
+      case "APROVADA":
         return "bg-green-100 text-green-800";
-      case "Arquivada":
+      case "ARQUIVADA":
         return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -146,7 +179,7 @@ export default function DetalhesDenunciaPt() {
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={16} className="text-gray-400 mt-1" />
+                <MapPin size={16} className="text-blue-500 mt-1" />
                 <div>
                   <p className="text-sm text-gray-600">Localização</p>
                   <p className="font-medium text-gray-900">
@@ -161,7 +194,7 @@ export default function DetalhesDenunciaPt() {
                 </div>
               )}
               <div className="flex items-start gap-2">
-                <Calendar size={16} className="text-gray-400 mt-1" />
+                <Calendar size={16} className="text-green-500 mt-1" />
                 <div>
                   <p className="text-sm text-gray-600">Data</p>
                   <p className="font-medium text-gray-900">
@@ -189,12 +222,13 @@ export default function DetalhesDenunciaPt() {
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
-                      style={{ width: `${denuncia?.confianca}%` }}
+                  
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${confiancaPercent}%` }}
                     ></div>
                   </div>
                   <span className="font-medium text-gray-900">
-                    {denuncia?.confianca}%
+                    {confiancaPercent}%
                   </span>
                 </div>
               </div>
@@ -233,8 +267,9 @@ export default function DetalhesDenunciaPt() {
                     <video
                       controls
                       className="w-full h-full"
-                      src={denuncia?.ficheiro_original || ""}
+                     
                     >
+                      <source src={`${BASE_URL}${denuncia.ficheiro_original}`} type="video/mp4" />
                       Seu navegador não suporta vídeo.
                     </video>
                   </div>
@@ -249,8 +284,9 @@ export default function DetalhesDenunciaPt() {
                     <video
                       controls
                       className="w-full h-full"
-                      src={denuncia?.ficheiro_processado || ""}
+                      
                     >
+                      <source src={`${BASE_URL}${denuncia.ficheiro_processado}`} type="video/mp4" />
                       Seu navegador não suporta vídeo.
                     </video>
                   </div>
@@ -283,7 +319,7 @@ export default function DetalhesDenunciaPt() {
                   type="text"
                   value={codigoLegal}
                   onChange={(e) => setCodigoLegal(e.target.value)}
-                  disabled={!isEditing || isSubmitting}
+                  disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="Ex: Art. 24º - Circulação em Contramão"
                 />
@@ -296,7 +332,7 @@ export default function DetalhesDenunciaPt() {
                 <textarea
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
-                  disabled={!isEditing || isSubmitting}
+                  disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
                   rows={4}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
                   placeholder="Adicione observações sobre a denúncia..."
@@ -312,9 +348,9 @@ export default function DetalhesDenunciaPt() {
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="animate-spin" size={20} />
+                      <Loader2 className="animate-spin text-white" size={20} />
                     ) : (
-                      <CheckCircle size={20} />
+                      <CheckCircle className="text-white" size={20} />
                     )}
                     Aprovar Denúncia
                   </button>
@@ -324,9 +360,9 @@ export default function DetalhesDenunciaPt() {
                     className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSubmitting ? (
-                      <Loader2 className="animate-spin" size={20} />
+                      <Loader2 className="animate-spin text-white" size={20} />
                     ) : (
-                      <Archive size={20} />
+                      <Archive className="text-white" size={20} />
                     )}
                     Arquivar Denúncia
                   </button>
