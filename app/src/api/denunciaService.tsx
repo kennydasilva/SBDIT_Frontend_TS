@@ -95,6 +95,18 @@ export const denunciaService = {
         }
     },
 
+
+     async listar(): Promise<DenunciaDetalhada[]>{
+        try{
+            const response= await api.get(`/denuncias/`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar denúncias:", error);
+            throw error;
+        }
+    },
+
     async actualizar (data:denunciaupdate):Promise<{message:string; id:number}>{
 
         try{
