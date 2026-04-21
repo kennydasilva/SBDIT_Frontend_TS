@@ -19,7 +19,7 @@ export default function CidadaoPerfil() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simular salvamento
+    
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsEditing(false);
     setShowSuccess(true);

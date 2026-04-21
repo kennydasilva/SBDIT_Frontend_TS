@@ -1,68 +1,22 @@
 import { FileText, Clock, CheckCircle, XCircle } from "lucide-react";
 import { Link } from "react-router";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect, useState } from "react";
+import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
-const stats = [
-  {
-    label: "Total de Denúncias",
-    value: "12",
-    icon: FileText,
-    color: "bg-blue-500",
-  },
-  {
-    label: "Pendentes",
-    value: "3",
-    icon: Clock,
-    color: "bg-yellow-500",
-  },
-  {
-    label: "Aprovadas",
-    value: "7",
-    icon: CheckCircle,
-    color: "bg-green-500",
-  },
-  {
-    label: "Rejeitadas",
-    value: "2",
-    icon: XCircle,
-    color: "bg-red-500",
-  },
-];
 
-const recentDenuncias = [
-  {
-    id: 1,
-    matricula: "AB-12-CD",
-    tipo: "Contramão",
-    data: "2026-04-05",
-    estado: "Pendente",
-  },
-  {
-    id: 2,
-    matricula: "EF-34-GH",
-    tipo: "Veículo Parado",
-    data: "2026-04-03",
-    estado: "Validada",
-  },
-  {
-    id: 3,
-    matricula: "IJ-56-KL",
-    tipo: "Excesso de Velocidade",
-    data: "2026-04-01",
-    estado: "Aprovada",
-  },
-];
 
 const getStatusColor = (estado: string) => {
   switch (estado) {
-    case "Pendente":
+    case "PENDENTE":
       return "bg-yellow-100 text-yellow-800";
-    case "Validada":
+    case "VALIDADA":
       return "bg-blue-100 text-blue-800";
-    case "Aprovada":
+    case "APROVADA":
       return "bg-green-100 text-green-800";
-    case "Rejeitada":
+    case "REJEITADA":
       return "bg-red-100 text-red-800";
-    case "Arquivada":
+    case "ARQUIVADA":
       return "bg-gray-100 text-gray-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -70,6 +24,97 @@ const getStatusColor = (estado: string) => {
 };
 
 export default function CidadaoDashboard() {
+
+   const { user, loading: authLoading } = useAuth();
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedEstado, setSelectedEstado] = useState("Todos");
+    const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+    const [loading, setLoading] = useState(true);
+    const[error, setError]= useState<string | null>(null);
+    const[pendentes, setPendentes]=useState(0);
+    const[validadas, setValidadas]=useState(0);
+    const[rejeitadas, setRejeitadas]=useState(0);
+    
+
+   
+  
+  
+    useEffect(() => {
+      if (!authLoading && user) {
+        carregarDenuncias();
+      }
+    }, [authLoading, user]);
+  
+  
+    const carregarDenuncias = async () => {
+      if (!user) return;
+      try{
+        setLoading(true);
+        setError(null);
+  
+        const data= await denunciaService.listarPorCidadao(user.id);
+        setDenuncias(data);
+        calcular(data);
+      } catch (err) {
+        setError("Erro ao carregar denúncias.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+
+    const calcular=(dados:DenunciaDetalhada[])=>{
+      let pendente=0;
+      let validada=0;
+      let rejeitada=0;
+
+      for(const d of dados){
+        if(d.estado === "PENDENTE"){
+          pendente++;
+        }
+        else if(d.estado === "VALIDADA"){
+          validada++;
+        }
+        else if(d.estado === "REJEITADA"){
+          rejeitada++;
+        }
+      }
+
+      setPendentes(pendente);
+      setValidadas(validada);
+      setRejeitadas(rejeitada);
+
+    }
+
+
+  const stats = [
+  {
+    label: "Total de Denúncias",
+    value: denuncias.length.toString(),
+    icon: FileText,
+    color: "bg-blue-500",
+  },
+  {
+    label: "Pendentes",
+    value: pendentes.toString(),
+    icon: Clock,
+    color: "bg-yellow-500",
+  },
+  {
+    label: "Validadas",
+    value: validadas.toString(),
+    icon: CheckCircle,
+    color: "bg-green-500",
+  },
+  {
+    label: "Rejeitadas",
+    value: rejeitadas.toString(),
+    icon: XCircle,
+    color: "bg-red-500",
+  },
+];
+
+
   return (
     <div className="p-8">
       {/* Header */}
@@ -138,7 +183,7 @@ export default function CidadaoDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {recentDenuncias.map((denuncia) => (
+              {denuncias.map((denuncia) => (
                 <tr key={denuncia.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-900">
                     #{denuncia.id}
@@ -147,10 +192,10 @@ export default function CidadaoDashboard() {
                     {denuncia.matricula}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {denuncia.tipo}
+                    {denuncia.tipo_infracao}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {denuncia.data}
+                    {denuncia.data_captura}
                   </td>
                   <td className="px-6 py-4">
                     <span
