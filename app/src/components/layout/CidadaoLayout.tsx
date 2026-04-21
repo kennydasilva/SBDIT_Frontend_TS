@@ -6,6 +6,9 @@ import {
   User,
   LogOut
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect, useState } from "react";
+import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 
 const menuItems = [
   { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -16,6 +19,53 @@ const menuItems = [
 
 export default function CidadaoLayout() {
   const location = useLocation();
+   
+  
+  
+  const { user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
+  const[cidadao, setCidadao]= useState<cidadaoResponse  | null>(null);
+  const getInitials = (name?: string | null) => {
+      if (!name) return "JD";
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return "JD";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      const first = parts[0][0] ?? "";
+      const last = parts[parts.length - 1][0] ?? "";
+      return (first + last).toUpperCase();
+    };
+        
+    
+       
+      
+      
+        useEffect(() => {
+          if (!authLoading && user) {
+            carregar();
+          }
+        }, [authLoading, user]);
+      
+      
+        const carregar = async () => {
+          if (!user) return;
+          try{
+            setLoading(true);
+            setError(null);
+      
+            const data= await cidadaoService.getCidadaoId(user.id);
+            setCidadao(data);
+           
+          } catch (err) {
+            setError("Erro ao carregar cidadao.");
+          } finally {
+            setLoading(false);
+          }
+        };
+  
+  if(loading){
+      return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -64,11 +114,11 @@ export default function CidadaoLayout() {
         <div className="p-4 border-t border-blue-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center">
-              <span className="font-semibold">JD</span>
+              <span className="font-semibold">{getInitials(cidadao?.nome)}</span>
             </div>
             <div>
-              <p className="font-medium">João da Silva</p>
-              <p className="text-xs text-blue-200">joao@email.com</p>
+              <p className="font-medium">{cidadao?.nome}</p>
+              <p className="text-xs text-blue-200">{user?.email}</p>
             </div>
           </div>
         </div>

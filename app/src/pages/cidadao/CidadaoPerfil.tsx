@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Mail, Phone, MapPin, Calendar, Save } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
+import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 
 export default function CidadaoPerfil() {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,18 +14,80 @@ export default function CidadaoPerfil() {
     dataNascimento: "1990-05-15",
   });
 
+
+  const { user, loading: authLoading } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const[error, setError]= useState<string | null>(null);
+  const[cidadao, setCidadao]= useState<cidadaoResponse | null>(null);
+  const getInitials = (name?: string | null) => {
+    if (!name) return "JD";
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return "JD";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    const first = parts[0][0] ?? "";
+    const last = parts[parts.length - 1][0] ?? "";
+    return (first + last).toUpperCase();
+  };
+      
+  
+     
+    
+    
+      useEffect(() => {
+        if (!authLoading && user) {
+          carregarDenuncias();
+        }
+      }, [authLoading, user]);
+    
+    
+      const carregarDenuncias = async () => {
+        if (!user) return;
+        try{
+          setLoading(true);
+          setError(null);
+    
+          const data= await cidadaoService.getCidadaoId(user.id);
+          setCidadao(data);
+         
+        } catch (err) {
+          setError("Erro ao carregar cidadao.");
+        } finally {
+          setLoading(false);
+        }
+      };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setCidadao((prev) => {
+      if (!prev) return prev;
+      const field = name === "telefone" ? "numero" : name;
+      return { ...prev, [field]: value } as cidadaoResponse;
+    });
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    setIsEditing(false);
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    if (!cidadao) return;
+    if(!user) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+      await cidadaoService.updateCidadao({
+        id: cidadao.id,
+        nome: cidadao.nome,
+        email: cidadao.email,
+        data_registo: cidadao.data_registo,
+        numero: cidadao.numero,
+      },user.id);
+      setIsEditing(false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      setError("Erro ao atualizar cidadão.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const stats = [
@@ -60,12 +124,12 @@ export default function CidadaoPerfil() {
             {/* Avatar */}
             <div className="flex flex-col items-center mb-6">
               <div className="w-32 h-32 rounded-full bg-blue-600 flex items-center justify-center mb-4">
-                <span className="text-4xl font-bold text-white">JD</span>
+                <span className="text-4xl font-bold text-white">{getInitials(cidadao?.nome)}</span>
               </div>
               <h2 className="text-xl font-bold text-gray-900">
-                {formData.nome}
+                {cidadao?.nome}
               </h2>
-              <p className="text-gray-600 text-sm">{formData.email}</p>
+              <p className="text-gray-600 text-sm">{cidadao?.email}</p>
             </div>
 
             {/* Stats */}
@@ -115,7 +179,7 @@ export default function CidadaoPerfil() {
                   <input
                     type="text"
                     name="nome"
-                    value={formData.nome}
+                    value={cidadao?.nome}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
@@ -133,9 +197,9 @@ export default function CidadaoPerfil() {
                   <input
                     type="email"
                     name="email"
-                    value={formData.email}
+                    value={cidadao?.email}
                     onChange={handleInputChange}
-                    disabled={!isEditing}
+                    disabled={isEditing}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
                   />
                 </div>
@@ -151,48 +215,15 @@ export default function CidadaoPerfil() {
                   <input
                     type="tel"
                     name="telefone"
-                    value={formData.telefone}
+                    value={cidadao?.numero}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
                   />
                 </div>
 
-                {/* Endereço */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={16} />
-                      Endereço
-                    </div>
-                  </label>
-                  <input
-                    type="text"
-                    name="endereco"
-                    value={formData.endereco}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
-                  />
-                </div>
+               
 
-                {/* Data de Nascimento */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={16} />
-                      Data de Nascimento
-                    </div>
-                  </label>
-                  <input
-                    type="date"
-                    name="dataNascimento"
-                    value={formData.dataNascimento}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
-                  />
-                </div>
               </div>
 
               {/* Botões */}

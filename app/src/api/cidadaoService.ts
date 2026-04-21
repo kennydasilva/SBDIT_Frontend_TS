@@ -42,10 +42,10 @@ export const cidadaoService = {
 
     },
 
-    async updateCidadao(dados: cidadao): Promise<cidadaoResponse> {
+    async updateCidadao(dados: cidadao, userid: number): Promise<cidadaoResponse> {
         try {
             
-            const response = await api.put<cidadaoResponse>(`/cidadao/user/${dados.id}/`, dados);
+            const response = await api.put<cidadaoResponse>(`/cidadao/user/${userid}/`, dados);
             return response.data;
         } catch (error) {
             console.error("Erro ao atualizar cidadão: ", error);

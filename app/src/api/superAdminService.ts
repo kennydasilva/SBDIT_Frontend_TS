@@ -93,3 +93,112 @@ export const adminService={
         }
     }
 };
+
+
+
+export interface cidadao{
+    id:number;
+    nome:string;
+    email:string;
+    data_registo:string;
+    numero: string;
+    
+}
+
+
+export interface Denuncia{
+    id: number,
+    matricula: string,
+    estado: string,
+    descricao: string,
+    tipo_infracao: string,
+    localizacao: string,
+    sentido_direccao: string,
+    data_registo: string,
+    cidadao_id: number,
+    pt_id: number
+}
+
+export interface PTUserResponse {
+    id: number;
+    nome: string;
+    email: string;
+    numero_agente: string;
+    localizacao: string;
+    data_registo: string;
+    numero: string;
+    admin_id: number;
+}
+export const superAdminService = {
+
+    async listarCidadao(): Promise<cidadao[]> {
+        try{
+            const response= await api.get<cidadao[]>("/cidadao/lista/");
+
+            return response.data.map(cidadao => ({
+                id: cidadao.id,
+                nome: cidadao.nome,
+                email: cidadao.email,
+                data_registo: cidadao.data_registo,
+                numero: cidadao.numero
+            }));
+
+        }
+        catch(error)
+        {
+            console.error("Erro ao listar cidadãos: ", error);
+            throw error;
+        }
+    },
+
+
+    async listarPts(): Promise<PTUserResponse[]> {
+        try{
+            const response= await api.get<PTUserResponse[]>("/pts/lista/");
+
+            return response.data.map(PTUserResponse => ({
+                id: PTUserResponse.id,
+                nome: PTUserResponse.nome,
+                email: PTUserResponse.email,
+                numero_agente: PTUserResponse.numero_agente,
+                localizacao: PTUserResponse.localizacao,
+                data_registo: PTUserResponse.data_registo,
+                numero: PTUserResponse.numero,
+                admin_id: PTUserResponse.admin_id
+            }));
+
+        }
+        catch(error)
+        {
+            console.error("Erro ao listar Policias de Trânsito: ", error);
+            throw error;
+        }
+    },
+
+    async listarDenuncias(): Promise<Denuncia[]> {
+        try{
+            const response= await api.get<Denuncia[]>("/denuncia/lista/");
+
+            return response.data.map(Denuncia => ({
+                id: Denuncia.id,
+                matricula: Denuncia.matricula,
+                estado: Denuncia.estado,
+                descricao: Denuncia.descricao,
+                tipo_infracao: Denuncia.tipo_infracao,
+                localizacao: Denuncia.localizacao,
+                sentido_direccao: Denuncia.sentido_direccao,
+                data_registo: Denuncia.data_registo,
+                cidadao_id: Denuncia.cidadao_id,
+                pt_id: Denuncia.pt_id
+            }));
+
+        }
+        catch(error)
+        {
+            console.error("Erro ao listar Denuncias: ", error);
+            throw error;
+        }
+               
+    },
+
+};
