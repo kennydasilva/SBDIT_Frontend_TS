@@ -5,74 +5,15 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 
-const stats = [
-  {
-    label: "Denúncias Validadas",
-    value: "48",
-    icon: AlertTriangle,
-    color: "bg-blue-500",
-  },
-  {
-    label: "Aprovadas por mim",
-    value: "32",
-    icon: CheckCircle,
-    color: "bg-green-500",
-  },
-  {
-    label: "Arquivadas por mim",
-    value: "8",
-    icon: Archive,
-    color: "bg-gray-500",
-  },
-  {
-    label: "Pendentes de análise",
-    value: "16",
-    icon: Clock,
-    color: "bg-yellow-500",
-  },
-];
 
-const chartData = [
-  { tipo: "Contramão", quantidade: 12 },
-  { tipo: "Veículo Parado", quantidade: 8 },
-  { tipo: "Excesso Velocidade", quantidade: 15 },
-  { tipo: "Sinal Vermelho", quantidade: 5 },
-];
-
-const recentDenuncias = [
-  {
-    id: 145,
-    matricula: "AB-12-CD",
-    tipo: "Contramão",
-    data: "2026-04-10 09:15",
-    estado: "Validada",
-    confianca: 95,
-  },
-  {
-    id: 144,
-    matricula: "EF-34-GH",
-    tipo: "Veículo Parado",
-    data: "2026-04-10 08:45",
-    estado: "Validada",
-    confianca: 88,
-  },
-  {
-    id: 143,
-    matricula: "IJ-56-KL",
-    tipo: "Excesso de Velocidade",
-    data: "2026-04-09 18:30",
-    estado: "Validada",
-    confianca: 92,
-  },
-];
 
 const getStatusColor = (estado: string) => {
   switch (estado) {
-    case "Validada":
+    case "VALIDADA":
       return "bg-blue-100 text-blue-800";
-    case "Aprovada":
+    case "APROVADA":
       return "bg-green-100 text-green-800";
-    case "Arquivada":
+    case "ARQUIVADA":
       return "bg-gray-100 text-gray-800";
     default:
       return "bg-gray-100 text-gray-800";
@@ -86,10 +27,67 @@ export default function DashboardPt() {
   const[error, setError]= useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState("todas");
+  const [denunciasAprovadas, setDenunciasAprovadas] = useState<DenunciaDetalhada[]>([]);
+  const [denunciasArquivadas, setDenunciasArquivadas] = useState<DenunciaDetalhada[]>([]);
+  const [denunciasTemp, setDenunciasTemp] = useState<DenunciaDetalhada[]>([]);
+  const [contramaoCount, setContramaoCount] = useState(0);
+  const [veiculoParadoCount, setVeiculoParadoCount] = useState(0);
+  const [excessoVelocidadeCount, setExcessoVelocidadeCount] = useState(0);
+  const [sinalVermelhoCount, setSinalVermelhoCount] = useState(0);
+
+  
+
+ const calcularInfracoes = (dados: DenunciaDetalhada[]) => {
+  let contramao = 0;
+  let veiculoParado = 0;
+  let excesso = 0;
+
+   
+  for (const d of dados) {
+    if (d.tipo_infracao === "CONTRAMAO") {
+      contramao++;
+
+      
+    } else if (d.tipo_infracao === "VEICULO_PARADO") {
+      veiculoParado++;
+      
+    } else if (d.tipo_infracao === "EXCESSO_VELOCIDADE") {
+      excesso++;
+      
+    }
+
+
+    
+  }
+
+  for(const da of dados){
+
+    if(da.estado === "APROVADA"){
+      setDenunciasAprovadas(prev => [...prev, da]);
+    } else if(da.estado === "ARQUIVADA"){
+      setDenunciasArquivadas(prev => [...prev, da]);
+    }
+  }
+
+  
+
+  setContramaoCount(contramao);
+  setVeiculoParadoCount(veiculoParado);
+  setExcessoVelocidadeCount(excesso);
+
+  
+};
+
+
+
+
+
   
   useEffect(() => {
           if (!authLoading && user) {
             carregarDenuncias();
+            
+           
           }
   }, [authLoading, user]);
         
@@ -104,19 +102,80 @@ export default function DashboardPt() {
           const data= await denunciaService.listarValidadas();
     
           setDenuncias(data);
-        }
-        catch(error){
+
+          const data2 = await denunciaService.listarPorPt(user.id);
+
+        setDenunciasTemp(data2);
+
+       
+
+        calcularInfracoes(data2);
+      } catch (error) {
           setError("Erro ao carregar denúncias.");
-        }
-        finally{
+      } finally {
           setLoading(false);
-        }
+      }
   }
+
+
+  const stats = [
+    {
+      label: "Denúncias Validadas",
+      value: denuncias.length.toString(),
+      icon: AlertTriangle,
+      color: "bg-blue-500",
+    },
+    {
+      label: "Aprovadas por mim",
+      value: denunciasAprovadas.length.toString(),
+      icon: CheckCircle,
+      color: "bg-green-500",
+    },
+    {
+      label: "Arquivadas por mim",
+      value: denunciasArquivadas.length.toString(),
+      icon: Archive,
+      color: "bg-gray-500",
+    },
+    {
+      label: "Pendentes de análise",
+      value: "16",
+      icon: Clock,
+      color: "bg-yellow-500",
+    },
+  ];
+
+  const chartData = [
+    {
+      tipo: "CONTRAMAO",
+      quantidade: denunciasTemp.filter(d => d.tipo_infracao === "CONTRAMAO").length
+    },
+    {
+      tipo: "VEICULO_PARADO",
+      quantidade: denunciasTemp.filter(d => d.tipo_infracao === "VEICULO_PARADO").length
+    },
+    {
+      tipo: "EXCESSO_VELOCIDADE",
+      quantidade: denunciasTemp.filter(d => d.tipo_infracao === "EXCESSO_VELOCIDADE").length
+    }
+  ];
+
 
 
 
 
   return (
+  <>
+
+  {loading ? (
+      <div className="p-8 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Carregando denúncias...
+        </h2>
+      </div>
+  ) : null
+  }
+  
     <div className="p-8">
       {/* Header */}
       <div className="mb-8">
@@ -206,7 +265,7 @@ export default function DashboardPt() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {recentDenuncias.map((denuncia) => (
+              {denuncias.map((denuncia) => (
                 <tr key={denuncia.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm text-gray-900">
                     #{denuncia.id}
@@ -215,10 +274,10 @@ export default function DashboardPt() {
                     {denuncia.matricula}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {denuncia.tipo}
+                    {denuncia.tipo_infracao}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {denuncia.data}
+                    {denuncia.data_captura}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     <span className="font-medium">{denuncia.confianca}%</span>
@@ -247,5 +306,9 @@ export default function DashboardPt() {
         </div>
       </div>
     </div>
+
+    
+    
+  </>
   );
 }

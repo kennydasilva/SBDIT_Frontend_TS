@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "lucide-react";
 import { toast } from "sonner";
+import { ptService, type PTUserResponse } from "../../api/ptService";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function PerfilPt() {
   const [isEditing, setIsEditing] = useState(false);
@@ -12,6 +14,40 @@ export default function PerfilPt() {
     divisao: "Maputo Central",
     dataCadastro: "2024-01-15",
   });
+
+   const { user, loading: authLoading } = useAuth();
+    const [pt, setPt] = useState<PTUserResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const[error, setError]= useState<string | null>(null);
+   
+  
+    
+    
+    useEffect(() => {
+            if (!authLoading && user) {
+              carregarPT();
+              
+             
+            }
+    }, [authLoading, user]);
+          
+        
+        
+    const carregarPT = async () => {
+          if (!user) return;
+      
+          try{
+            setLoading(true);
+      
+            const data= await ptService.getPtyId(user.id);
+            setPt(data);
+         
+        } catch (error) {
+            setError("Erro ao carregar PT.");
+        } finally {
+            setLoading(false);
+        }
+    }
 
   const handleSave = () => {
     
@@ -43,12 +79,12 @@ export default function PerfilPt() {
                 PT
               </div>
               <h2 className="text-xl font-bold text-gray-900">
-                {formData.nome}
+                {pt?.nome}
               </h2>
-              <p className="text-gray-600 text-sm">{formData.numeroAgente}</p>
+              <p className="text-gray-600 text-sm">{pt?.numero_agente}</p>
               <div className="mt-4 flex items-center gap-2 text-gray-600">
                 <Shield size={16} />
-                <span className="text-sm">{formData.divisao}</span>
+                <span className="text-sm">{pt?.localizacao}</span>
               </div>
             </div>
           </div>
@@ -95,7 +131,7 @@ export default function PerfilPt() {
                 </label>
                 <input
                   type="text"
-                  value={formData.nome}
+                  value={pt?.nome}
                   onChange={(e) =>
                     setFormData({ ...formData, nome: e.target.value })
                   }
@@ -112,7 +148,7 @@ export default function PerfilPt() {
                 </label>
                 <input
                   type="email"
-                  value={formData.email}
+                  value={pt?.email}
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
@@ -129,7 +165,7 @@ export default function PerfilPt() {
                 </label>
                 <input
                   type="tel"
-                  value={formData.telefone}
+                  value={pt?.numero}
                   onChange={(e) =>
                     setFormData({ ...formData, telefone: e.target.value })
                   }
@@ -146,7 +182,7 @@ export default function PerfilPt() {
                 </label>
                 <input
                   type="text"
-                  value={formData.numeroAgente}
+                  value={pt?.numero_agente}
                   disabled
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />
@@ -162,7 +198,7 @@ export default function PerfilPt() {
                   Divisão
                 </label>
                 <select
-                  value={formData.divisao}
+                  value={pt?.localizacao}
                   onChange={(e) =>
                     setFormData({ ...formData, divisao: e.target.value })
                   }
@@ -184,7 +220,7 @@ export default function PerfilPt() {
                 </label>
                 <input
                   type="text"
-                  value={formData.dataCadastro}
+                  value={pt?.data_registo}
                   disabled
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                 />

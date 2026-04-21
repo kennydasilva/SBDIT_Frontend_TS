@@ -37,9 +37,36 @@ export interface PTResponse {
   admin_id:number;
 }
 
+export interface PTUserResponse {
+    id: number;
+    nome: string;
+    email: string;
+    numero_agente: string;
+    localizacao: string;
+    data_registo: string;
+    numero: string;
+    admin_id: number;
+}
+
 
 
 export const ptService={
+
+
+    async getPtyId(userid:number): Promise<PTUserResponse>{
+
+        try{
+
+            const response= await api.get<PTUserResponse>(`/pts/user/${userid}/`);
+
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao obter PT por ID: ", error);
+            throw error;
+        }
+
+    },
 
     async listarPT(adminId: number): Promise<PT[]> {
         try{

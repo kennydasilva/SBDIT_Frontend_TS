@@ -6,6 +6,7 @@ import {
   User,
   LogOut
 } from "lucide-react";
+import { useAuth } from "../../hooks/useAuth";
 
 const menuItems = [
   { path: "/pt/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -16,6 +17,14 @@ const menuItems = [
 
 export default function PTLayout() {
   const location = useLocation();
+
+   
+  
+  const {user, loading}= useAuth();
+  
+  if(loading){
+      return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -67,8 +76,8 @@ export default function PTLayout() {
               <span className="font-semibold">PT</span>
             </div>
             <div>
-              <p className="font-medium">António Costa</p>
-              <p className="text-xs text-blue-200">PT-2145</p>
+              <p className="font-medium">{user?.email}</p>
+              <p className="text-xs text-blue-200">{user?.role}</p>
             </div>
           </div>
         </div>
