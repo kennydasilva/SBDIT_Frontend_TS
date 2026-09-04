@@ -1,5 +1,6 @@
-import { tr } from "zod/v4/locales";
 import api from "./axios";
+import type { DenunciaDetalhada } from "./denunciaService";
+import type { PT } from "./ptService";
 
 export interface Admin{
     id:number;
@@ -102,47 +103,15 @@ export interface cidadao{
     email:string;
     data_registo:string;
     numero: string;
-    
+    ativo?: boolean;
 }
 
-
-export interface Denuncia{
-    id: number,
-    matricula: string,
-    estado: string,
-    descricao: string,
-    tipo_infracao: string,
-    localizacao: string,
-    sentido_direccao: string,
-    data_registo: string,
-    cidadao_id: number,
-    pt_id: number
-}
-
-export interface PTUserResponse {
-    id: number;
-    nome: string;
-    email: string;
-    numero_agente: string;
-    localizacao: string;
-    data_registo: string;
-    numero: string;
-    admin_id: number;
-}
 export const superAdminService = {
 
     async listarCidadao(): Promise<cidadao[]> {
         try{
             const response= await api.get<cidadao[]>("/cidadao/lista/");
-
-            return response.data.map(cidadao => ({
-                id: cidadao.id,
-                nome: cidadao.nome,
-                email: cidadao.email,
-                data_registo: cidadao.data_registo,
-                numero: cidadao.numero
-            }));
-
+            return response.data;
         }
         catch(error)
         {
@@ -151,22 +120,22 @@ export const superAdminService = {
         }
     },
 
-
-    async listarPts(): Promise<PTUserResponse[]> {
+    async alterarStatusCidadao(cidadaoId: number, ativo: boolean): Promise<{message: string}> {
         try{
-            const response= await api.get<PTUserResponse[]>("/pts/lista/");
+            const response = await api.patch<{message: string}>(`/cidadao/${cidadaoId}/status/`, { ativo });
+            return response.data;
+        }
+        catch(error)
+        {
+            console.error("Erro ao alterar estado do cidadão: ", error);
+            throw error;
+        }
+    },
 
-            return response.data.map(PTUserResponse => ({
-                id: PTUserResponse.id,
-                nome: PTUserResponse.nome,
-                email: PTUserResponse.email,
-                numero_agente: PTUserResponse.numero_agente,
-                localizacao: PTUserResponse.localizacao,
-                data_registo: PTUserResponse.data_registo,
-                numero: PTUserResponse.numero,
-                admin_id: PTUserResponse.admin_id
-            }));
-
+    async listarPts(): Promise<PT[]> {
+        try{
+            const response= await api.get<PT[]>("/pts/");
+            return response.data;
         }
         catch(error)
         {
@@ -175,30 +144,17 @@ export const superAdminService = {
         }
     },
 
-    async listarDenuncias(): Promise<Denuncia[]> {
+    async listarDenuncias(): Promise<DenunciaDetalhada[]> {
         try{
-            const response= await api.get<Denuncia[]>("/denuncia/lista/");
-
-            return response.data.map(Denuncia => ({
-                id: Denuncia.id,
-                matricula: Denuncia.matricula,
-                estado: Denuncia.estado,
-                descricao: Denuncia.descricao,
-                tipo_infracao: Denuncia.tipo_infracao,
-                localizacao: Denuncia.localizacao,
-                sentido_direccao: Denuncia.sentido_direccao,
-                data_registo: Denuncia.data_registo,
-                cidadao_id: Denuncia.cidadao_id,
-                pt_id: Denuncia.pt_id
-            }));
-
+            const response= await api.get<DenunciaDetalhada[]>("/denuncias/");
+            return response.data;
         }
         catch(error)
         {
             console.error("Erro ao listar Denuncias: ", error);
             throw error;
         }
-               
+
     },
 
 };

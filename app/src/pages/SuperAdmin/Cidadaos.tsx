@@ -1,38 +1,74 @@
-import { useState } from "react";
-import { Search, Ban, CheckCircle } from "lucide-react";
-
-interface Cidadao {
-  id: number;
-  nome: string;
-  email: string;
-  numeroDenuncias: number;
-  dataCadastro: string;
-  status: "Ativo" | "Banido";
-}
-
-const mockCidadaos: Cidadao[] = [
-  { id: 1, nome: "Lucas Ferreira", email: "lucas@email.com", numeroDenuncias: 5, dataCadastro: "2024-01-10", status: "Ativo" },
-  { id: 2, nome: "Beatriz Souza", email: "beatriz@email.com", numeroDenuncias: 12, dataCadastro: "2024-02-15", status: "Ativo" },
-  { id: 3, nome: "Rafael Santos", email: "rafael@email.com", numeroDenuncias: 3, dataCadastro: "2024-03-20", status: "Ativo" },
-  { id: 4, nome: "Carla Mendes", email: "carla@email.com", numeroDenuncias: 0, dataCadastro: "2024-01-05", status: "Banido" },
-];
+import { useEffect, useState } from "react";
+import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { superAdminService, type cidadao } from "../../api/superAdminService";
 
 export default function Cidadaos() {
-  const [cidadaos, setCidadaos] = useState<Cidadao[]>(mockCidadaos);
+  const [cidadaos, setCidadaos] = useState<cidadao[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [atualizandoId, setAtualizandoId] = useState<number | null>(null);
+
+  useEffect(() => {
+    carregarCidadaos();
+  }, []);
+
+  const carregarCidadaos = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await superAdminService.listarCidadao();
+      setCidadaos(data);
+    } catch (err) {
+      setError("Erro ao carregar cidadãos.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredCidadaos = cidadaos.filter(cidadao =>
     cidadao.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cidadao.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const toggleStatus = (id: number) => {
-    setCidadaos(cidadaos.map(cidadao =>
-      cidadao.id === id
-        ? { ...cidadao, status: cidadao.status === "Ativo" ? "Banido" : "Ativo" }
-        : cidadao
-    ));
+  const toggleStatus = async (cidadao: cidadao) => {
+    try {
+      setAtualizandoId(cidadao.id);
+      await superAdminService.alterarStatusCidadao(cidadao.id, !cidadao.ativo);
+      setCidadaos(prev =>
+        prev.map(c => (c.id === cidadao.id ? { ...c, ativo: !c.ativo } : c))
+      );
+    } catch (err) {
+      alert("Erro ao alterar estado do cidadão");
+    } finally {
+      setAtualizandoId(null);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={carregarCidadaos}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -63,53 +99,66 @@ export default function Cidadaos() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número de Denúncias</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Cadastro</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data de Registo</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredCidadaos.map((cidadao) => (
-              <tr key={cidadao.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cidadao.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cidadao.nome}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{cidadao.numeroDenuncias}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.dataCadastro}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                    cidadao.status === "Ativo"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-red-100 text-red-800"
-                  }`}>
-                    {cidadao.status}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <button
-                    onClick={() => toggleStatus(cidadao.id)}
-                    className={`flex items-center gap-1 ${
-                      cidadao.status === "Ativo"
-                        ? "text-red-600 hover:text-red-800"
-                        : "text-green-600 hover:text-green-800"
-                    }`}
-                  >
-                    {cidadao.status === "Ativo" ? (
-                      <>
-                        <Ban size={18} />
-                        Banir
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle size={18} />
-                        Ativar
-                      </>
-                    )}
-                  </button>
+            {filteredCidadaos.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                  Nenhum cidadão encontrado
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredCidadaos.map((cidadao) => (
+                <tr key={cidadao.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{cidadao.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cidadao.nome}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.numero || "—"}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {cidadao.data_registo ? new Date(cidadao.data_registo).toLocaleDateString() : "—"}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                      cidadao.ativo !== false
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}>
+                      {cidadao.ativo !== false ? "Ativo" : "Banido"}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <button
+                      onClick={() => toggleStatus(cidadao)}
+                      disabled={atualizandoId === cidadao.id}
+                      className={`flex items-center gap-1 disabled:opacity-50 ${
+                        cidadao.ativo !== false
+                          ? "text-red-600 hover:text-red-800"
+                          : "text-green-600 hover:text-green-800"
+                      }`}
+                    >
+                      {atualizandoId === cidadao.id ? (
+                        <Loader2 size={18} className="animate-spin" />
+                      ) : cidadao.ativo !== false ? (
+                        <>
+                          <Ban size={18} />
+                          Banir
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle size={18} />
+                          Ativar
+                        </>
+                      )}
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

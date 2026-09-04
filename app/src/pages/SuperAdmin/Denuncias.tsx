@@ -1,51 +1,92 @@
-import { useState } from "react";
-import { Search, MapPin, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "lucide-react";
+import { superAdminService } from "../../api/superAdminService";
+import type { DenunciaDetalhada } from "../../api/denunciaService";
 
-interface Denuncia {
-  id: number;
-  titulo: string;
-  descricao: string;
-  cidadao: string;
-  localizacao: string;
-  data: string;
-  status: "Pendente" | "Em Análise" | "Resolvida" | "Rejeitada";
-}
+const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA"] as const;
 
-const mockDenuncias: Denuncia[] = [
-  { id: 1, titulo: "Veículo estacionado irregularmente", descricao: "Carro bloqueando entrada de garagem", cidadao: "Lucas Ferreira", localizacao: "Rua das Flores, 123", data: "2024-03-25", status: "Pendente" },
-  { id: 2, titulo: "Semáforo com defeito", descricao: "Semáforo piscando amarelo constantemente", cidadao: "Beatriz Souza", localizacao: "Av. Principal, esquina com Rua B", data: "2024-03-24", status: "Em Análise" },
-  { id: 3, titulo: "Buraco na via", descricao: "Buraco grande causando acidentes", cidadao: "Rafael Santos", localizacao: "Rua do Comércio, 456", data: "2024-03-23", status: "Resolvida" },
-  { id: 4, titulo: "Placa de trânsito danificada", descricao: "Placa caída no chão", cidadao: "Lucas Ferreira", localizacao: "Av. Central, 789", data: "2024-03-22", status: "Rejeitada" },
-];
+const ESTADO_LABEL: Record<string, string> = {
+  PENDENTE: "Pendente",
+  VALIDADA: "Validada",
+  APROVADA: "Aprovada",
+  REJEITADA: "Rejeitada",
+  ARQUIVADA: "Arquivada",
+};
 
 export default function Denuncias() {
-  const [denuncias] = useState<Denuncia[]>(mockDenuncias);
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("Todos");
+  const [filterStatus, setFilterStatus] = useState<string>("Todos");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    carregarDenuncias();
+  }, []);
+
+  const carregarDenuncias = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await superAdminService.listarDenuncias();
+      setDenuncias(data);
+    } catch (err) {
+      setError("Erro ao carregar denúncias.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredDenuncias = denuncias.filter(denuncia => {
-    const matchesSearch = denuncia.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         denuncia.cidadao.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterStatus === "Todos" || denuncia.status === filterStatus;
+    const matchesSearch =
+      denuncia.matricula?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      denuncia.localizacao?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFilter = filterStatus === "Todos" || denuncia.estado === filterStatus;
     return matchesSearch && matchesFilter;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Pendente": return "bg-yellow-100 text-yellow-800";
-      case "Em Análise": return "bg-blue-100 text-blue-800";
-      case "Resolvida": return "bg-green-100 text-green-800";
-      case "Rejeitada": return "bg-red-100 text-red-800";
+  const getStatusColor = (estado: string) => {
+    switch (estado) {
+      case "PENDENTE": return "bg-yellow-100 text-yellow-800";
+      case "VALIDADA": return "bg-blue-100 text-blue-800";
+      case "APROVADA": return "bg-green-100 text-green-800";
+      case "REJEITADA": return "bg-red-100 text-red-800";
+      case "ARQUIVADA": return "bg-gray-100 text-gray-800";
       default: return "bg-gray-100 text-gray-800";
     }
   };
 
   const statusCount = {
-    Pendente: denuncias.filter(d => d.status === "Pendente").length,
-    "Em Análise": denuncias.filter(d => d.status === "Em Análise").length,
-    Resolvida: denuncias.filter(d => d.status === "Resolvida").length,
-    Rejeitada: denuncias.filter(d => d.status === "Rejeitada").length,
+    Pendente: denuncias.filter(d => d.estado === "PENDENTE").length,
+    Validada: denuncias.filter(d => d.estado === "VALIDADA").length,
+    Aprovada: denuncias.filter(d => d.estado === "APROVADA").length,
+    Rejeitada: denuncias.filter(d => d.estado === "REJEITADA").length,
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={carregarDenuncias}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Tentar Novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-8">
@@ -71,7 +112,7 @@ export default function Denuncias() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Buscar por título ou cidadão..."
+              placeholder="Buscar por matrícula ou localização..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -82,50 +123,51 @@ export default function Denuncias() {
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="Todos">Todos os Status</option>
-            <option value="Pendente">Pendente</option>
-            <option value="Em Análise">Em Análise</option>
-            <option value="Resolvida">Resolvida</option>
-            <option value="Rejeitada">Rejeitada</option>
+            {ESTADOS.map(estado => (
+              <option key={estado} value={estado}>
+                {estado === "Todos" ? "Todos os Status" : ESTADO_LABEL[estado]}
+              </option>
+            ))}
           </select>
         </div>
       </div>
 
       {/* Denuncias List */}
       <div className="space-y-4">
-        {filteredDenuncias.map((denuncia) => (
-          <div key={denuncia.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">{denuncia.titulo}</h3>
-                <p className="text-gray-600 mb-3">{denuncia.descricao}</p>
-              </div>
-              <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(denuncia.status)}`}>
-                {denuncia.status}
-              </span>
-            </div>
-
-            <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-              <div className="flex items-center gap-1">
-                <MapPin size={16} />
-                <span>{denuncia.localizacao}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Calendar size={16} />
-                <span>{denuncia.data}</span>
-              </div>
-              <div>
-                Cidadão: <span className="font-medium">{denuncia.cidadao}</span>
-              </div>
-            </div>
-
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <button className="text-[#2563EB] hover:text-[#1E40AF] font-medium text-sm">
-                Ver Detalhes →
-              </button>
-            </div>
+        {filteredDenuncias.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+            Nenhuma denúncia encontrada
           </div>
-        ))}
+        ) : (
+          filteredDenuncias.map((denuncia) => (
+            <div key={denuncia.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                    {denuncia.matricula} — {denuncia.tipo_infracao}
+                  </h3>
+                  <p className="text-gray-600 mb-3">{denuncia.descricao}</p>
+                </div>
+                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(denuncia.estado)}`}>
+                  {ESTADO_LABEL[denuncia.estado] || denuncia.estado}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div className="flex items-center gap-1">
+                  <MapPin size={16} />
+                  <span>{denuncia.localizacao}</span>
+                </div>
+                {denuncia.data_captura && (
+                  <div className="flex items-center gap-1">
+                    <Calendar size={16} />
+                    <span>{denuncia.data_captura}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
