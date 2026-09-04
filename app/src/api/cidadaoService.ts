@@ -18,7 +18,14 @@ export interface cidadaoResponse{
     email:string;
     data_registo:string;
     numero: string;
-    
+    numero_denuncias?: number;
+    codigo_ranking?: string;
+}
+
+export interface RankingEntry{
+    posicao: number;
+    codigo: string;
+    numero_denuncias: number;
 }
 
 
@@ -44,7 +51,7 @@ export const cidadaoService = {
 
     async updateCidadao(dados: cidadao, userid: number): Promise<cidadaoResponse> {
         try {
-            
+
             const response = await api.put<cidadaoResponse>(`/cidadao/user/${userid}/`, dados);
             return response.data;
         } catch (error) {
@@ -53,5 +60,14 @@ export const cidadaoService = {
         }
     },
 
-    
+    async ranking(): Promise<RankingEntry[]> {
+        try {
+            const response = await api.get<RankingEntry[]>("/cidadao/user/ranking/");
+            return response.data;
+        } catch (error) {
+            console.error("Erro ao obter ranking de cidadãos: ", error);
+            throw error;
+        }
+    },
+
 };

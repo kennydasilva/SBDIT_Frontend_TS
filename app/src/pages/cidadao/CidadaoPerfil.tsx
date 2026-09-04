@@ -109,10 +109,8 @@ export default function CidadaoPerfil() {
   };
 
   const stats = [
-    { label: "Total de Denúncias", value: "12" },
-    { label: "Aprovadas", value: "7" },
-    { label: "Rejeitadas", value: "2" },
-    { label: "Pendentes", value: "3" },
+    { label: "Total de Denúncias", value: String(cidadao?.numero_denuncias ?? 0) },
+    { label: "O teu código no ranking", value: cidadao?.codigo_ranking ?? "—" },
   ];
 
   return (

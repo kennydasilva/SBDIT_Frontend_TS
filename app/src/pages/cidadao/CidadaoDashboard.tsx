@@ -1,8 +1,9 @@
-import { FileText, Clock, CheckCircle, XCircle } from "lucide-react";
+import { FileText, Clock, CheckCircle, XCircle, Trophy } from "lucide-react";
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import { cidadaoService, type RankingEntry } from "../../api/cidadaoService";
 
 
 
@@ -34,16 +35,32 @@ export default function CidadaoDashboard() {
     const[pendentes, setPendentes]=useState(0);
     const[validadas, setValidadas]=useState(0);
     const[rejeitadas, setRejeitadas]=useState(0);
-    
+    const [ranking, setRanking] = useState<RankingEntry[]>([]);
+    const [meuCodigo, setMeuCodigo] = useState<string | null>(null);
 
-   
-  
-  
+
+
     useEffect(() => {
       if (!authLoading && user) {
         carregarDenuncias();
+        carregarRanking();
       }
     }, [authLoading, user]);
+
+    const carregarRanking = async () => {
+      if (!user) return;
+      try {
+        const [rankingData, perfil] = await Promise.all([
+          cidadaoService.ranking(),
+          cidadaoService.getCidadaoId(user.id),
+        ]);
+        setRanking(rankingData);
+        setMeuCodigo(perfil.codigo_ranking ?? null);
+      } catch (err) {
+        // ranking é um extra motivacional, falha silenciosa não deve bloquear o dashboard
+        console.error("Erro ao carregar ranking:", err);
+      }
+    };
   
   
     const carregarDenuncias = async () => {
@@ -212,6 +229,51 @@ export default function CidadaoDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Ranking de Cidadãos */}
+      {ranking.length > 0 && (
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-6 border-b border-gray-200 flex items-center gap-2">
+            <Trophy className="text-yellow-500" size={22} />
+            <h2 className="text-xl font-bold text-gray-900">
+              Top 10 Cidadãos Mais Ativos
+            </h2>
+          </div>
+          <p className="px-6 pt-4 text-sm text-gray-500">
+            Ranking anónimo — cada cidadão só reconhece o seu próprio código.
+          </p>
+          <div className="divide-y divide-gray-100">
+            {ranking.map((entrada) => {
+              const souEu = meuCodigo !== null && entrada.codigo === meuCodigo;
+              return (
+                <div
+                  key={entrada.codigo}
+                  className={`flex items-center justify-between px-6 py-3 ${
+                    souEu ? "bg-blue-50" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-6 text-sm font-bold text-gray-500">
+                      {entrada.posicao}º
+                    </span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {entrada.codigo}
+                      {souEu && (
+                        <span className="ml-2 text-xs font-semibold text-blue-600">
+                          (és tu!)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <span className="text-sm text-gray-600">
+                    {entrada.numero_denuncias} denúncias
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
