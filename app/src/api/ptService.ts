@@ -1,4 +1,3 @@
-import { tr } from "zod/v4/locales";
 import api from "./axios";
 
 
@@ -71,8 +70,6 @@ export const ptService={
     async listarPT(adminId: number): Promise<PT[]> {
         try{
 
-            alert("id do admin 1: " + adminId); 
-        
             const response= await api.get<PT[]>(`/pts/admin/${adminId}/`);
 
             return response.data;
@@ -90,7 +87,6 @@ export const ptService={
     async criarPT(data: CreatePTData): Promise<{message: string; id:number}>{
         try{
 
-             alert("id do admin 2: " + data.admin_id);
             const response= await api.post("/pts/", data);
             return response.data;
         }
