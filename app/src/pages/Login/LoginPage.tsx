@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,12 +15,10 @@ import {
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { login } from "../../api/authService";
+import { emailSchema } from "../../utils/validationSchemas";
 
 const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "O email é obrigatório")
-    .email("Digite um email válido"),
+  email: emailSchema,
   password: z
     .string()
     .min(1, "A senha é obrigatória")
@@ -141,23 +139,23 @@ export default function LoginPage() {
 
           
             <div className="text-center">
-              <a 
-                href="/recuperar-senha" 
+              <Link
+                to="/recuperar-senha"
                 className="text-sm text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors"
               >
                 Esqueceu sua senha?
-              </a>
+              </Link>
             </div>
 
-            
+
             <div className="text-center text-sm text-gray-600">
               Não tem uma conta?{" "}
-              <a 
-                href="/cadastrar" 
+              <Link
+                to="/cadastrar"
                 className="text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors font-medium"
               >
                 Cadastre-se
-              </a>
+              </Link>
             </div>
           </form>
         </Form>

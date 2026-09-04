@@ -1,6 +1,9 @@
 // routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "../pages/Login/LoginPage";
+import SignupPage from "../pages/Signup/SignupPage";
+import RecuperarSenhaPage from "../pages/RecuperarSenha/RecuperarSenhaPage";
+import RedefinirSenhaPage from "../pages/RecuperarSenha/RedefinirSenhaPage";
 import RouteGuard from "../components/protect/RouteGuard";
 
 // Super Admin Layout e Pages
@@ -43,7 +46,10 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      
+      <Route path="/cadastrar" element={<SignupPage />} />
+      <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
+      <Route path="/redefinir-senha/:uid/:token" element={<RedefinirSenhaPage />} />
+
       {/* Rotas Protegidas */}
       <Route element={<RouteGuard />}>
         {/* Super Admin Routes */}
