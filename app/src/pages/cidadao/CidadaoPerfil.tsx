@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { User, Mail, Phone, MapPin, Calendar, Save } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
+import { REGEX } from "../../utils/validationSchemas";
 
 export default function CidadaoPerfil() {
   const [isEditing, setIsEditing] = useState(false);
@@ -9,7 +10,7 @@ export default function CidadaoPerfil() {
   const [formData, setFormData] = useState({
     nome: "João da Silva",
     email: "joao@email.com",
-    telefone: "+244 923 456 789",
+    telefone: "+258 84 123 4567",
     endereco: "Luanda, Angola",
     dataNascimento: "1990-05-15",
   });
@@ -19,6 +20,7 @@ export default function CidadaoPerfil() {
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | null>(null);
   const[cidadao, setCidadao]= useState<cidadaoResponse | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{ nome?: string; telefone?: string }>({});
   const getInitials = (name?: string | null) => {
     if (!name) return "JD";
     const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -65,10 +67,26 @@ export default function CidadaoPerfil() {
     });
   };
 
+  const validate = () => {
+    const errors: { nome?: string; telefone?: string } = {};
+
+    if (!cidadao?.nome || !REGEX.nome.test(cidadao.nome)) {
+      errors.nome = "O nome deve conter apenas letras e espaços (2-100 caracteres)";
+    }
+
+    if (!cidadao?.numero || !REGEX.telefone.test(cidadao.numero)) {
+      errors.telefone = "Digite um número válido no formato +258 8XX XXX XXX";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cidadao) return;
     if(!user) return;
+    if (!validate()) return;
 
     try {
       setLoading(true);
@@ -184,6 +202,9 @@ export default function CidadaoPerfil() {
                     disabled={!isEditing}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
                   />
+                  {fieldErrors.nome && (
+                    <p className="mt-1 text-sm text-red-600">{fieldErrors.nome}</p>
+                  )}
                 </div>
 
                 {/* Email */}
@@ -220,9 +241,12 @@ export default function CidadaoPerfil() {
                     disabled={!isEditing}
                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
                   />
+                  {fieldErrors.telefone && (
+                    <p className="mt-1 text-sm text-red-600">{fieldErrors.telefone}</p>
+                  )}
                 </div>
 
-               
+
 
               </div>
 

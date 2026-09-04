@@ -4,6 +4,7 @@ import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2 } from "luci
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import { REGEX } from "../../utils/validationSchemas";
 
 export default function DetalhesDenunciaPt() {
   const { id } = useParams();
@@ -57,6 +58,11 @@ export default function DetalhesDenunciaPt() {
       return;
     }
 
+    if (!REGEX.codigoLegal.test(codigoLegal)) {
+      toast.error("Código legal inválido (3-150 caracteres)");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await denunciaService.actualizar({
@@ -102,6 +108,11 @@ export default function DetalhesDenunciaPt() {
   };
 
   const handleAtualizar = async () => {
+    if (codigoLegal.trim() && !REGEX.codigoLegal.test(codigoLegal)) {
+      toast.error("Código legal inválido (3-150 caracteres)");
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await denunciaService.actualizar({

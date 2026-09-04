@@ -3,6 +3,7 @@ import { Upload, X, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
+import { REGEX } from "../../utils/validationSchemas";
 
 
 export default function CriarDenuncia() {
@@ -19,6 +20,11 @@ export default function CriarDenuncia() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const { user, loading: authLoading } = useAuth();
+  const [fieldErrors, setFieldErrors] = useState<{
+    matricula?: string;
+    localizacao?: string;
+    descricao?: string;
+  }>({});
 
   const mapTipoInfracao = (tipo: string) => {
   switch (tipo) {
@@ -59,9 +65,29 @@ export default function CriarDenuncia() {
     setVideoPreview(null);
   };
 
+  const validate = () => {
+    const errors: { matricula?: string; localizacao?: string; descricao?: string } = {};
+
+    if (!REGEX.matricula.test(formData.matricula)) {
+      errors.matricula = "Digite uma matrícula válida no formato AB-12-CD";
+    }
+
+    if (!REGEX.localizacao.test(formData.localizacao)) {
+      errors.localizacao = "A localização deve ter entre 3 e 200 caracteres";
+    }
+
+    if (formData.descricao && !REGEX.descricao.test(formData.descricao)) {
+      errors.descricao = "A descrição deve ter entre 5 e 1000 caracteres";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!validate()) return;
 
     if (!videoFile){
       alert("Por favor, faça upload de um vídeo da infração.");
@@ -158,6 +184,9 @@ export default function CriarDenuncia() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
+            {fieldErrors.matricula && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.matricula}</p>
+            )}
           </div>
 
           {/* Tipo de Infração */}
@@ -230,6 +259,9 @@ export default function CriarDenuncia() {
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               required
             />
+            {fieldErrors.localizacao && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.localizacao}</p>
+            )}
           </div>
 
           {/* Descrição */}
@@ -245,6 +277,9 @@ export default function CriarDenuncia() {
               rows={4}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
+            {fieldErrors.descricao && (
+              <p className="mt-1 text-sm text-red-600">{fieldErrors.descricao}</p>
+            )}
           </div>
 
           {/* Upload de Vídeo */}

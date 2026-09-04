@@ -6,7 +6,7 @@ import type {
   UpdateAdminData, 
   Admin
 } from "../../api/superAdminService";
-import { set } from "zod";
+import { REGEX } from "../../utils/validationSchemas";
 
 
 
@@ -27,6 +27,30 @@ export default function Admins() {
     posto: "Comando Geral",
     status: "Ativo" as "Ativo" | "Inativo"
   });
+  const [fieldErrors, setFieldErrors] = useState<{
+    nome?: string;
+    email?: string;
+    senha?: string;
+  }>({});
+
+  const validate = (isCreate: boolean) => {
+    const errors: typeof fieldErrors = {};
+
+    if (!REGEX.nome.test(formData.nome)) {
+      errors.nome = "O nome deve conter apenas letras e espaços (2-100 caracteres)";
+    }
+
+    if (isCreate && !REGEX.email.test(formData.email)) {
+      errors.email = "Digite um email válido";
+    }
+
+    if (isCreate && !REGEX.password.test(formData.senha)) {
+      errors.senha = "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula e número";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   useEffect(() =>{
     carregarAdmins();
@@ -56,6 +80,7 @@ export default function Admins() {
   );
 
   const handleCreate = async() => {
+    if (!validate(true)) return;
 
     try{
       setSubmitting(true);
@@ -104,6 +129,7 @@ export default function Admins() {
 
   const handleUpdate = async () => {
     if (!selectedAdmin) return;
+    if (!validate(false)) return;
 
     try{
       setSubmitting(true);
@@ -157,6 +183,7 @@ export default function Admins() {
       posto: "Comando Geral",
       status: "Ativo"
     });
+    setFieldErrors({});
   };
 
   if (loading) {
@@ -298,6 +325,9 @@ export default function Admins() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
                 />
+                {fieldErrors.nome && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.nome}</p>
+                )}
               </div>
 
               <div>
@@ -312,6 +342,9 @@ export default function Admins() {
                 {selectedAdmin && (
                   <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
                 )}
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                )}
               </div>
 
               {!selectedAdmin && (
@@ -324,6 +357,9 @@ export default function Admins() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={submitting}
                   />
+                  {fieldErrors.senha && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.senha}</p>
+                  )}
                 </div>
               )}
 

@@ -6,8 +6,8 @@ import type {
   UpdatePTData,
   PT
 } from "../../api/ptService";
-import { set } from "zod";
 import { useAuth } from "../../hooks/useAuth";
+import { REGEX } from "../../utils/validationSchemas";
 
 
 
@@ -30,7 +30,36 @@ export default function PTs() {
     numero_agente: "",
     localizacao: "Maputo"
   });
-  
+  const [fieldErrors, setFieldErrors] = useState<{
+    nome?: string;
+    email?: string;
+    senha?: string;
+    numero_agente?: string;
+  }>({});
+
+  const validate = (isCreate: boolean) => {
+    const errors: typeof fieldErrors = {};
+
+    if (!REGEX.nome.test(formData.nome)) {
+      errors.nome = "O nome deve conter apenas letras e espaços (2-100 caracteres)";
+    }
+
+    if (isCreate && !REGEX.email.test(formData.email)) {
+      errors.email = "Digite um email válido";
+    }
+
+    if (isCreate && !REGEX.password.test(formData.senha)) {
+      errors.senha = "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula e número";
+    }
+
+    if (!REGEX.numeroAgente.test(formData.numero_agente)) {
+      errors.numero_agente = "Número de agente inválido (apenas letras, números e hífen)";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -68,9 +97,11 @@ export default function PTs() {
         return;
     }
 
+    if (!validate(true)) return;
+
     try{
 
-      
+
         setSubmitting(true);
 
         const createData: CreatePTData = {
@@ -121,6 +152,7 @@ export default function PTs() {
 
   const handleUpdate = async () => {
     if (!selectedPt) return;
+    if (!validate(false)) return;
 
     try{
       setSubmitting(true);
@@ -175,6 +207,7 @@ export default function PTs() {
       numero_agente:"",
       localizacao:"Maputo"
     });
+    setFieldErrors({});
   };
 
   if (loading) {
@@ -306,6 +339,9 @@ export default function PTs() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
                 />
+                {fieldErrors.nome && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.nome}</p>
+                )}
               </div>
 
               <div>
@@ -320,6 +356,9 @@ export default function PTs() {
                 {selectedPt && (
                   <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
                 )}
+                {fieldErrors.email && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
+                )}
               </div>
 
               {!selectedPt && (
@@ -332,6 +371,9 @@ export default function PTs() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     disabled={submitting}
                   />
+                  {fieldErrors.senha && (
+                    <p className="text-xs text-red-600 mt-1">{fieldErrors.senha}</p>
+                  )}
                 </div>
               )}
 
@@ -344,6 +386,9 @@ export default function PTs() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
                 />
+                {fieldErrors.numero_agente && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.numero_agente}</p>
+                )}
               </div>
 
               <div>
