@@ -1,5 +1,6 @@
 import api from "./axios";
 import type { PaginatedResponse } from "./types";
+import { cachedGet, limparCache } from "./httpCache";
 
 
 
@@ -71,9 +72,9 @@ export const ptService={
     async listarPT(adminId: number): Promise<PT[]> {
         try{
 
-            const response= await api.get<PaginatedResponse<PT>>(`/pts/admin/${adminId}/`);
+            const data = await cachedGet<PaginatedResponse<PT>>(api, `/pts/admin/${adminId}/`);
 
-            return response.data.results;
+            return data.results;
 
         }
         catch(error)
@@ -89,6 +90,7 @@ export const ptService={
         try{
 
             const response= await api.post("/pts/", data);
+            limparCache("/pts/");
             return response.data;
         }
         catch(error){
@@ -101,6 +103,7 @@ export const ptService={
     async atualizarPT(data: UpdatePTData): Promise<{message:string}>{
         try{
             const response=await api.put(`/pts/${data.pt_id}/`, data);
+            limparCache("/pts/");
             return response.data;
         }
         catch(error){
@@ -112,7 +115,7 @@ export const ptService={
     async apagarPT(id: number): Promise<{message:string}>{
         try{
             const response=await api.delete(`/pts/${id}/`);
-            
+            limparCache("/pts/");
             return response.data;
 
         }

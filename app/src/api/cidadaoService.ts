@@ -1,4 +1,5 @@
 import api from "./axios";
+import { cachedGet } from "./httpCache";
 
 
 
@@ -62,8 +63,7 @@ export const cidadaoService = {
 
     async ranking(): Promise<RankingEntry[]> {
         try {
-            const response = await api.get<RankingEntry[]>("/cidadao/user/ranking/");
-            return response.data;
+            return await cachedGet<RankingEntry[]>(api, "/cidadao/user/ranking/");
         } catch (error) {
             console.error("Erro ao obter ranking de cidadãos: ", error);
             throw error;

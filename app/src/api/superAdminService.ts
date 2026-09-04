@@ -2,6 +2,7 @@ import api from "./axios";
 import type { DenunciaDetalhada } from "./denunciaService";
 import type { PT } from "./ptService";
 import type { PaginatedResponse } from "./types";
+import { cachedGet, limparCache } from "./httpCache";
 
 export interface Admin{
     id:number;
@@ -38,9 +39,9 @@ export const adminService={
 
     async listarAdmins(): Promise<Admin[]> {
         try{
-            const response= await api.get<PaginatedResponse<AdminResponse>>("/admins/");
+            const data = await cachedGet<PaginatedResponse<AdminResponse>>(api, "/admins/");
 
-            return response.data.results.map(admin => ({
+            return data.results.map(admin => ({
                 id: admin.id,
                 nome: admin.nome,
                 email: admin.email,
@@ -62,6 +63,7 @@ export const adminService={
     async criarAdmin(data: CreateAdminData): Promise<{message: string; id:number}>{
         try{
             const response= await api.post("/admins/", data);
+            limparCache("/admins/");
             return response.data;
         }
         catch(error){
@@ -74,6 +76,7 @@ export const adminService={
     async atualizarAdmin(data: UpdateAdminData): Promise<{message:string}>{
         try{
             const response=await api.put("/admins/", data);
+            limparCache("/admins/");
             return response.data;
         }
         catch(error){
@@ -86,6 +89,7 @@ export const adminService={
         try{
             const response=await api.delete("/admins/", {data: {admin_id: admin_id}
             });
+            limparCache("/admins/");
             return response.data;
 
         }
@@ -111,8 +115,8 @@ export const superAdminService = {
 
     async listarCidadao(): Promise<cidadao[]> {
         try{
-            const response= await api.get<PaginatedResponse<cidadao>>("/cidadao/lista/");
-            return response.data.results;
+            const data = await cachedGet<PaginatedResponse<cidadao>>(api, "/cidadao/lista/");
+            return data.results;
         }
         catch(error)
         {
@@ -124,6 +128,7 @@ export const superAdminService = {
     async alterarStatusCidadao(cidadaoId: number, ativo: boolean): Promise<{message: string}> {
         try{
             const response = await api.patch<{message: string}>(`/cidadao/${cidadaoId}/status/`, { ativo });
+            limparCache("/cidadao/lista/");
             return response.data;
         }
         catch(error)
@@ -135,8 +140,8 @@ export const superAdminService = {
 
     async listarPts(): Promise<PT[]> {
         try{
-            const response= await api.get<PaginatedResponse<PT>>("/pts/");
-            return response.data.results;
+            const data = await cachedGet<PaginatedResponse<PT>>(api, "/pts/");
+            return data.results;
         }
         catch(error)
         {
