@@ -1,4 +1,5 @@
 import api from "./axios";
+import type { PaginatedResponse } from "./types";
 
 
 export interface Denuncia{
@@ -98,8 +99,8 @@ export const denunciaService = {
 
      async listar(): Promise<DenunciaDetalhada[]>{
         try{
-            const response= await api.get(`/denuncias/`);
-            return response.data;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/`);
+            return response.data.results;
         }
         catch(error){
             console.error("Erro ao listar denúncias:", error);
@@ -133,8 +134,8 @@ export const denunciaService = {
 
     async listarPorCidadao(cidadaoId: number): Promise<DenunciaDetalhada[]>{
         try{
-            const response= await api.get(`/denuncias/cidadao/${cidadaoId}`);
-            return response.data;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/cidadao/${cidadaoId}`);
+            return response.data.results;
         }
         catch(error){
             console.error("Erro ao listar denúncias por cidadão:", error);
@@ -156,8 +157,8 @@ export const denunciaService = {
 
     async listarPorPt(ptId: number): Promise<DenunciaDetalhada[]>{
         try{
-            const response= await api.get(`denuncias/pt/denuncias/${ptId}`);
-            return response.data;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/denuncias/${ptId}`);
+            return response.data.results;
         }
         catch(error){
             console.error("Erro ao listar denúncias por Policia de Transito:", error);
@@ -168,8 +169,8 @@ export const denunciaService = {
 
     async listarValidadas(): Promise<DenunciaDetalhada[]>{
         try{
-            const response= await api.get(`denuncias/pt/validadas/`);
-            return response.data;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/validadas/`);
+            return response.data.results;
         }
         catch(error){
             console.error("Erro ao listar denúncias validadas:", error);

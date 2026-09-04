@@ -1,6 +1,7 @@
 import api from "./axios";
 import type { DenunciaDetalhada } from "./denunciaService";
 import type { PT } from "./ptService";
+import type { PaginatedResponse } from "./types";
 
 export interface Admin{
     id:number;
@@ -37,9 +38,9 @@ export const adminService={
 
     async listarAdmins(): Promise<Admin[]> {
         try{
-            const response= await api.get<AdminResponse[]>("/admins/");
+            const response= await api.get<PaginatedResponse<AdminResponse>>("/admins/");
 
-            return response.data.map(admin => ({
+            return response.data.results.map(admin => ({
                 id: admin.id,
                 nome: admin.nome,
                 email: admin.email,
@@ -110,8 +111,8 @@ export const superAdminService = {
 
     async listarCidadao(): Promise<cidadao[]> {
         try{
-            const response= await api.get<cidadao[]>("/cidadao/lista/");
-            return response.data;
+            const response= await api.get<PaginatedResponse<cidadao>>("/cidadao/lista/");
+            return response.data.results;
         }
         catch(error)
         {
@@ -134,8 +135,8 @@ export const superAdminService = {
 
     async listarPts(): Promise<PT[]> {
         try{
-            const response= await api.get<PT[]>("/pts/");
-            return response.data;
+            const response= await api.get<PaginatedResponse<PT>>("/pts/");
+            return response.data.results;
         }
         catch(error)
         {
@@ -146,8 +147,8 @@ export const superAdminService = {
 
     async listarDenuncias(): Promise<DenunciaDetalhada[]> {
         try{
-            const response= await api.get<DenunciaDetalhada[]>("/denuncias/");
-            return response.data;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>("/denuncias/");
+            return response.data.results;
         }
         catch(error)
         {

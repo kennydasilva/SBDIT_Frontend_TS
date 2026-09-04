@@ -1,4 +1,5 @@
 import api from "./axios";
+import type { PaginatedResponse } from "./types";
 
 
 
@@ -70,9 +71,9 @@ export const ptService={
     async listarPT(adminId: number): Promise<PT[]> {
         try{
 
-            const response= await api.get<PT[]>(`/pts/admin/${adminId}/`);
+            const response= await api.get<PaginatedResponse<PT>>(`/pts/admin/${adminId}/`);
 
-            return response.data;
+            return response.data.results;
 
         }
         catch(error)
