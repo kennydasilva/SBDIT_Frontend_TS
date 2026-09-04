@@ -48,13 +48,21 @@ export default function CriarDenuncia() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const VIDEO_MAX_SIZE_MB = 100;
+
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setVideoFile(file);
-      const url = URL.createObjectURL(file);
-      setVideoPreview(url);
+    if (!file) return;
+
+    if (file.size > VIDEO_MAX_SIZE_MB * 1024 * 1024) {
+      alert(`Vídeo demasiado grande (máximo ${VIDEO_MAX_SIZE_MB}MB). Reduza a duração ou a qualidade do vídeo.`);
+      e.target.value = "";
+      return;
     }
+
+    setVideoFile(file);
+    const url = URL.createObjectURL(file);
+    setVideoPreview(url);
   };
 
   const handleRemoveVideo = () => {
