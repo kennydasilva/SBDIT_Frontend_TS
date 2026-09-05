@@ -5,13 +5,13 @@ export interface ViaJurisdicao {
   id: number;
   nome_via: string;
   place_id: string;
-  geometria: unknown;
+  geometria: { lat: number; lng: number } | null;
 }
 
 export interface AddViaData {
   nome_via: string;
   place_id: string;
-  geometria?: unknown;
+  geometria?: { lat: number; lng: number } | null;
 }
 
 export const jurisdicaoService = {

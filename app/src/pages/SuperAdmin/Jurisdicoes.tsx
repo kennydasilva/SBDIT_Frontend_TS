@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
 import { AlertTriangle, Loader2, MapPinned, Search, Trash2 } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
 import { jurisdicaoService, type ViaJurisdicao } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
-import { GOOGLE_MAPS_LIBRARIES } from "../../utils/maps";
+import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
+
+const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 
 export default function Jurisdicoes() {
   const [admins, setAdmins] = useState<Admin[]>([]);
@@ -174,6 +176,28 @@ export default function Jurisdicoes() {
               </Autocomplete>
             ) : (
               <p className="text-sm text-gray-500">A carregar mapa...</p>
+            )}
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-4 mb-6">
+            {isLoaded && apiKey ? (
+              <GoogleMap
+                mapContainerStyle={containerStyle}
+                center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
+                zoom={vias.some((v) => v.geometria) ? 12 : 11}
+              >
+                {vias.map(
+                  (v) =>
+                    v.geometria && (
+                      <MarkerF key={v.id} position={v.geometria} title={v.nome_via} />
+                    )
+                )}
+              </GoogleMap>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+                <MapPinned size={16} />
+                A carregar mapa...
+              </div>
             )}
           </div>
 
