@@ -13,6 +13,8 @@ import SuperAdminAdmins from "../pages/SuperAdmin/Admins";
 import SuperAdminPoliciais from "../pages/SuperAdmin/Policiais";
 import SuperAdminCidadaos from "../pages/SuperAdmin/Cidadaos";
 import SuperAdminDenuncias from "../pages/SuperAdmin/Denuncias";
+import SuperAdminRelatorios from "../pages/SuperAdmin/Relatorios";
+import SuperAdminConfiguracoes from "../pages/SuperAdmin/Configuracoes";
 
 // Admin Layout e Pages
 import AdminLayout from "../components/layout/AdminLayout";
@@ -59,6 +61,8 @@ export default function AppRoutes() {
           <Route path="/super-admin/policiais" element={<SuperAdminPoliciais />} />
           <Route path="/super-admin/cidadaos" element={<SuperAdminCidadaos />} />
           <Route path="/super-admin/denuncias" element={<SuperAdminDenuncias />} />
+          <Route path="/super-admin/relatorios" element={<SuperAdminRelatorios />} />
+          <Route path="/super-admin/configuracoes" element={<SuperAdminConfiguracoes />} />
         </Route>
 
         {/* Admin Routes */}

@@ -26,6 +26,8 @@ export interface CreateDenunciaData{
     localizacao:string;
     sentido_direccao:string;
     caminho_ficheiro:File;
+    latitude?: number | null;
+    longitude?: number | null;
 }
 
 export interface denunciaupdate{
@@ -60,6 +62,8 @@ export interface DenunciaDetalhada {
     confianca: number | null;
     data_analise: string | null;
     infracao_detectada: boolean | null;
+    latitude: number | null;
+    longitude: number | null;
 }
 
 export const denunciaService = {
@@ -78,7 +82,12 @@ export const denunciaService = {
             if (data.sentido_direccao){
                 formData.append("sentido_direccao", data.sentido_direccao);
             }
-            
+
+            if (data.latitude != null && data.longitude != null){
+                formData.append("latitude", String(data.latitude));
+                formData.append("longitude", String(data.longitude));
+            }
+
             formData.append("caminho_ficheiro", data.caminho_ficheiro);
 
             const response=await api.post("/denuncias/", formData, {

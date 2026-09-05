@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Upload, X, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
 import { REGEX } from "../../utils/validationSchemas";
+import LocationPicker from "../../components/LocationPicker";
 
 
 export default function CriarDenuncia() {
@@ -19,12 +20,13 @@ export default function CriarDenuncia() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [fieldErrors, setFieldErrors] = useState<{
     matricula?: string;
     localizacao?: string;
     descricao?: string;
   }>({});
+  const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(null);
 
   const mapTipoInfracao = (tipo: string) => {
   switch (tipo) {
@@ -121,6 +123,8 @@ export default function CriarDenuncia() {
           ? formData.sentidoPermitido 
           : "",
         caminho_ficheiro: videoFile,
+        latitude: coordenadas?.lat ?? null,
+        longitude: coordenadas?.lng ?? null,
       });
 
       setShowSuccess(true);
@@ -143,12 +147,6 @@ export default function CriarDenuncia() {
   const handleCancel = () => {
     navigate("/cidadao");
   };
-
-  useEffect(() => {
-      if (!authLoading && user) {
-        alert("teste")
-      }
-    }, [authLoading, user]);
 
   return (
     <div className="p-8">
@@ -270,6 +268,16 @@ export default function CriarDenuncia() {
             {fieldErrors.localizacao && (
               <p className="mt-1 text-sm text-red-600">{fieldErrors.localizacao}</p>
             )}
+          </div>
+
+          {/* Local no mapa (opcional, mas recomendado) */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Marcar local no mapa
+            </label>
+            <LocationPicker
+              onChange={(lat, lng) => setCoordenadas({ lat, lng })}
+            />
           </div>
 
           {/* Descrição */}
