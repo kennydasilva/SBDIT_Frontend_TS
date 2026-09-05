@@ -18,13 +18,6 @@ export default function Jurisdicoes() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-
-  const { isLoaded } = useJsApiLoader({
-    id: "sgdit-google-maps",
-    googleMapsApiKey: apiKey ?? "",
-    libraries: GOOGLE_MAPS_LIBRARIES,
-  });
 
   useEffect(() => {
     carregarAdmins();
@@ -66,14 +59,13 @@ export default function Jurisdicoes() {
     }
   };
 
-  const handlePlaceChanged = async () => {
+  const handlePlaceSelecionado = async (place: google.maps.places.PlaceResult) => {
     if (adminSelecionado === "") {
       alert("Escolhe primeiro um posto (administrador).");
       return;
     }
 
-    const place = autocompleteRef.current?.getPlace();
-    if (!place?.place_id || !place.name) return;
+    if (!place.place_id || !place.name) return;
 
     try {
       setSubmitting(true);
@@ -155,51 +147,19 @@ export default function Jurisdicoes() {
 
       {adminSelecionado !== "" && (
         <>
-          <div className="bg-white rounded-lg shadow p-4 mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adicionar via/estrada à jurisdição
-            </label>
-            {isLoaded && apiKey ? (
-              <Autocomplete
-                onLoad={(a) => (autocompleteRef.current = a)}
-                onPlaceChanged={handlePlaceChanged}
-              >
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
-                    type="text"
-                    placeholder="Ex: Avenida Vladimir Lenine, Hulene..."
-                    disabled={submitting}
-                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </Autocomplete>
-            ) : (
-              <p className="text-sm text-gray-500">A carregar mapa...</p>
-            )}
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-4 mb-6">
-            {isLoaded && apiKey ? (
-              <GoogleMap
-                mapContainerStyle={containerStyle}
-                center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
-                zoom={vias.some((v) => v.geometria) ? 12 : 11}
-              >
-                {vias.map(
-                  (v) =>
-                    v.geometria && (
-                      <MarkerF key={v.id} position={v.geometria} title={v.nome_via} />
-                    )
-                )}
-              </GoogleMap>
-            ) : (
-              <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
-                <MapPinned size={16} />
-                A carregar mapa...
-              </div>
-            )}
-          </div>
+          {apiKey ? (
+            <BuscaEMapaVias
+              apiKey={apiKey}
+              vias={vias}
+              submitting={submitting}
+              onAdicionarVia={handlePlaceSelecionado}
+            />
+          ) : (
+            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
+              <MapPinned size={16} />
+              A carregar mapa...
+            </div>
+          )}
 
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <div className="p-4 border-b border-gray-200 flex items-center gap-2">
@@ -232,5 +192,81 @@ export default function Jurisdicoes() {
         </>
       )}
     </div>
+  );
+}
+
+/**
+ * Só monta depois de haver uma chave real (ver `apiKey: string`, não
+ * opcional) - useJsApiLoader não permite ser chamado com opções diferentes
+ * ao longo do tempo (ex: chave vazia -> chave real) para o mesmo `id`,
+ * rebenta o componente inteiro se isso acontecer.
+ */
+function BuscaEMapaVias({
+  apiKey,
+  vias,
+  submitting,
+  onAdicionarVia,
+}: {
+  apiKey: string;
+  vias: ViaJurisdicao[];
+  submitting: boolean;
+  onAdicionarVia: (place: google.maps.places.PlaceResult) => void;
+}) {
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    id: "sgdit-google-maps",
+    googleMapsApiKey: apiKey,
+    libraries: GOOGLE_MAPS_LIBRARIES,
+  });
+
+  const handlePlaceChanged = () => {
+    const place = autocompleteRef.current?.getPlace();
+    if (place) onAdicionarVia(place);
+  };
+
+  if (loadError || !isLoaded) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
+        <MapPinned size={16} />
+        {loadError ? "Erro ao carregar o mapa." : "A carregar mapa..."}
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Adicionar via/estrada à jurisdição
+        </label>
+        <Autocomplete
+          onLoad={(a) => (autocompleteRef.current = a)}
+          onPlaceChanged={handlePlaceChanged}
+        >
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+            <input
+              type="text"
+              placeholder="Ex: Avenida Vladimir Lenine, Hulene..."
+              disabled={submitting}
+              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+        </Autocomplete>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
+          zoom={vias.some((v) => v.geometria) ? 12 : 11}
+        >
+          {vias.map(
+            (v) => v.geometria && <MarkerF key={v.id} position={v.geometria} title={v.nome_via} />
+          )}
+        </GoogleMap>
+      </div>
+    </>
   );
 }

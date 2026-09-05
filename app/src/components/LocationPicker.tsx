@@ -12,16 +12,16 @@ interface LocationPickerProps {
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 
-export default function LocationPicker({ onChange, initialLat, initialLng }: LocationPickerProps) {
+/**
+ * Componente "portão": só monta <LocationPickerMapa> depois de já ter uma
+ * chave real. useJsApiLoader não permite ser chamado com opções diferentes
+ * ao longo do tempo (ex: chave vazia -> chave real) para o mesmo `id` -
+ * rebenta o componente inteiro se isso acontecer. Por isso a chave nunca
+ * pode "chegar depois" a um componente que já montou o hook.
+ */
+export default function LocationPicker(props: LocationPickerProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [erroConfig, setErroConfig] = useState<string | null>(null);
-  const [center, setCenter] = useState(
-    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : CENTRO_PADRAO_MAPA
-  );
-  const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(
-    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
-  );
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     configService
@@ -35,6 +35,40 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
       })
       .catch(() => setErroConfig("Não foi possível carregar as configurações do mapa."));
   }, []);
+
+  if (erroConfig) {
+    return (
+      <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+        {erroConfig}
+      </div>
+    );
+  }
+
+  if (!apiKey) {
+    return (
+      <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+        <MapPin size={16} />
+        A carregar mapa...
+      </div>
+    );
+  }
+
+  return <LocationPickerMapa {...props} apiKey={apiKey} />;
+}
+
+function LocationPickerMapa({
+  onChange,
+  initialLat,
+  initialLng,
+  apiKey,
+}: LocationPickerProps & { apiKey: string }) {
+  const [center, setCenter] = useState(
+    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : CENTRO_PADRAO_MAPA
+  );
+  const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(
+    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
+  );
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     // GPS atual serve só para centrar o mapa como ponto de partida - nunca
@@ -52,7 +86,7 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
-    googleMapsApiKey: apiKey ?? "",
+    googleMapsApiKey: apiKey,
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
@@ -90,15 +124,7 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
     onChange(lat, lng);
   };
 
-  if (erroConfig) {
-    return (
-      <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
-        {erroConfig}
-      </div>
-    );
-  }
-
-  if (!apiKey || loadError || !isLoaded) {
+  if (loadError || !isLoaded) {
     return (
       <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
         <MapPin size={16} />
