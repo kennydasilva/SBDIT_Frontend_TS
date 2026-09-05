@@ -2,12 +2,21 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, AlertTriangle, Loader2, KeyRound } from "lucide-react";
 import { configService, type ConfigEntry } from "../../api/configService";
 
+const CHAVES_CONHECIDAS = [
+  { chave: "GOOGLE_MAPS_API_KEY", descricao: "Chave JS do Google Maps (pública)", publica: true },
+  { chave: "FIREBASE_SERVICE_ACCOUNT_JSON", descricao: "JSON do Firebase Admin SDK (privada)", publica: false },
+  { chave: "FIREBASE_SERVER_KEY", descricao: "Chave de servidor do Firebase (privada)", publica: false },
+];
+
+const OUTRA_CHAVE = "__OUTRA__";
+
 export default function Configuracoes() {
   const [configs, setConfigs] = useState<ConfigEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [chaveSelecionada, setChaveSelecionada] = useState<string>("");
   const [formData, setFormData] = useState({
     chave: "",
     valor: "",
@@ -34,6 +43,24 @@ export default function Configuracoes() {
 
   const resetForm = () => {
     setFormData({ chave: "", valor: "", publica: false, descricao: "" });
+    setChaveSelecionada("");
+  };
+
+  const handleSelecionarChave = (valor: string) => {
+    setChaveSelecionada(valor);
+
+    if (valor === OUTRA_CHAVE || valor === "") {
+      setFormData({ ...formData, chave: "" });
+      return;
+    }
+
+    const conhecida = CHAVES_CONHECIDAS.find((c) => c.chave === valor);
+    setFormData({
+      ...formData,
+      chave: valor,
+      publica: conhecida?.publica ?? formData.publica,
+      descricao: conhecida?.descricao ?? formData.descricao,
+    });
   };
 
   const handleSalvar = async () => {
@@ -179,14 +206,31 @@ export default function Configuracoes() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Chave</label>
-                <input
-                  type="text"
-                  value={formData.chave}
-                  onChange={(e) => setFormData({ ...formData, chave: e.target.value.toUpperCase().replace(/\s+/g, "_") })}
-                  placeholder="Ex: GOOGLE_MAPS_API_KEY"
+                <select
+                  value={chaveSelecionada}
+                  onChange={(e) => handleSelecionarChave(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
-                />
+                >
+                  <option value="">Selecione a credencial...</option>
+                  {CHAVES_CONHECIDAS.map((c) => (
+                    <option key={c.chave} value={c.chave}>
+                      {c.chave}
+                    </option>
+                  ))}
+                  <option value={OUTRA_CHAVE}>Outra (personalizada)</option>
+                </select>
+
+                {chaveSelecionada === OUTRA_CHAVE && (
+                  <input
+                    type="text"
+                    value={formData.chave}
+                    onChange={(e) => setFormData({ ...formData, chave: e.target.value.toUpperCase().replace(/\s+/g, "_") })}
+                    placeholder="Ex: MINHA_CHAVE_PERSONALIZADA"
+                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    disabled={submitting}
+                  />
+                )}
               </div>
 
               <div>
