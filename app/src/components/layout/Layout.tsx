@@ -6,7 +6,8 @@ import {
   UserCircle,
   AlertTriangle,
   FileText,
-  Settings
+  Settings,
+  MapPinned
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 
@@ -18,6 +19,7 @@ const menuItems = [
   { path: "/super-admin/policiais", icon: Shield, label: "Policiais" },
   { path: "/super-admin/cidadaos", icon: UserCircle, label: "Cidadãos" },
   { path: "/super-admin/denuncias", icon: AlertTriangle, label: "Denúncias" },
+  { path: "/super-admin/jurisdicoes", icon: MapPinned, label: "Jurisdições" },
   { path: "/super-admin/relatorios", icon: FileText, label: "Relatórios" },
   { path: "/super-admin/configuracoes", icon: Settings, label: "Configurações" },
 ];

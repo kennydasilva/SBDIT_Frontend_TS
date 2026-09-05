@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
-import { GoogleMap, MarkerF, useJsApiLoader } from "@react-google-maps/api";
-import { MapPin } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { GoogleMap, MarkerF, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import { MapPin, Search } from "lucide-react";
 import { configService } from "../api/configService";
+import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../utils/maps";
 
 interface LocationPickerProps {
   onChange: (lat: number, lng: number) => void;
@@ -9,19 +10,18 @@ interface LocationPickerProps {
   initialLng?: number | null;
 }
 
-// Maputo, usado só como centro de partida se não houver GPS nem local inicial
-const CENTRO_PADRAO = { lat: -25.9692, lng: 32.5732 };
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 
 export default function LocationPicker({ onChange, initialLat, initialLng }: LocationPickerProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [erroConfig, setErroConfig] = useState<string | null>(null);
   const [center, setCenter] = useState(
-    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : CENTRO_PADRAO
+    initialLat && initialLng ? { lat: initialLat, lng: initialLng } : CENTRO_PADRAO_MAPA
   );
   const [marker, setMarker] = useState<{ lat: number; lng: number } | null>(
     initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
   );
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     configService
@@ -53,6 +53,7 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
     googleMapsApiKey: apiKey ?? "",
+    libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
   const handleMapClick = useCallback(
@@ -77,6 +78,18 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
     [onChange]
   );
 
+  const handlePlaceChanged = () => {
+    const place = autocompleteRef.current?.getPlace();
+    const location = place?.geometry?.location;
+    if (!location) return;
+
+    const lat = location.lat();
+    const lng = location.lng();
+    setCenter({ lat, lng });
+    setMarker({ lat, lng });
+    onChange(lat, lng);
+  };
+
   if (erroConfig) {
     return (
       <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
@@ -96,6 +109,20 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
 
   return (
     <div>
+      <Autocomplete
+        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+        onPlaceChanged={handlePlaceChanged}
+      >
+        <div className="relative mb-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <input
+            type="text"
+            placeholder="Pesquisar rua, avenida ou local..."
+            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </Autocomplete>
+
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={marker ?? center}
@@ -107,7 +134,7 @@ export default function LocationPicker({ onChange, initialLat, initialLng }: Loc
       <p className="mt-2 text-xs text-gray-500">
         {marker
           ? "Arraste o marcador ou clique noutro ponto do mapa para ajustar o local exato."
-          : "Clique no mapa para marcar o local exato onde a infração aconteceu."}
+          : "Pesquise um local ou clique no mapa para marcar onde a infração aconteceu."}
       </p>
     </div>
   );
