@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   PlusCircle,
@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
+import { logout } from "../../api/authService";
 
 const menuItems = [
   { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -19,9 +20,8 @@ const menuItems = [
 
 export default function CidadaoLayout() {
   const location = useLocation();
-   
-  
-  
+  const navigate = useNavigate();
+
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | null>(null);
@@ -67,6 +67,11 @@ export default function CidadaoLayout() {
       return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
   }
 
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -102,12 +107,13 @@ export default function CidadaoLayout() {
           })}
 
           {/* Logout */}
-          <Link to="/login">
-            <button className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full">
-              <LogOut size={20} />
-              <span>Sair</span>
-            </button>
-          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full"
+          >
+            <LogOut size={20} />
+            <span>Sair</span>
+          </button>
         </nav>
 
         {/* User */}

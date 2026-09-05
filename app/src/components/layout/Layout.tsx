@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import {
   LayoutDashboard,
   Users,
@@ -7,9 +7,11 @@ import {
   AlertTriangle,
   FileText,
   Settings,
-  MapPinned
+  MapPinned,
+  LogOut
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { logout } from "../../api/authService";
 
 
 
@@ -25,14 +27,18 @@ const menuItems = [
 ];
 export default function Layout() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const {user, loading}= useAuth();
-
-
 
   if(loading){
     return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
   }
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -68,6 +74,15 @@ export default function Layout() {
               </Link>
             );
           })}
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full"
+          >
+            <LogOut size={20} />
+            <span>Sair</span>
+          </button>
         </nav>
 
         {/* User */}

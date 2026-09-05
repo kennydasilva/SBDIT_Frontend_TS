@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -7,6 +7,7 @@ import {
   LogOut
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { logout } from "../../api/authService";
 
 const menuItems = [
   { path: "/pt/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -17,14 +18,18 @@ const menuItems = [
 
 export default function PTLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
 
-   
-  
   const {user, loading}= useAuth();
-  
+
   if(loading){
       return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
   }
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -61,12 +66,13 @@ export default function PTLayout() {
           })}
 
           {/* Logout */}
-          <Link to="/login">
-          <button className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 rounded-lg mt-4 text-blue-100 hover:bg-blue-800 transition-colors w-full"
+          >
             <LogOut size={20} />
             <span>Sair</span>
           </button>
-          </Link>
         </nav>
 
         {/* User */}
