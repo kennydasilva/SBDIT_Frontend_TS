@@ -12,7 +12,7 @@ export const REGEX = {
   matricula: /^[A-Za-z]{2}-\d{2}-[A-Za-z]{2}$/,
   codigoLegal: /^[A-Za-zÀ-ÿ0-9ºª.,()\-\s]{3,150}$/,
   numeroAgente: /^[A-Za-z0-9-]{2,20}$/,
-  posto: /^[A-Za-zÀ-ÿ0-9\s.-]{2,100}$/,
+  posto: /^[A-Za-zÀ-ÿºª0-9\s.-]{2,100}$/,
   localizacao: /^.{3,200}$/,
   descricao: /^.{5,1000}$/,
 };

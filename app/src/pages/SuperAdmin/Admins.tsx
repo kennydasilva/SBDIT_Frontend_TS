@@ -24,13 +24,14 @@ export default function Admins() {
     nome: "",
     email: "",
     senha: "",
-    posto: "Comando Geral",
+    posto: "",
     status: "Ativo" as "Ativo" | "Inativo"
   });
   const [fieldErrors, setFieldErrors] = useState<{
     nome?: string;
     email?: string;
     senha?: string;
+    posto?: string;
   }>({});
 
   const validate = (isCreate: boolean) => {
@@ -46,6 +47,10 @@ export default function Admins() {
 
     if (isCreate && !REGEX.password.test(formData.senha)) {
       errors.senha = "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula e número";
+    }
+
+    if (!REGEX.posto.test(formData.posto)) {
+      errors.posto = "Indique o nome do posto (2-100 caracteres)";
     }
 
     setFieldErrors(errors);
@@ -180,7 +185,7 @@ export default function Admins() {
       nome: "",
       email: "",
       senha: "",
-      posto: "Comando Geral",
+      posto: "",
       status: "Ativo"
     });
     setFieldErrors({});
@@ -364,17 +369,18 @@ export default function Admins() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Posto/Localização</label>
-                <select
+                <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Posto</label>
+                <input
+                  type="text"
                   value={formData.posto}
                   onChange={(e) => setFormData({ ...formData, posto: e.target.value })}
+                  placeholder="Ex: Mavalane, 12ª Esquadra, Comando Geral..."
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={submitting}
-                >
-                  <option value="Comando Geral">Comando Geral</option>
-                  <option value="Regional">Regional</option>
-                  <option value="Municipal">Municipal</option>
-                </select>
+                />
+                {fieldErrors.posto && (
+                  <p className="text-xs text-red-600 mt-1">{fieldErrors.posto}</p>
+                )}
               </div>
 
               <div>
