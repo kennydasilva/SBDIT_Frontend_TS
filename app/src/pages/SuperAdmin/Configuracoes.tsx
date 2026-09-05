@@ -173,7 +173,7 @@ export default function Configuracoes() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Nova Credencial</h2>
 
             <div className="space-y-4">
@@ -191,12 +191,12 @@ export default function Configuracoes() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Valor</label>
-                <input
-                  type="text"
+                <textarea
                   value={formData.valor}
                   onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                  placeholder="Cola aqui a chave/segredo"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Cola aqui a chave/segredo (ex: uma chave simples ou um JSON completo do Firebase Admin SDK)"
+                  rows={6}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                   disabled={submitting}
                 />
               </div>
