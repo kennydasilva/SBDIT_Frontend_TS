@@ -7,6 +7,9 @@ import type {
   Admin
 } from "../../api/superAdminService";
 import { REGEX } from "../../utils/validationSchemas";
+import { POSTOS_MAPUTO } from "../../utils/postosMaputo";
+
+const OUTRO_POSTO = "__OUTRO__";
 
 
 
@@ -369,15 +372,45 @@ export default function Admins() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome do Posto</label>
-                <input
-                  type="text"
-                  value={formData.posto}
-                  onChange={(e) => setFormData({ ...formData, posto: e.target.value })}
-                  placeholder="Ex: Mavalane, 12ª Esquadra, Comando Geral..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">Posto</label>
+                {(() => {
+                  const postoEhConhecido = POSTOS_MAPUTO.includes(formData.posto);
+                  const valorSelect = postoEhConhecido ? formData.posto : (formData.posto ? OUTRO_POSTO : "");
+
+                  return (
+                    <>
+                      <select
+                        value={valorSelect}
+                        onChange={(e) => {
+                          const valor = e.target.value;
+                          setFormData({
+                            ...formData,
+                            posto: valor === OUTRO_POSTO ? (postoEhConhecido ? "" : formData.posto) : valor,
+                          });
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={submitting}
+                      >
+                        <option value="">Selecione o posto...</option>
+                        {POSTOS_MAPUTO.map((p) => (
+                          <option key={p} value={p}>{p}</option>
+                        ))}
+                        <option value={OUTRO_POSTO}>Outro (não está na lista)</option>
+                      </select>
+
+                      {valorSelect === OUTRO_POSTO && (
+                        <input
+                          type="text"
+                          value={formData.posto}
+                          onChange={(e) => setFormData({ ...formData, posto: e.target.value })}
+                          placeholder="Ex: Posto Policial de..."
+                          className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          disabled={submitting}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
                 {fieldErrors.posto && (
                   <p className="text-xs text-red-600 mt-1">{fieldErrors.posto}</p>
                 )}
