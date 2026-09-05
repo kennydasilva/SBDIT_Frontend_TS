@@ -1,17 +1,30 @@
 import api from "./axios";
 import { limparCache } from "./httpCache";
 
+export interface LimitesVia {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
+
+export interface GeometriaVia {
+  lat: number;
+  lng: number;
+  bounds?: LimitesVia;
+}
+
 export interface ViaJurisdicao {
   id: number;
   nome_via: string;
   place_id: string;
-  geometria: { lat: number; lng: number } | null;
+  geometria: GeometriaVia | null;
 }
 
 export interface AddViaData {
   nome_via: string;
   place_id: string;
-  geometria?: { lat: number; lng: number } | null;
+  geometria?: GeometriaVia | null;
 }
 
 export const jurisdicaoService = {

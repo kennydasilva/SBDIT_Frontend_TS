@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { GoogleMap, MarkerF, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, Rectangle, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
 import { AlertTriangle, Loader2, MapPinned, Search, Trash2 } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
@@ -67,13 +67,29 @@ export default function Jurisdicoes() {
 
     if (!place.place_id || !place.name) return;
 
+    const location = place.geometry?.location;
+    const viewport = place.geometry?.viewport;
+
     try {
       setSubmitting(true);
       await jurisdicaoService.adicionarVia(adminSelecionado, {
         nome_via: place.formatted_address || place.name,
         place_id: place.place_id,
-        geometria: place.geometry?.location
-          ? { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() }
+        geometria: location
+          ? {
+              lat: location.lat(),
+              lng: location.lng(),
+              // área aproximada da via (retângulo), não é o traçado exato da
+              // estrada, mas dá uma ideia visual melhor que só um ponto
+              bounds: viewport
+                ? {
+                    north: viewport.getNorthEast().lat(),
+                    east: viewport.getNorthEast().lng(),
+                    south: viewport.getSouthWest().lat(),
+                    west: viewport.getSouthWest().lng(),
+                  }
+                : undefined,
+            }
           : null,
       });
       await carregarVias(adminSelecionado);
@@ -262,10 +278,31 @@ function BuscaEMapaVias({
           center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
           zoom={vias.some((v) => v.geometria) ? 12 : 11}
         >
-          {vias.map(
-            (v) => v.geometria && <MarkerF key={v.id} position={v.geometria} title={v.nome_via} />
-          )}
+          {vias.map((v) => {
+            if (!v.geometria) return null;
+
+            return (
+              <div key={v.id} style={{ display: "contents" }}>
+                {v.geometria.bounds && (
+                  <Rectangle
+                    bounds={v.geometria.bounds}
+                    options={{
+                      strokeColor: "#2563EB",
+                      strokeOpacity: 0.8,
+                      strokeWeight: 2,
+                      fillColor: "#2563EB",
+                      fillOpacity: 0.15,
+                    }}
+                  />
+                )}
+                <MarkerF position={v.geometria} title={v.nome_via} />
+              </div>
+            );
+          })}
         </GoogleMap>
+        <p className="mt-2 text-xs text-gray-500">
+          A área a azul é aproximada (dada pelo Google para a via), não é o traçado exato da estrada.
+        </p>
       </div>
     </>
   );
