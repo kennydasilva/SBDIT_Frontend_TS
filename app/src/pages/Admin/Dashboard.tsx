@@ -33,11 +33,16 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      const pts = await ptService.listarPT(user.id);
+      const { results: pts } = await ptService.listarPT(user.id);
       setTotalPoliciais(pts.length);
 
       const denunciasPorPt = await Promise.all(
-        pts.map((pt) => denunciaService.listarPorPt(pt.id).catch(() => []))
+        pts.map((pt) =>
+          denunciaService
+            .listarPorPt(pt.id)
+            .then((r) => r.results)
+            .catch(() => [])
+        )
       );
 
       const todas = denunciasPorPt.flat().sort((a, b) => b.id - a.id).slice(0, 5);

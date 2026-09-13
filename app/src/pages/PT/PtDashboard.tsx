@@ -32,10 +32,10 @@ export default function DashboardPt() {
 
     try {
       setLoading(true);
-      const validadas = await denunciaService.listarValidadas();
+      const { results: validadas } = await denunciaService.listarValidadas();
       setDenuncias(validadas);
 
-      const minhas = await denunciaService.listarPorPt(user.id);
+      const { results: minhas } = await denunciaService.listarPorPt(user.id);
       setDenunciasTemp(minhas);
     } catch (err) {
       console.error("Erro ao carregar denúncias:", err);

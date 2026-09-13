@@ -8,6 +8,9 @@ import type {
 } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";
 import { REGEX } from "../../utils/validationSchemas";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 
 
@@ -23,6 +26,8 @@ export default function PTs() {
   const [loading, setLoading]= useState(true);
   const [submitting, setSubmitting]= useState(false);
   const [error, setError]= useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -63,20 +68,21 @@ export default function PTs() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      carregarPts();
+      carregarPts(paginaAtual);
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, paginaAtual]);
 
 
-  const carregarPts = async () => {
+  const carregarPts = async (pagina: number = paginaAtual) => {
     if (!user) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      const data = await ptService.listarPT(user.id);
-      setPts(data);
+      const data = await ptService.listarPT(user.id, pagina);
+      setPts(data.results);
+      setTotalItens(data.count);
 
     } catch (error: any) {
       console.error("Erro ao carregar Policias:", error);
@@ -225,7 +231,7 @@ export default function PTs() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarPts}
+            onClick={() => carregarPts(paginaAtual)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -319,6 +325,13 @@ export default function PTs() {
             )}
           </tbody>
         </table>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
 
       {/* Create/Edit Modal */}

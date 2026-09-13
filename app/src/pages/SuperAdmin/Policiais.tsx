@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Search, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService } from "../../api/superAdminService";
 import type { PT } from "../../api/ptService";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 export default function Policiais() {
   const [policiais, setPoliciais] = useState<PT[]>([]);
@@ -9,17 +12,20 @@ export default function Policiais() {
   const [filterAdmin, setFilterAdmin] = useState("Todos");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
   useEffect(() => {
-    carregarPoliciais();
-  }, []);
+    carregarPoliciais(paginaAtual);
+  }, [paginaAtual]);
 
-  const carregarPoliciais = async () => {
+  const carregarPoliciais = async (pagina: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarPts();
-      setPoliciais(data);
+      const data = await superAdminService.listarPts(pagina);
+      setPoliciais(data.results);
+      setTotalItens(data.count);
     } catch (err) {
       setError("Erro ao carregar policiais.");
     } finally {
@@ -52,7 +58,7 @@ export default function Policiais() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarPoliciais}
+            onClick={() => carregarPoliciais(paginaAtual)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -130,6 +136,13 @@ export default function Policiais() {
             )}
           </tbody>
         </table>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
     </div>
   );

@@ -37,18 +37,21 @@ export interface AdminResponse {
 
 export const adminService={
 
-    async listarAdmins(): Promise<Admin[]> {
+    async listarAdmins(page: number = 1): Promise<PaginatedResponse<Admin>> {
         try{
-            const data = await cachedGet<PaginatedResponse<AdminResponse>>(api, "/admins/");
+            const data = await cachedGet<PaginatedResponse<AdminResponse>>(api, "/admins/", { params: { page } });
 
-            return data.results.map(admin => ({
-                id: admin.id,
-                nome: admin.nome,
-                email: admin.email,
-                posto: admin.posto,
-                dataCriacao: new Date().toISOString().split('T')[0],
-                status: "Ativo"
-            }));
+            return {
+                ...data,
+                results: data.results.map(admin => ({
+                    id: admin.id,
+                    nome: admin.nome,
+                    email: admin.email,
+                    posto: admin.posto,
+                    dataCriacao: new Date().toISOString().split('T')[0],
+                    status: "Ativo"
+                })),
+            };
 
         }
         catch(error)
@@ -113,10 +116,9 @@ export interface cidadao{
 
 export const superAdminService = {
 
-    async listarCidadao(): Promise<cidadao[]> {
+    async listarCidadao(page: number = 1): Promise<PaginatedResponse<cidadao>> {
         try{
-            const data = await cachedGet<PaginatedResponse<cidadao>>(api, "/cidadao/lista/");
-            return data.results;
+            return await cachedGet<PaginatedResponse<cidadao>>(api, "/cidadao/lista/", { params: { page } });
         }
         catch(error)
         {
@@ -138,10 +140,9 @@ export const superAdminService = {
         }
     },
 
-    async listarPts(): Promise<PT[]> {
+    async listarPts(page: number = 1): Promise<PaginatedResponse<PT>> {
         try{
-            const data = await cachedGet<PaginatedResponse<PT>>(api, "/pts/");
-            return data.results;
+            return await cachedGet<PaginatedResponse<PT>>(api, "/pts/", { params: { page } });
         }
         catch(error)
         {
@@ -150,10 +151,10 @@ export const superAdminService = {
         }
     },
 
-    async listarDenuncias(): Promise<DenunciaDetalhada[]> {
+    async listarDenuncias(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>> {
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>("/denuncias/");
-            return response.data.results;
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>("/denuncias/", { params: { page } });
+            return response.data;
         }
         catch(error)
         {

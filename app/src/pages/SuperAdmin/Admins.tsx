@@ -8,8 +8,10 @@ import type {
 } from "../../api/superAdminService";
 import { REGEX } from "../../utils/validationSchemas";
 import { POSTOS_MAPUTO } from "../../utils/postosMaputo";
+import Paginacao from "../../components/Paginacao";
 
 const OUTRO_POSTO = "__OUTRO__";
+const TAMANHO_PAGINA = 20;
 
 
 
@@ -23,6 +25,8 @@ export default function Admins() {
   const [loading, setLoading]= useState(true);
   const [submitting, setSubmitting]= useState(false);
   const [error, setError]= useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -61,16 +65,17 @@ export default function Admins() {
   };
 
   useEffect(() =>{
-    carregarAdmins();
-  }, []);
+    carregarAdmins(paginaAtual);
+  }, [paginaAtual]);
 
 
-  const carregarAdmins= async() =>{
+  const carregarAdmins= async(pagina: number = paginaAtual) =>{
     try{
       setLoading(true);
       setError(null);
-      const data= await adminService.listarAdmins();
-      setAdmins(data);
+      const data= await adminService.listarAdmins(pagina);
+      setAdmins(data.results);
+      setTotalItens(data.count);
     }
     catch(error: any){
       console.error("Erro ao carregar administradores: ", error);
@@ -209,7 +214,7 @@ export default function Admins() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarAdmins}
+            onClick={() => carregarAdmins(paginaAtual)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -313,6 +318,13 @@ export default function Admins() {
             )}
           </tbody>
         </table>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
 
       {/* Create/Edit Modal */}

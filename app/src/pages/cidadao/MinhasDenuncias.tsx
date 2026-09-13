@@ -3,8 +3,9 @@ import { Search, Eye } from "lucide-react";
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import Paginacao from "../../components/Paginacao";
 
-
+const TAMANHO_PAGINA = 20;
 
 const estados = [
   "Todos",
@@ -39,24 +40,26 @@ export default function MinhasDenuncias() {
   const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | null>(null);
- 
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
 
   useEffect(() => {
     if (!authLoading && user) {
-      carregarDenuncias();
+      carregarDenuncias(paginaAtual);
     }
-  }, [authLoading, user]);
+  }, [authLoading, user, paginaAtual]);
 
 
-  const carregarDenuncias = async () => {
+  const carregarDenuncias = async (pagina: number) => {
     if (!user) return;
     try{
       setLoading(true);
       setError(null);
 
-      const data= await denunciaService.listarPorCidadao(user.id);
-      setDenuncias(data);
+      const data= await denunciaService.listarPorCidadao(user.id, pagina);
+      setDenuncias(data.results);
+      setTotalItens(data.count);
     } catch (err) {
       setError("Erro ao carregar denúncias.");
     } finally {
@@ -197,26 +200,13 @@ export default function MinhasDenuncias() {
           </table>
         </div>
 
-        {/* Pagination */}
-        {filteredDenuncias.length > 0 && (
-          <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-            <p className="text-sm text-gray-600">
-              Mostrando {filteredDenuncias.length} de{" "}
-              {denuncias.length} denúncias
-            </p>
-            <div className="flex gap-2">
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Anterior
-              </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700">
-                1
-              </button>
-              <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
-                Próximo
-              </button>
-            </div>
-          </div>
-        )}
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
     </div>
   );

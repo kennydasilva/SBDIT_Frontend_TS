@@ -3,6 +3,9 @@ import { Link } from "react-router";
 import { Search } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 const denunciasData = [
   {
@@ -86,24 +89,27 @@ export default function DenunciasPt() {
   const[error, setError]= useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterEstado, setFilterEstado] = useState("todas");
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
   useEffect(() => {
-          
-            carregarDenuncias();
-          
-    }, []);
-      
-    
-    
-    const carregarDenuncias = async () => {
-      
-  
+
+            carregarDenuncias(paginaAtual);
+
+    }, [paginaAtual]);
+
+
+
+    const carregarDenuncias = async (pagina: number) => {
+
+
       try{
         setLoading(true);
-  
-        const data= await denunciaService.listarValidadas();
-  
-        setDenuncias(data);
+
+        const data= await denunciaService.listarValidadas(pagina);
+
+        setDenuncias(data.results);
+        setTotalItens(data.count);
       }
       catch(error){
         setError("Erro ao carregar denúncias.");
@@ -266,6 +272,13 @@ export default function DenunciasPt() {
             </tbody>
           </table>
         </div>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
     </div>
   );

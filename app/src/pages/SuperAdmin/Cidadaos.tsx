@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService, type cidadao } from "../../api/superAdminService";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 export default function Cidadaos() {
   const [cidadaos, setCidadaos] = useState<cidadao[]>([]);
@@ -8,17 +11,20 @@ export default function Cidadaos() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [atualizandoId, setAtualizandoId] = useState<number | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
   useEffect(() => {
-    carregarCidadaos();
-  }, []);
+    carregarCidadaos(paginaAtual);
+  }, [paginaAtual]);
 
-  const carregarCidadaos = async () => {
+  const carregarCidadaos = async (pagina: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarCidadao();
-      setCidadaos(data);
+      const data = await superAdminService.listarCidadao(pagina);
+      setCidadaos(data.results);
+      setTotalItens(data.count);
     } catch (err) {
       setError("Erro ao carregar cidadãos.");
     } finally {
@@ -60,7 +66,7 @@ export default function Cidadaos() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarCidadaos}
+            onClick={() => carregarCidadaos(paginaAtual)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -161,6 +167,13 @@ export default function Cidadaos() {
             )}
           </tbody>
         </table>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
     </div>
   );

@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService } from "../../api/superAdminService";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA"] as const;
 
@@ -19,17 +22,20 @@ export default function Denuncias() {
   const [filterStatus, setFilterStatus] = useState<string>("Todos");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
   useEffect(() => {
-    carregarDenuncias();
-  }, []);
+    carregarDenuncias(paginaAtual);
+  }, [paginaAtual]);
 
-  const carregarDenuncias = async () => {
+  const carregarDenuncias = async (pagina: number) => {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarDenuncias();
-      setDenuncias(data);
+      const data = await superAdminService.listarDenuncias(pagina);
+      setDenuncias(data.results);
+      setTotalItens(data.count);
     } catch (err) {
       setError("Erro ao carregar denúncias.");
     } finally {
@@ -78,7 +84,7 @@ export default function Denuncias() {
           <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <p className="text-red-600">{error}</p>
           <button
-            onClick={carregarDenuncias}
+            onClick={() => carregarDenuncias(paginaAtual)}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
           >
             Tentar Novamente
@@ -169,6 +175,18 @@ export default function Denuncias() {
           ))
         )}
       </div>
+
+      {totalItens > TAMANHO_PAGINA && (
+        <div className="bg-white rounded-lg shadow mt-4">
+          <Paginacao
+            paginaAtual={paginaAtual}
+            totalItens={totalItens}
+            tamanhoPagina={TAMANHO_PAGINA}
+            onMudarPagina={setPaginaAtual}
+            disabled={loading}
+          />
+        </div>
+      )}
     </div>
   );
 }

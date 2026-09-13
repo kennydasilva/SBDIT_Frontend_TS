@@ -2,6 +2,9 @@ import { Link } from "react-router";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import Paginacao from "../../components/Paginacao";
+
+const TAMANHO_PAGINA = 20;
 
 const decisoesData = [
   {
@@ -78,26 +81,29 @@ export default function MinhasDecisoesPt() {
   const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | null>(null);
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const [totalItens, setTotalItens] = useState(0);
 
 
   useEffect(() => {
       if (!authLoading && user) {
-        carregarDenuncias();
+        carregarDenuncias(paginaAtual);
       }
-  }, [authLoading, user]);
-  
+  }, [authLoading, user, paginaAtual]);
 
 
-  const carregarDenuncias = async () => {
+
+  const carregarDenuncias = async (pagina: number) => {
     if (!user) return;
 
     try{
 
       setLoading(true)
 
-      const data= await denunciaService.listarPorPt(user.id)
+      const data= await denunciaService.listarPorPt(user.id, pagina)
 
-      setDenuncias(data);
+      setDenuncias(data.results);
+      setTotalItens(data.count);
 
     }
     catch(error){
@@ -215,6 +221,13 @@ export default function MinhasDecisoesPt() {
             </tbody>
           </table>
         </div>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
       </div>
     </div>
   );

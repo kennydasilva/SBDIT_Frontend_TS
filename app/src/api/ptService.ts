@@ -69,12 +69,10 @@ export const ptService={
 
     },
 
-    async listarPT(adminId: number): Promise<PT[]> {
+    async listarPT(adminId: number, page: number = 1): Promise<PaginatedResponse<PT>> {
         try{
 
-            const data = await cachedGet<PaginatedResponse<PT>>(api, `/pts/admin/${adminId}/`);
-
-            return data.results;
+            return await cachedGet<PaginatedResponse<PT>>(api, `/pts/admin/${adminId}/`, { params: { page } });
 
         }
         catch(error)

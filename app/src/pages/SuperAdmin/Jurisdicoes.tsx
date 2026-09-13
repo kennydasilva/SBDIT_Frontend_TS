@@ -38,7 +38,7 @@ export default function Jurisdicoes() {
     try {
       setLoadingAdmins(true);
       setError(null);
-      const data = await adminService.listarAdmins();
+      const { results: data } = await adminService.listarAdmins();
       setAdmins(data);
     } catch (err) {
       setError("Erro ao carregar administradores.");
