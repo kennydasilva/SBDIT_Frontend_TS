@@ -584,11 +584,16 @@ function MapaVias({
       >
         {pontos.length > 0 && (
           <>
-            <Polyline path={pontos} options={{ strokeColor: "#2563EB", strokeWeight: 4 }} />
+            {/* clickable=false em tudo o que é desenhado - senão um clique
+                em cima da própria linha/ponto (ex: para marcar um ponto no
+                meio de dois já existentes) é apanhado pelo overlay em vez
+                de chegar ao mapa, e o ponto nunca é acrescentado. */}
+            <Polyline path={pontos} options={{ strokeColor: "#2563EB", strokeWeight: 4, clickable: false }} />
             {pontos.map((p, i) => (
               <MarkerF
                 key={i}
                 position={p}
+                clickable={false}
                 icon={{
                   path: google.maps.SymbolPath.CIRCLE,
                   scale: 5,
@@ -610,7 +615,7 @@ function MapaVias({
               {v.geometria.path ? (
                 <Polyline
                   path={v.geometria.path}
-                  options={{ strokeColor: "#2563EB", strokeOpacity: 0.8, strokeWeight: 4 }}
+                  options={{ strokeColor: "#2563EB", strokeOpacity: 0.8, strokeWeight: 4, clickable: false }}
                 />
               ) : (
                 v.geometria.bounds && (
@@ -622,11 +627,12 @@ function MapaVias({
                       strokeWeight: 2,
                       fillColor: "#2563EB",
                       fillOpacity: 0.15,
+                      clickable: false,
                     }}
                   />
                 )
               )}
-              <MarkerF position={v.geometria} title={v.nome_via} />
+              <MarkerF position={v.geometria} title={v.nome_via} clickable={!desenhando} />
             </div>
           );
         })}
