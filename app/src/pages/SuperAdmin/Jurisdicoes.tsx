@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, MarkerF, Rectangle, Polyline, DrawingManager, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, Rectangle, Polyline, useJsApiLoader } from "@react-google-maps/api";
 import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
@@ -471,8 +471,11 @@ function MapaVias({
   adminId: number;
   onViaAdicionada: () => void;
 }) {
+  // Desenho manual sem depender do DrawingManager do Google (a biblioteca
+  // "drawing" foi descontinuada na Maps JS API v3.65) - construído à mão a
+  // partir de cliques no mapa + <Polyline> a crescer em tempo real.
   const [desenhando, setDesenhando] = useState(false);
-  const [pathPendente, setPathPendente] = useState<PontoVia[] | null>(null);
+  const [pontos, setPontos] = useState<PontoVia[]>([]);
   const [nomeVia, setNomeVia] = useState("");
   const [guardando, setGuardando] = useState(false);
 
@@ -491,33 +494,38 @@ function MapaVias({
     );
   }
 
-  const handlePolylineCompleta = (polyline: google.maps.Polyline) => {
-    const path = polyline
-      .getPath()
-      .getArray()
-      .map((p) => ({ lat: p.lat(), lng: p.lng() }));
+  const pronto = pontos.length >= 2 && !desenhando;
 
-    polyline.setMap(null); // o traçado definitivo passa a vir do estado, via <Polyline>, depois de guardado
+  const handleMapClick = (e: google.maps.MapMouseEvent) => {
+    if (!desenhando || !e.latLng) return;
+    setPontos((prev) => [...prev, { lat: e.latLng!.lat(), lng: e.latLng!.lng() }]);
+  };
+
+  const handleIniciarDesenho = () => {
+    setDesenhando(true);
+    setPontos([]);
+    setNomeVia("");
+  };
+
+  const handleConcluirTracado = () => {
+    if (pontos.length < 2) return;
     setDesenhando(false);
-
-    if (path.length < 2) return;
-    setPathPendente(path);
   };
 
   const handleGuardar = async () => {
-    if (!pathPendente || !nomeVia.trim()) return;
+    if (pontos.length < 2 || !nomeVia.trim()) return;
 
-    const bounds = calcularBoundsDoPath(pathPendente);
-    const centro = pathPendente[Math.floor(pathPendente.length / 2)];
+    const bounds = calcularBoundsDoPath(pontos);
+    const centro = pontos[Math.floor(pontos.length / 2)];
 
     try {
       setGuardando(true);
       await jurisdicaoService.adicionarVia(adminId, {
         nome_via: nomeVia.trim(),
         place_id: `manual:${Date.now()}`,
-        geometria: { lat: centro.lat, lng: centro.lng, bounds, path: pathPendente },
+        geometria: { lat: centro.lat, lng: centro.lng, bounds, path: pontos },
       });
-      setPathPendente(null);
+      setPontos([]);
       setNomeVia("");
       onViaAdicionada();
     } catch (err) {
@@ -529,30 +537,41 @@ function MapaVias({
 
   const handleCancelarDesenho = () => {
     setDesenhando(false);
-    setPathPendente(null);
+    setPontos([]);
     setNomeVia("");
   };
 
   return (
     <div className={`${CARD} p-4 mb-6`}>
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2 gap-3">
         <p className="text-xs text-gray-500">
           Não encontras a via na pesquisa (comum: muitas ruas ainda não têm nome no OpenStreetMap)? Desenha-a
           directamente no mapa.
         </p>
-        <button
-          onClick={() => (desenhando ? handleCancelarDesenho() : setDesenhando(true))}
-          className={`${desenhando ? BUTTON_SECONDARY : BUTTON_PRIMARY} shrink-0 ml-3`}
-          disabled={!!pathPendente}
-        >
-          <PenLine size={16} />
-          {desenhando ? "Cancelar desenho" : "Desenhar via"}
-        </button>
+        <div className="flex gap-2 shrink-0">
+          {desenhando && (
+            <button onClick={handleConcluirTracado} disabled={pontos.length < 2} className={BUTTON_PRIMARY}>
+              Concluir traçado
+            </button>
+          )}
+          {(desenhando || pontos.length > 0) && (
+            <button onClick={handleCancelarDesenho} className={BUTTON_SECONDARY}>
+              Cancelar
+            </button>
+          )}
+          {!desenhando && pontos.length === 0 && (
+            <button onClick={handleIniciarDesenho} className={BUTTON_PRIMARY}>
+              <PenLine size={16} />
+              Desenhar via
+            </button>
+          )}
+        </div>
       </div>
 
       {desenhando && (
         <p className="mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-          Clica no mapa para marcar pontos ao longo da rua; termina com duplo-clique no último ponto.
+          Clica no mapa para marcar pontos ao longo da rua ({pontos.length} marcado{pontos.length === 1 ? "" : "s"}).
+          Quando tiveres pelo menos 2, clica em "Concluir traçado".
         </p>
       )}
 
@@ -560,18 +579,27 @@ function MapaVias({
         mapContainerStyle={containerStyle}
         center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
         zoom={vias.some((v) => v.geometria) ? 13 : 11}
+        onClick={handleMapClick}
+        options={{ draggableCursor: desenhando ? "crosshair" : undefined }}
       >
-        <DrawingManager
-          drawingMode={desenhando ? google.maps.drawing.OverlayType.POLYLINE : null}
-          options={{
-            drawingControl: false,
-            polylineOptions: { strokeColor: "#2563EB", strokeWeight: 4 },
-          }}
-          onPolylineComplete={handlePolylineCompleta}
-        />
-
-        {pathPendente && (
-          <Polyline path={pathPendente} options={{ strokeColor: "#2563EB", strokeWeight: 4 }} />
+        {pontos.length > 0 && (
+          <>
+            <Polyline path={pontos} options={{ strokeColor: "#2563EB", strokeWeight: 4 }} />
+            {pontos.map((p, i) => (
+              <MarkerF
+                key={i}
+                position={p}
+                icon={{
+                  path: google.maps.SymbolPath.CIRCLE,
+                  scale: 5,
+                  fillColor: "#2563EB",
+                  fillOpacity: 1,
+                  strokeColor: "#FFFFFF",
+                  strokeWeight: 1.5,
+                }}
+              />
+            ))}
+          </>
         )}
 
         {vias.map((v) => {
@@ -604,7 +632,7 @@ function MapaVias({
         })}
       </GoogleMap>
 
-      {pathPendente ? (
+      {pronto ? (
         <div className="mt-3 flex items-center gap-2">
           <input
             type="text"
@@ -614,9 +642,6 @@ function MapaVias({
             className={INPUT}
             autoFocus
           />
-          <button onClick={handleCancelarDesenho} className={BUTTON_SECONDARY} disabled={guardando}>
-            Cancelar
-          </button>
           <button onClick={handleGuardar} disabled={guardando || !nomeVia.trim()} className={BUTTON_PRIMARY}>
             {guardando ? <Loader2 size={16} className="animate-spin" /> : "Guardar"}
           </button>
