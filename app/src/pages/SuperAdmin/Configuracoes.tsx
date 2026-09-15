@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, AlertTriangle, Loader2, KeyRound } from "lucide-react";
 import { configService, type ConfigEntry } from "../../api/configService";
+import {
+  CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY,
+  BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
+} from "../../utils/uiClasses";
 
 const CHAVES_CONHECIDAS = [
   { chave: "GOOGLE_MAPS_API_KEY", descricao: "Chave JS do Google Maps (pública)", publica: true },
@@ -107,11 +111,11 @@ export default function Configuracoes() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600">{error}</p>
           <button
             onClick={carregarConfigs}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={`${BUTTON_PRIMARY} mt-4`}
           >
             Tentar Novamente
           </button>
@@ -121,11 +125,11 @@ export default function Configuracoes() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Configurações</h1>
-          <p className="text-gray-600 mt-2">
+          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Configurações</h1>
+          <p className="text-gray-500 mt-1">
             Credenciais de integrações externas (Google Maps, Firebase, etc.)
           </p>
         </div>
@@ -134,31 +138,31 @@ export default function Configuracoes() {
             resetForm();
             setShowModal(true);
           }}
-          className="flex items-center gap-2 bg-[#2563EB] text-white px-4 py-2 rounded-lg hover:bg-[#1E40AF] transition-colors"
+          className={BUTTON_PRIMARY}
         >
           <Plus size={20} />
           Nova Credencial
         </button>
       </div>
 
-      <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+      <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
         <strong>Público</strong> = seguro para expor ao browser (ex: chave JS do Google Maps,
         protegida por restrição de domínio na Google Cloud Console). Nunca marques como
         pública uma credencial de servidor (ex: chave privada do Firebase Admin SDK).
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chave</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descrição</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Visibilidade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className={TABLE_HEAD_CELL}>Chave</th>
+              <th className={TABLE_HEAD_CELL}>Valor</th>
+              <th className={TABLE_HEAD_CELL}>Descrição</th>
+              <th className={TABLE_HEAD_CELL}>Visibilidade</th>
+              <th className={TABLE_HEAD_CELL}>Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-50">
             {configs.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
@@ -167,7 +171,7 @@ export default function Configuracoes() {
               </tr>
             ) : (
               configs.map((c) => (
-                <tr key={c.chave} className="hover:bg-gray-50">
+                <tr key={c.chave} className={TABLE_ROW_HOVER}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     <div className="flex items-center gap-2">
                       <KeyRound size={14} className="text-gray-400" />
@@ -177,16 +181,15 @@ export default function Configuracoes() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">{c.valor_mascarado}</td>
                   <td className="px-6 py-4 text-sm text-gray-600">{c.descricao || "—"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      c.publica ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-700"
-                    }`}>
+                    <span className={`${BADGE} ${c.publica ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
                       {c.publica ? "Pública" : "Privada"}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => handleApagar(c.chave)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-rose-600 hover:text-rose-800"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -199,17 +202,17 @@ export default function Configuracoes() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Nova Credencial</h2>
+        <div className={MODAL_OVERLAY}>
+          <div className={`${MODAL_CARD} max-w-lg`}>
+            <h2 className="text-lg font-semibold text-gray-900 mb-6">Nova Credencial</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Chave</label>
+                <label className={LABEL}>Chave</label>
                 <select
                   value={chaveSelecionada}
                   onChange={(e) => handleSelecionarChave(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={INPUT}
                   disabled={submitting}
                 >
                   <option value="">Selecione a credencial...</option>
@@ -227,32 +230,32 @@ export default function Configuracoes() {
                     value={formData.chave}
                     onChange={(e) => setFormData({ ...formData, chave: e.target.value.toUpperCase().replace(/\s+/g, "_") })}
                     placeholder="Ex: MINHA_CHAVE_PERSONALIZADA"
-                    className="w-full mt-2 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`${INPUT} mt-2`}
                     disabled={submitting}
                   />
                 )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Valor</label>
+                <label className={LABEL}>Valor</label>
                 <textarea
                   value={formData.valor}
                   onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
                   placeholder="Cola aqui a chave/segredo (ex: uma chave simples ou um JSON completo do Firebase Admin SDK)"
                   rows={6}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                  className={`${INPUT} font-mono text-sm`}
                   disabled={submitting}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Descrição (opcional)</label>
+                <label className={LABEL}>Descrição (opcional)</label>
                 <input
                   type="text"
                   value={formData.descricao}
                   onChange={(e) => setFormData({ ...formData, descricao: e.target.value })}
                   placeholder="Ex: Chave JS do Google Maps para o mapa de denúncias"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={INPUT}
                   disabled={submitting}
                 />
               </div>
@@ -278,14 +281,14 @@ export default function Configuracoes() {
                   setShowModal(false);
                   resetForm();
                 }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                className={`${BUTTON_SECONDARY} flex-1`}
                 disabled={submitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSalvar}
-                className="flex-1 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1E40AF] transition-colors disabled:opacity-50"
+                className={`${BUTTON_PRIMARY} flex-1`}
                 disabled={submitting}
               >
                 {submitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Guardar"}

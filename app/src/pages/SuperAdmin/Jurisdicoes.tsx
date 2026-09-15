@@ -6,6 +6,7 @@ import type { Admin } from "../../api/superAdminService";
 import { jurisdicaoService, type ViaJurisdicao } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY } from "../../utils/uiClasses";
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 
@@ -123,11 +124,11 @@ export default function Jurisdicoes() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600">{error}</p>
           <button
             onClick={carregarAdmins}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={`${BUTTON_PRIMARY} mt-4`}
           >
             Tentar Novamente
           </button>
@@ -137,20 +138,20 @@ export default function Jurisdicoes() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Jurisdições dos Postos</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Jurisdições dos Postos</h1>
+        <p className="text-gray-500 mt-1">
           Define as vias/estradas sob responsabilidade de cada posto (administrador)
         </p>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">Posto (Administrador)</label>
+      <div className={`${CARD} p-4 mb-6`}>
+        <label className={LABEL}>Posto (Administrador)</label>
         <select
           value={adminSelecionado}
           onChange={(e) => setAdminSelecionado(e.target.value ? Number(e.target.value) : "")}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={INPUT}
         >
           <option value="">Selecione um posto...</option>
           {admins.map((a) => (
@@ -177,8 +178,8 @@ export default function Jurisdicoes() {
             </div>
           )}
 
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="p-4 border-b border-gray-200 flex items-center gap-2">
+          <div className={`${CARD} overflow-hidden`}>
+            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <MapPinned size={18} className="text-gray-500" />
               <h2 className="font-semibold text-gray-900">Vias atribuídas</h2>
             </div>
@@ -190,13 +191,13 @@ export default function Jurisdicoes() {
             ) : vias.length === 0 ? (
               <p className="p-6 text-center text-gray-500">Nenhuma via atribuída a este posto ainda.</p>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-gray-50">
                 {vias.map((v) => (
                   <li key={v.id} className="flex items-center justify-between px-6 py-3">
                     <span className="text-sm text-gray-900">{v.nome_via}</span>
                     <button
                       onClick={() => handleRemover(v.id)}
-                      className="text-red-600 hover:text-red-800"
+                      className="text-rose-600 hover:text-rose-800"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -252,8 +253,8 @@ function BuscaEMapaVias({
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+      <div className={`${CARD} p-4 mb-6`}>
+        <label className={LABEL}>
           Adicionar via/estrada à jurisdição
         </label>
         <Autocomplete
@@ -266,13 +267,13 @@ function BuscaEMapaVias({
               type="text"
               placeholder="Ex: Avenida Vladimir Lenine, Hulene..."
               disabled={submitting}
-              className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`${INPUT} pl-9`}
             />
           </div>
         </Autocomplete>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className={`${CARD} p-4 mb-6`}>
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}

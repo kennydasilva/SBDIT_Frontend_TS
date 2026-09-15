@@ -21,7 +21,7 @@ export const useAuth=()=>{
 
 
     const isAuthenticated=()=>{
-        return !!localStorage.getItem("token");
+        return !!localStorage.getItem("access");
     };
 
     const getUserRole=()=>{

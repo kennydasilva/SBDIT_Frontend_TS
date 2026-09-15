@@ -3,6 +3,7 @@ import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService } from "../../api/superAdminService";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
+import { CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES } from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
 
@@ -14,6 +15,14 @@ const ESTADO_LABEL: Record<string, string> = {
   APROVADA: "Aprovada",
   REJEITADA: "Rejeitada",
   ARQUIVADA: "Arquivada",
+};
+
+const ESTADO_TONE: Record<string, string> = {
+  PENDENTE: STATUS_TONES.amber,
+  VALIDADA: STATUS_TONES.blue,
+  APROVADA: STATUS_TONES.emerald,
+  REJEITADA: STATUS_TONES.rose,
+  ARQUIVADA: STATUS_TONES.gray,
 };
 
 export default function Denuncias() {
@@ -51,17 +60,6 @@ export default function Denuncias() {
     return matchesSearch && matchesFilter;
   });
 
-  const getStatusColor = (estado: string) => {
-    switch (estado) {
-      case "PENDENTE": return "bg-yellow-100 text-yellow-800";
-      case "VALIDADA": return "bg-blue-100 text-blue-800";
-      case "APROVADA": return "bg-green-100 text-green-800";
-      case "REJEITADA": return "bg-red-100 text-red-800";
-      case "ARQUIVADA": return "bg-gray-100 text-gray-800";
-      default: return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const statusCount = {
     Pendente: denuncias.filter(d => d.estado === "PENDENTE").length,
     Validada: denuncias.filter(d => d.estado === "VALIDADA").length,
@@ -81,11 +79,11 @@ export default function Denuncias() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600">{error}</p>
           <button
             onClick={() => carregarDenuncias(paginaAtual)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={`${BUTTON_PRIMARY} mt-4`}
           >
             Tentar Novamente
           </button>
@@ -95,24 +93,24 @@ export default function Denuncias() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Denúncias</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Denúncias</h1>
       </div>
 
       {/* Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {Object.entries(statusCount).map(([status, count]) => (
-          <div key={status} className="bg-white rounded-lg shadow p-4">
-            <p className="text-sm text-gray-600 mb-1">{status}</p>
-            <p className="text-2xl font-bold text-gray-900">{count}</p>
+          <div key={status} className={`${CARD} p-4`}>
+            <p className="text-sm text-gray-500 mb-1">{status}</p>
+            <p className="text-2xl font-semibold text-gray-900">{count}</p>
           </div>
         ))}
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className={`${CARD} p-4 mb-6`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -121,13 +119,13 @@ export default function Denuncias() {
               placeholder="Buscar por matrícula ou localização..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`${INPUT} pl-10`}
             />
           </div>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={INPUT}
           >
             {ESTADOS.map(estado => (
               <option key={estado} value={estado}>
@@ -141,25 +139,26 @@ export default function Denuncias() {
       {/* Denuncias List */}
       <div className="space-y-4">
         {filteredDenuncias.length === 0 ? (
-          <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+          <div className={`${CARD} p-8 text-center text-gray-500`}>
             Nenhuma denúncia encontrada
           </div>
         ) : (
           filteredDenuncias.map((denuncia) => (
-            <div key={denuncia.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+            <div key={denuncia.id} className={`${CARD} p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">
+                  <h3 className="text-base font-semibold text-gray-900 mb-1">
                     {denuncia.matricula} — {denuncia.tipo_infracao}
                   </h3>
                   <p className="text-gray-600 mb-3">{denuncia.descricao}</p>
                 </div>
-                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(denuncia.estado)}`}>
+                <span className={`${BADGE} ${ESTADO_TONE[denuncia.estado] ?? STATUS_TONES.gray}`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
                   {ESTADO_LABEL[denuncia.estado] || denuncia.estado}
                 </span>
               </div>
 
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <MapPin size={16} />
                   <span>{denuncia.localizacao}</span>
@@ -177,7 +176,7 @@ export default function Denuncias() {
       </div>
 
       {totalItens > TAMANHO_PAGINA && (
-        <div className="bg-white rounded-lg shadow mt-4">
+        <div className={`${CARD} mt-4`}>
           <Paginacao
             paginaAtual={paginaAtual}
             totalItens={totalItens}

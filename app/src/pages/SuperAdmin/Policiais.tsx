@@ -3,6 +3,7 @@ import { Search, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService } from "../../api/superAdminService";
 import type { PT } from "../../api/ptService";
 import Paginacao from "../../components/Paginacao";
+import { CARD, INPUT, BUTTON_PRIMARY, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
 
@@ -55,11 +56,11 @@ export default function Policiais() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
+          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600">{error}</p>
           <button
             onClick={() => carregarPoliciais(paginaAtual)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className={`${BUTTON_PRIMARY} mt-4`}
           >
             Tentar Novamente
           </button>
@@ -69,14 +70,14 @@ export default function Policiais() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Policiais (PT)</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Gestão de Policiais (PT)</h1>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className={`${CARD} p-4 mb-6`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -85,13 +86,13 @@ export default function Policiais() {
               placeholder="Buscar por nome ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`${INPUT} pl-10`}
             />
           </div>
           <select
             value={filterAdmin}
             onChange={(e) => setFilterAdmin(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={INPUT}
           >
             {admins.map(admin => (
               <option key={admin} value={admin}>
@@ -103,19 +104,19 @@ export default function Policiais() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número do Agente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localização</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admin Responsável</th>
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className={TABLE_HEAD_CELL}>ID</th>
+              <th className={TABLE_HEAD_CELL}>Número do Agente</th>
+              <th className={TABLE_HEAD_CELL}>Nome</th>
+              <th className={TABLE_HEAD_CELL}>Email</th>
+              <th className={TABLE_HEAD_CELL}>Localização</th>
+              <th className={TABLE_HEAD_CELL}>Admin Responsável</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-50">
             {filteredPoliciais.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
@@ -124,8 +125,8 @@ export default function Policiais() {
               </tr>
             ) : (
               filteredPoliciais.map((policial) => (
-                <tr key={policial.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{policial.id}</td>
+                <tr key={policial.id} className={TABLE_ROW_HOVER}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{policial.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{policial.numero_agente}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{policial.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{policial.email}</td>

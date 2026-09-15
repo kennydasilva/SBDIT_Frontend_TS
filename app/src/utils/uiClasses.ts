@@ -35,3 +35,6 @@ export const BADGE = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full 
 
 export const TABLE_HEAD_CELL = "px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide";
 export const TABLE_ROW_HOVER = "hover:bg-gray-50/60 transition-colors";
+
+export const MODAL_OVERLAY = "fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4";
+export const MODAL_CARD = "bg-white rounded-2xl shadow-xl w-full max-w-md p-6";
