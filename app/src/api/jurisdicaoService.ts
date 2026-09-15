@@ -49,6 +49,8 @@ export interface BairroEncontrado {
   display_name: string;
   osm_type: string;
   osm_id: number;
+  lat: number | null;
+  lng: number | null;
 }
 
 export const jurisdicaoService = {
