@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { GoogleMap, MarkerF, Rectangle, useJsApiLoader } from "@react-google-maps/api";
-import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot } from "lucide-react";
+import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
 import {
@@ -14,6 +14,7 @@ import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
+const BADGE_TAG = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0";
 
 /** Espera o utilizador parar de escrever antes de disparar a pesquisa. */
 function useDebounced<T>(valor: T, atrasoMs = 400): T {
@@ -139,12 +140,7 @@ export default function Jurisdicoes() {
 
       {adminSelecionado !== "" && (
         <>
-          <PesquisaVia
-            adminId={adminSelecionado}
-            onViaAdicionada={() => carregarVias(adminSelecionado)}
-          />
-
-          <PesquisaBairro
+          <PesquisaJurisdicao
             adminId={adminSelecionado}
             onViasAdicionadas={() => carregarVias(adminSelecionado)}
           />
@@ -193,119 +189,18 @@ export default function Jurisdicoes() {
 }
 
 /**
- * Pesquisa uma via/estrada específica pelo nome (OpenStreetMap Nominatim,
- * filtrado a resultados classificados como via - exclui estabelecimentos,
- * terminais, etc., que antes apareciam misturados na pesquisa do Google
- * Places).
+ * Uma única pesquisa que serve para as duas coisas que se pode fazer aqui:
+ * - Encontrar UMA via específica pelo nome e adicioná-la directamente.
+ * - Encontrar um BAIRRO e, a partir dele, carregar todas as vias lá dentro
+ *   de uma vez (OpenStreetMap Overpass), escolhendo quais adicionar.
+ *
+ * Os dois tipos de resultado aparecem na mesma lista, cada um com o rótulo
+ * "Via" ou "Bairro" e um ícone diferente, para ficar óbvio o que cada linha
+ * faz ao clicar - "Via" adiciona logo, "Bairro" abre a lista de vias dele.
+ * (Antes eram duas caixas de pesquisa separadas, e não ficava claro qual
+ * delas usar para quê.)
  */
-function PesquisaVia({
-  adminId,
-  onViaAdicionada,
-}: {
-  adminId: number;
-  onViaAdicionada: () => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [resultados, setResultados] = useState<ViaEncontrada[]>([]);
-  const [pesquisando, setPesquisando] = useState(false);
-  const [adicionandoId, setAdicionandoId] = useState<string | null>(null);
-  const queryDebounced = useDebounced(query);
-
-  useEffect(() => {
-    if (queryDebounced.trim().length < 3) {
-      setResultados([]);
-      return;
-    }
-
-    let cancelado = false;
-    setPesquisando(true);
-
-    jurisdicaoService
-      .pesquisarVias(queryDebounced)
-      .then((data) => {
-        if (!cancelado) setResultados(data);
-      })
-      .catch(() => {
-        if (!cancelado) setResultados([]);
-      })
-      .finally(() => {
-        if (!cancelado) setPesquisando(false);
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, [queryDebounced]);
-
-  const handleAdicionar = async (via: ViaEncontrada) => {
-    try {
-      setAdicionandoId(via.place_id);
-      await jurisdicaoService.adicionarVia(adminId, {
-        nome_via: via.nome_via,
-        place_id: via.place_id,
-        geometria: via.geometria,
-      });
-      setQuery("");
-      setResultados([]);
-      onViaAdicionada();
-    } catch (err) {
-      alert("Erro ao adicionar via.");
-    } finally {
-      setAdicionandoId(null);
-    }
-  };
-
-  return (
-    <div className={`${CARD} p-4 mb-6`}>
-      <label className={LABEL}>Adicionar via/estrada à jurisdição</label>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ex: Avenida Vladimir Lenine, Hulene..."
-          className={`${INPUT} pl-9`}
-        />
-        {pesquisando && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={16} />
-        )}
-      </div>
-
-      {resultados.length > 0 && (
-        <ul className="mt-2 rounded-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
-          {resultados.map((via) => (
-            <li key={via.place_id} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50/60">
-              <span className="text-sm text-gray-700">{via.nome_via}</span>
-              <button
-                onClick={() => handleAdicionar(via)}
-                disabled={adicionandoId === via.place_id}
-                className="text-blue-600 hover:text-blue-800 disabled:opacity-50"
-              >
-                {adicionandoId === via.place_id ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Plus size={16} />
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {!pesquisando && queryDebounced.trim().length >= 3 && resultados.length === 0 && (
-        <p className="mt-2 text-xs text-gray-500">Nenhuma via encontrada para "{queryDebounced}".</p>
-      )}
-    </div>
-  );
-}
-
-/**
- * Pesquisa um bairro e lista de uma vez todas as vias nomeadas lá dentro
- * (OpenStreetMap Overpass), para não ter de adicionar via a via quando o
- * posto cobre o bairro inteiro.
- */
-function PesquisaBairro({
+function PesquisaJurisdicao({
   adminId,
   onViasAdicionadas,
 }: {
@@ -313,8 +208,10 @@ function PesquisaBairro({
   onViasAdicionadas: () => void;
 }) {
   const [query, setQuery] = useState("");
+  const [vias, setViasResultado] = useState<ViaEncontrada[]>([]);
   const [bairros, setBairros] = useState<BairroEncontrado[]>([]);
   const [pesquisando, setPesquisando] = useState(false);
+  const [adicionandoId, setAdicionandoId] = useState<string | null>(null);
   const [bairroSelecionado, setBairroSelecionado] = useState<BairroEncontrado | null>(null);
   const [viasDoBairro, setViasDoBairro] = useState<ViaEncontrada[]>([]);
   const [selecionadas, setSelecionadas] = useState<Set<string>>(new Set());
@@ -325,6 +222,7 @@ function PesquisaBairro({
 
   useEffect(() => {
     if (queryDebounced.trim().length < 3) {
+      setViasResultado([]);
       setBairros([]);
       return;
     }
@@ -332,13 +230,14 @@ function PesquisaBairro({
     let cancelado = false;
     setPesquisando(true);
 
-    jurisdicaoService
-      .pesquisarBairros(queryDebounced)
-      .then((data) => {
-        if (!cancelado) setBairros(data);
-      })
-      .catch(() => {
-        if (!cancelado) setBairros([]);
+    Promise.all([
+      jurisdicaoService.pesquisarVias(queryDebounced).catch(() => []),
+      jurisdicaoService.pesquisarBairros(queryDebounced).catch(() => []),
+    ])
+      .then(([vias, bairros]) => {
+        if (cancelado) return;
+        setViasResultado(vias);
+        setBairros(bairros);
       })
       .finally(() => {
         if (!cancelado) setPesquisando(false);
@@ -349,10 +248,30 @@ function PesquisaBairro({
     };
   }, [queryDebounced]);
 
+  const handleAdicionarVia = async (via: ViaEncontrada) => {
+    try {
+      setAdicionandoId(via.place_id);
+      await jurisdicaoService.adicionarVia(adminId, {
+        nome_via: via.nome_via,
+        place_id: via.place_id,
+        geometria: via.geometria,
+      });
+      setQuery("");
+      setViasResultado([]);
+      setBairros([]);
+      onViasAdicionadas();
+    } catch (err) {
+      alert("Erro ao adicionar via.");
+    } finally {
+      setAdicionandoId(null);
+    }
+  };
+
   const handleEscolherBairro = async (bairro: BairroEncontrado) => {
     setBairroSelecionado(bairro);
-    setBairros([]);
     setQuery("");
+    setViasResultado([]);
+    setBairros([]);
     setViasDoBairro([]);
     setErroVias(null);
 
@@ -396,16 +315,15 @@ function PesquisaBairro({
     }
   };
 
+  const semResultados =
+    !pesquisando && queryDebounced.trim().length >= 3 && vias.length === 0 && bairros.length === 0;
+
   return (
     <div className={`${CARD} p-4 mb-6`}>
-      <label className={LABEL}>
-        <div className="flex items-center gap-2">
-          <LandPlot size={16} />
-          Carregar todas as vias de um bairro
-        </div>
-      </label>
+      <label className={LABEL}>Adicionar à jurisdição</label>
       <p className="text-xs text-gray-500 mb-2">
-        Pesquisa o bairro (ex: "Albazine") e escolhe quais das vias encontradas fazem parte da jurisdição.
+        Pesquisa o nome de uma via (ex: "Avenida Vladimir Lenine") para a adicionar directamente, ou o nome de um
+        bairro (ex: "Albazine") para escolher, de uma vez, quais das suas vias adicionar.
       </p>
 
       <div className="relative">
@@ -414,7 +332,7 @@ function PesquisaBairro({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Ex: Albazine, Mavalane..."
+          placeholder="Pesquisar via ou bairro..."
           className={`${INPUT} pl-9`}
         />
         {pesquisando && (
@@ -422,19 +340,49 @@ function PesquisaBairro({
         )}
       </div>
 
-      {bairros.length > 0 && (
+      {(vias.length > 0 || bairros.length > 0) && (
         <ul className="mt-2 rounded-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
           {bairros.map((b) => (
-            <li key={`${b.osm_type}-${b.osm_id}`}>
+            <li key={`bairro-${b.osm_type}-${b.osm_id}`}>
               <button
                 onClick={() => handleEscolherBairro(b)}
-                className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50/60"
+                className="w-full flex items-center gap-3 text-left px-4 py-2.5 hover:bg-blue-50/60"
               >
-                {b.display_name}
+                <span className={`${BADGE_TAG} bg-blue-50 text-blue-700`}>
+                  <LandPlot size={12} />
+                  Bairro
+                </span>
+                <span className="text-sm text-gray-700">{b.display_name}</span>
+              </button>
+            </li>
+          ))}
+          {vias.map((via) => (
+            <li key={`via-${via.place_id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50/60">
+              <div className="flex items-center gap-3">
+                <span className={`${BADGE_TAG} bg-gray-100 text-gray-600`}>
+                  <Route size={12} />
+                  Via
+                </span>
+                <span className="text-sm text-gray-700">{via.nome_via}</span>
+              </div>
+              <button
+                onClick={() => handleAdicionarVia(via)}
+                disabled={adicionandoId === via.place_id}
+                className="text-blue-600 hover:text-blue-800 disabled:opacity-50 shrink-0"
+              >
+                {adicionandoId === via.place_id ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <Plus size={16} />
+                )}
               </button>
             </li>
           ))}
         </ul>
+      )}
+
+      {semResultados && (
+        <p className="mt-2 text-xs text-gray-500">Nenhuma via ou bairro encontrado para "{queryDebounced}".</p>
       )}
 
       {bairroSelecionado && (
