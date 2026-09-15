@@ -114,7 +114,28 @@ export interface cidadao{
     ativo?: boolean;
 }
 
+export interface RelatorioResumo {
+    total_denuncias: number;
+    taxa_resolucao: number;
+    tempo_medio_resposta_horas: number | null;
+    por_estado: Record<string, number>;
+    por_tipo_infracao: Record<string, number>;
+    por_mes: { mes: string; total: number }[];
+}
+
 export const superAdminService = {
+
+    async obterResumoRelatorios(): Promise<RelatorioResumo> {
+        try{
+            return await cachedGet<RelatorioResumo>(api, "/relatorios/resumo/");
+        }
+        catch(error)
+        {
+            console.error("Erro ao obter resumo de relatórios: ", error);
+            throw error;
+        }
+    },
+
 
     async listarCidadao(page: number = 1): Promise<PaginatedResponse<cidadao>> {
         try{
