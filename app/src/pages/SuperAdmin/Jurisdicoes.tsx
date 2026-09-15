@@ -549,11 +549,15 @@ function MapaVias({
 }) {
   // Desenho manual sem depender do DrawingManager do Google (a biblioteca
   // "drawing" foi descontinuada na Maps JS API v3.65) - construído à mão a
-  // partir de cliques no mapa + <Polyline> a crescer em tempo real.
-  const [desenhando, setDesenhando] = useState(false);
+  // partir de cliques no mapa. "via" = linha aberta (2+ pontos), "zona" =
+  // área fechada (3+ pontos, fecha o anel sozinha no fim).
+  const [modo, setModo] = useState<"via" | "zona" | null>(null);
+  const [aDesenhar, setADesenhar] = useState(false);
   const [pontos, setPontos] = useState<PontoVia[]>([]);
   const [nomeVia, setNomeVia] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [erroGuardar, setErroGuardar] = useState<string | null>(null);
+  const minPontos = modo === "zona" ? 3 : 2;
 
   // Seleccionar uma via existente clicando no seu traçado/retângulo no mapa,
   // para a poder remover sem ter de a procurar na lista "Vias atribuídas".
@@ -627,22 +631,24 @@ function MapaVias({
     );
   }
 
-  const pronto = pontos.length >= 2 && !desenhando;
+  const pronto = modo !== null && !aDesenhar && pontos.length >= minPontos;
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
-    if (!desenhando || !e.latLng) return;
+    if (!aDesenhar || !e.latLng) return;
     setPontos((prev) => [...prev, { lat: e.latLng!.lat(), lng: e.latLng!.lng() }]);
   };
 
-  const handleIniciarDesenho = () => {
-    setDesenhando(true);
+  const handleIniciarDesenho = (tipo: "via" | "zona") => {
+    setModo(tipo);
+    setADesenhar(true);
     setPontos([]);
     setNomeVia("");
+    setErroGuardar(null);
     setViaSeleccionadaId(null);
   };
 
   const handleSelecionarVia = (viaId: number) => {
-    if (desenhando) return; // não seleccionar por engano enquanto se desenha
+    if (aDesenhar) return; // não seleccionar por engano enquanto se desenha
     setViaSeleccionadaId((atual) => (atual === viaId ? null : viaId));
   };
 
@@ -666,38 +672,64 @@ function MapaVias({
   };
 
   const handleConcluirTracado = () => {
-    if (pontos.length < 2) return;
-    setDesenhando(false);
+    if (pontos.length < minPontos) return;
+    setADesenhar(false);
   };
 
   const handleGuardar = async () => {
-    if (pontos.length < 2 || !nomeVia.trim()) return;
-
-    const bounds = calcularBoundsDoPath(pontos);
-    const centro = pontos[Math.floor(pontos.length / 2)];
+    if (!modo || pontos.length < minPontos || !nomeVia.trim()) return;
 
     try {
       setGuardando(true);
-      await jurisdicaoService.adicionarVia(adminId, {
-        nome_via: nomeVia.trim(),
-        place_id: `manual:${Date.now()}`,
-        geometria: { lat: centro.lat, lng: centro.lng, bounds, path: pontos },
-      });
-      setPontos([]);
-      setNomeVia("");
+      setErroGuardar(null);
+
+      if (modo === "zona") {
+        // GeoJSON exige o anel fechado (1º ponto repetido no fim). O
+        // backend recorta automaticamente contra zonas já existentes
+        // (ver JurisdicaoService.adicionar_zona) e recalcula lat/lng/bounds
+        // a partir da forma final - os valores aqui são só um placeholder
+        // válido para o pedido.
+        const anelFechado = [...pontos, pontos[0]].map((p) => [p.lng, p.lat]);
+
+        await jurisdicaoService.adicionarVia(adminId, {
+          nome_via: nomeVia.trim(),
+          place_id: `manual:zona:${Date.now()}`,
+          geometria: {
+            lat: pontos[0].lat,
+            lng: pontos[0].lng,
+            polygon: { type: "Polygon", coordinates: [anelFechado] },
+          },
+        });
+      } else {
+        const bounds = calcularBoundsDoPath(pontos);
+        const centro = pontos[Math.floor(pontos.length / 2)];
+
+        await jurisdicaoService.adicionarVia(adminId, {
+          nome_via: nomeVia.trim(),
+          place_id: `manual:${Date.now()}`,
+          geometria: { lat: centro.lat, lng: centro.lng, bounds, path: pontos },
+        });
+      }
+
+      const nomeGuardado = nomeVia.trim();
+      handleCancelarDesenho();
       onViaAdicionada();
-      mostrarMensagem(`"${nomeVia.trim()}" adicionada à jurisdição.`);
-    } catch (err) {
-      alert("Erro ao guardar via desenhada.");
+      mostrarMensagem(`"${nomeGuardado}" adicionada à jurisdição.`);
+    } catch (err: any) {
+      setErroGuardar(
+        err?.response?.data?.error || `Erro ao guardar ${modo === "zona" ? "a zona" : "a via"} desenhada.`
+      );
     } finally {
       setGuardando(false);
     }
   };
 
   const handleCancelarDesenho = () => {
-    setDesenhando(false);
+    setModo(null);
+    setADesenhar(false);
     setPontos([]);
     setNomeVia("");
+    setErroGuardar(null);
   };
 
   return (
@@ -708,18 +740,18 @@ function MapaVias({
           directamente no mapa. Clica num traçado já desenhado para o seleccionar e remover.
         </p>
         <div className="flex gap-2 shrink-0">
-          {desenhando && pontos.length > 0 && (
+          {aDesenhar && pontos.length > 0 && (
             <button onClick={handleApagarUltimoPonto} className={BUTTON_SECONDARY} title="Apagar o último ponto marcado">
               <Undo2 size={16} />
               Apagar último ponto
             </button>
           )}
-          {desenhando && (
-            <button onClick={handleConcluirTracado} disabled={pontos.length < 2} className={BUTTON_PRIMARY}>
-              Concluir traçado
+          {aDesenhar && (
+            <button onClick={handleConcluirTracado} disabled={pontos.length < minPontos} className={BUTTON_PRIMARY}>
+              Concluir {modo === "zona" ? "zona" : "traçado"}
             </button>
           )}
-          {(desenhando || pontos.length > 0) && (
+          {(modo !== null) && (
             <button onClick={handleCancelarDesenho} className={BUTTON_SECONDARY}>
               Cancelar
             </button>
@@ -730,19 +762,26 @@ function MapaVias({
               Remover via seleccionada
             </button>
           )}
-          {!desenhando && pontos.length === 0 && viaSeleccionadaId === null && (
-            <button onClick={handleIniciarDesenho} className={BUTTON_PRIMARY}>
-              <PenLine size={16} />
-              Desenhar via
-            </button>
+          {modo === null && viaSeleccionadaId === null && (
+            <>
+              <button onClick={() => handleIniciarDesenho("via")} className={BUTTON_SECONDARY} title="Traçar uma via (linha)">
+                <PenLine size={16} />
+                Desenhar via
+              </button>
+              <button onClick={() => handleIniciarDesenho("zona")} className={BUTTON_PRIMARY} title="Desenhar uma zona (área fechada, ex: um bairro)">
+                <LandPlot size={16} />
+                Desenhar zona
+              </button>
+            </>
           )}
         </div>
       </div>
 
-      {desenhando && (
+      {aDesenhar && (
         <p className="mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-          Clica no mapa para marcar pontos ao longo da rua ({pontos.length} marcado{pontos.length === 1 ? "" : "s"}).
-          Quando tiveres pelo menos 2, clica em "Concluir traçado".
+          {modo === "zona"
+            ? `Clica no mapa para marcar os cantos da área (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Quando tiveres pelo menos 3, clica em "Concluir zona" - o contorno fecha-se sozinho.`
+            : `Clica no mapa para marcar pontos ao longo da rua (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Quando tiveres pelo menos 2, clica em "Concluir traçado".`}
         </p>
       )}
 
@@ -788,7 +827,7 @@ function MapaVias({
         zoom={vias.some((v) => v.geometria) ? 13 : 11}
         onLoad={(map) => (mapRef.current = map)}
         onClick={handleMapClick}
-        options={{ draggableCursor: desenhando ? "crosshair" : undefined }}
+        options={{ draggableCursor: aDesenhar ? "crosshair" : undefined }}
       >
         {pontos.length > 0 && (
           <>
@@ -796,7 +835,23 @@ function MapaVias({
                 em cima da própria linha/ponto (ex: para marcar um ponto no
                 meio de dois já existentes) é apanhado pelo overlay em vez
                 de chegar ao mapa, e o ponto nunca é acrescentado. */}
-            <Polyline path={pontos} options={{ strokeColor: "#2563EB", strokeWeight: 4, clickable: false }} />
+            {modo === "zona" && pontos.length >= 3 && (
+              <Polygon
+                paths={[pontos]}
+                options={{
+                  strokeColor: "#2563EB",
+                  strokeOpacity: 0.9,
+                  strokeWeight: 3,
+                  fillColor: "#2563EB",
+                  fillOpacity: 0.2,
+                  clickable: false,
+                }}
+              />
+            )}
+            <Polyline
+              path={modo === "zona" ? [...pontos, pontos[0]] : pontos}
+              options={{ strokeColor: "#2563EB", strokeWeight: 4, clickable: false }}
+            />
             {pontos.map((p, i) => (
               <MarkerF
                 key={i}
@@ -832,14 +887,14 @@ function MapaVias({
                     strokeWeight: seleccionada ? 3 : 2,
                     fillColor: cor,
                     fillOpacity: seleccionada ? 0.3 : 0.18,
-                    clickable: !desenhando,
+                    clickable: !aDesenhar,
                   }}
                   onClick={() => handleSelecionarVia(v.id)}
                 />
               ) : v.geometria.path ? (
                 <Polyline
                   path={v.geometria.path}
-                  options={{ strokeColor: cor, strokeOpacity: 0.9, strokeWeight: seleccionada ? 6 : 4, clickable: !desenhando }}
+                  options={{ strokeColor: cor, strokeOpacity: 0.9, strokeWeight: seleccionada ? 6 : 4, clickable: !aDesenhar }}
                   onClick={() => handleSelecionarVia(v.id)}
                 />
               ) : (
@@ -852,7 +907,7 @@ function MapaVias({
                       strokeWeight: seleccionada ? 3 : 2,
                       fillColor: cor,
                       fillOpacity: seleccionada ? 0.25 : 0.15,
-                      clickable: !desenhando,
+                      clickable: !aDesenhar,
                     }}
                     onClick={() => handleSelecionarVia(v.id)}
                   />
@@ -861,7 +916,7 @@ function MapaVias({
               <MarkerF
                 position={v.geometria}
                 title={v.nome_via}
-                clickable={!desenhando}
+                clickable={!aDesenhar}
                 onClick={() => handleSelecionarVia(v.id)}
               />
             </div>
@@ -870,18 +925,21 @@ function MapaVias({
       </GoogleMap>
 
       {pronto ? (
-        <div className="mt-3 flex items-center gap-2">
-          <input
-            type="text"
-            value={nomeVia}
-            onChange={(e) => setNomeVia(e.target.value)}
-            placeholder="Nome desta via..."
-            className={INPUT}
-            autoFocus
-          />
-          <button onClick={handleGuardar} disabled={guardando || !nomeVia.trim()} className={BUTTON_PRIMARY}>
-            {guardando ? <Loader2 size={16} className="animate-spin" /> : "Guardar"}
-          </button>
+        <div className="mt-3">
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={nomeVia}
+              onChange={(e) => setNomeVia(e.target.value)}
+              placeholder={modo === "zona" ? "Nome desta zona..." : "Nome desta via..."}
+              className={INPUT}
+              autoFocus
+            />
+            <button onClick={handleGuardar} disabled={guardando || !nomeVia.trim()} className={BUTTON_PRIMARY}>
+              {guardando ? <Loader2 size={16} className="animate-spin" /> : "Guardar"}
+            </button>
+          </div>
+          {erroGuardar && <p className="mt-2 text-xs text-rose-600">{erroGuardar}</p>}
         </div>
       ) : (
         <p className="mt-2 text-xs text-gray-500">
