@@ -13,6 +13,13 @@ export interface PontoVia {
   lng: number;
 }
 
+// GeoJSON Polygon/MultiPolygon tal como o Nominatim devolve - coordenadas em
+// [lng, lat], não [lat, lng].
+export interface PoligonoGeoJSON {
+  type: "Polygon" | "MultiPolygon";
+  coordinates: number[][][] | number[][][][];
+}
+
 export interface GeometriaVia {
   lat: number;
   lng: number;
@@ -22,6 +29,9 @@ export interface GeometriaVia {
   // aproximado. `bounds` continua a ser o que o backend usa para decidir a
   // que posto pertence uma coordenada.
   path?: PontoVia[];
+  // Só presente em "zonas" (bairro inteiro) - o contorno real, mais preciso
+  // que `bounds`. Ver `pesquisarBairros` + `obterPoligonoBairro`.
+  polygon?: PoligonoGeoJSON;
 }
 
 export interface ViaJurisdicao {
@@ -122,6 +132,16 @@ export const jurisdicaoService = {
       return response.data;
     } catch (error) {
       console.error("Erro ao listar vias do bairro: ", error);
+      throw error;
+    }
+  },
+
+  async obterPoligonoBairro(osmType: string, osmId: number): Promise<PoligonoGeoJSON> {
+    try {
+      const response = await api.get<{ polygon: PoligonoGeoJSON }>(`/vias/bairro/${osmType}/${osmId}/poligono/`);
+      return response.data.polygon;
+    } catch (error) {
+      console.error("Erro ao obter o polígono do bairro: ", error);
       throw error;
     }
   },

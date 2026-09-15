@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { GoogleMap, MarkerF, Rectangle, Polyline, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, MarkerF, Rectangle, Polyline, Polygon, useJsApiLoader } from "@react-google-maps/api";
 import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
@@ -10,6 +10,7 @@ import {
   type BairroEncontrado,
   type PontoVia,
   type LimitesVia,
+  type PoligonoGeoJSON,
 } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
@@ -228,6 +229,8 @@ function PesquisaJurisdicao({
   const [carregandoVias, setCarregandoVias] = useState(false);
   const [erroVias, setErroVias] = useState<string | null>(null);
   const [adicionando, setAdicionando] = useState(false);
+  const [adicionandoZonaId, setAdicionandoZonaId] = useState<string | null>(null);
+  const [erroZona, setErroZona] = useState<string | null>(null);
   const queryDebounced = useDebounced(query);
 
   useEffect(() => {
@@ -274,6 +277,34 @@ function PesquisaJurisdicao({
       alert("Erro ao adicionar via.");
     } finally {
       setAdicionandoId(null);
+    }
+  };
+
+  const handleAdicionarZona = async (bairro: BairroEncontrado) => {
+    const chave = `${bairro.osm_type}-${bairro.osm_id}`;
+
+    try {
+      setAdicionandoZonaId(chave);
+      setErroZona(null);
+
+      const polygon = await jurisdicaoService.obterPoligonoBairro(bairro.osm_type, bairro.osm_id);
+
+      await jurisdicaoService.adicionarVia(adminId, {
+        nome_via: bairro.nome,
+        place_id: `osm:zona:${bairro.osm_type}:${bairro.osm_id}`,
+        geometria: { lat: bairro.lat ?? 0, lng: bairro.lng ?? 0, polygon },
+      });
+
+      setQuery("");
+      setViasResultado([]);
+      setBairros([]);
+      onViasAdicionadas();
+    } catch (err: any) {
+      setErroZona(
+        err?.response?.data?.error || `Não foi possível adicionar a zona "${bairro.nome}". Tenta novamente daqui a pouco.`
+      );
+    } finally {
+      setAdicionandoZonaId(null);
     }
   };
 
@@ -352,20 +383,39 @@ function PesquisaJurisdicao({
 
       {(vias.length > 0 || bairros.length > 0) && (
         <ul className="mt-2 rounded-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
-          {bairros.map((b) => (
-            <li key={`bairro-${b.osm_type}-${b.osm_id}`}>
-              <button
-                onClick={() => handleEscolherBairro(b)}
-                className="w-full flex items-center gap-3 text-left px-4 py-2.5 hover:bg-blue-50/60"
-              >
-                <span className={`${BADGE_TAG} bg-blue-50 text-blue-700`}>
-                  <LandPlot size={12} />
-                  Bairro
-                </span>
-                <span className="text-sm text-gray-700">{b.display_name}</span>
-              </button>
-            </li>
-          ))}
+          {bairros.map((b) => {
+            const chave = `${b.osm_type}-${b.osm_id}`;
+            return (
+              <li key={`bairro-${chave}`} className="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-blue-50/60">
+                <button
+                  onClick={() => handleEscolherBairro(b)}
+                  className="flex items-center gap-3 text-left flex-1 min-w-0"
+                  title="Ver e escolher vias individuais deste bairro"
+                >
+                  <span className={`${BADGE_TAG} bg-blue-50 text-blue-700`}>
+                    <LandPlot size={12} />
+                    Bairro
+                  </span>
+                  <span className="text-sm text-gray-700 truncate">{b.display_name}</span>
+                </button>
+                <button
+                  onClick={() => handleAdicionarZona(b)}
+                  disabled={adicionandoZonaId === chave}
+                  className={`${BUTTON_PRIMARY} !py-1.5 !px-2.5 text-xs shrink-0`}
+                  title="Adicionar o bairro inteiro (contorno real) como zona"
+                >
+                  {adicionandoZonaId === chave ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <>
+                      <Plus size={14} />
+                      Zona
+                    </>
+                  )}
+                </button>
+              </li>
+            );
+          })}
           {vias.map((via) => (
             <li key={`via-${via.place_id}`} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50/60">
               <div className="flex items-center gap-3">
@@ -393,6 +443,12 @@ function PesquisaJurisdicao({
 
       {semResultados && (
         <p className="mt-2 text-xs text-gray-500">Nenhuma via ou bairro encontrado para "{queryDebounced}".</p>
+      )}
+
+      {erroZona && (
+        <p className="mt-2 text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2">
+          {erroZona}
+        </p>
       )}
 
       {bairroSelecionado && (
@@ -461,6 +517,21 @@ function calcularBoundsDoPath(path: PontoVia[]): LimitesVia {
     east: Math.max(...lngs),
     west: Math.min(...lngs),
   };
+}
+
+/**
+ * GeoJSON Polygon/MultiPolygon -> anéis para o <Polygon> do Google Maps.
+ * Só o anel exterior de cada polígono (sem buracos) - suficiente para
+ * mostrar a forma, mesma simplificação já usada no TruckFreightEasy.
+ */
+function geoJsonParaAneis(geojson: PoligonoGeoJSON): PontoVia[][] {
+  const paraLatLng = (anel: number[][]): PontoVia[] => anel.map(([lng, lat]) => ({ lat, lng }));
+
+  if (geojson.type === "Polygon") {
+    return [paraLatLng((geojson.coordinates as number[][][])[0])];
+  }
+
+  return (geojson.coordinates as number[][][][]).map((poligono) => paraLatLng(poligono[0]));
 }
 
 function MapaVias({
@@ -752,7 +823,20 @@ function MapaVias({
 
           return (
             <div key={v.id} style={{ display: "contents" }}>
-              {v.geometria.path ? (
+              {v.geometria.polygon ? (
+                <Polygon
+                  paths={geoJsonParaAneis(v.geometria.polygon)}
+                  options={{
+                    strokeColor: cor,
+                    strokeOpacity: 0.9,
+                    strokeWeight: seleccionada ? 3 : 2,
+                    fillColor: cor,
+                    fillOpacity: seleccionada ? 0.3 : 0.18,
+                    clickable: !desenhando,
+                  }}
+                  onClick={() => handleSelecionarVia(v.id)}
+                />
+              ) : v.geometria.path ? (
                 <Polyline
                   path={v.geometria.path}
                   options={{ strokeColor: cor, strokeOpacity: 0.9, strokeWeight: seleccionada ? 6 : 4, clickable: !desenhando }}
