@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { GoogleMap, MarkerF, Rectangle, Polyline, useJsApiLoader } from "@react-google-maps/api";
-import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine } from "lucide-react";
+import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
 import {
@@ -590,6 +590,10 @@ function MapaVias({
     }
   };
 
+  const handleApagarUltimoPonto = () => {
+    setPontos((prev) => prev.slice(0, -1));
+  };
+
   const handleConcluirTracado = () => {
     if (pontos.length < 2) return;
     setDesenhando(false);
@@ -633,6 +637,12 @@ function MapaVias({
           directamente no mapa. Clica num traçado já desenhado para o seleccionar e remover.
         </p>
         <div className="flex gap-2 shrink-0">
+          {desenhando && pontos.length > 0 && (
+            <button onClick={handleApagarUltimoPonto} className={BUTTON_SECONDARY} title="Apagar o último ponto marcado">
+              <Undo2 size={16} />
+              Apagar último ponto
+            </button>
+          )}
           {desenhando && (
             <button onClick={handleConcluirTracado} disabled={pontos.length < 2} className={BUTTON_PRIMARY}>
               Concluir traçado
