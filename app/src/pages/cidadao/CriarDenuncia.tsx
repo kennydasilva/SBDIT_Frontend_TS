@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Upload, X, CheckCircle } from "lucide-react";
+import { Upload, X, CheckCircle, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
 import { REGEX } from "../../utils/validationSchemas";
 import LocationPicker from "../../components/LocationPicker";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
 
 export default function CriarDenuncia() {
@@ -149,24 +150,24 @@ export default function CriarDenuncia() {
   };
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Criar Denúncia</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Criar Denúncia</h1>
+        <p className="text-gray-500 mt-1">
           Preencha os dados da infração de trânsito
         </p>
       </div>
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <CheckCircle className="text-green-600" size={24} />
+        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-center gap-3">
+          <CheckCircle className="text-emerald-600 shrink-0" size={24} />
           <div>
-            <p className="text-green-800 font-medium">
+            <p className="text-emerald-800 font-medium">
               Denúncia enviada com sucesso!
             </p>
-            <p className="text-green-700 text-sm">
+            <p className="text-emerald-700 text-sm">
               Você será redirecionado para suas denúncias...
             </p>
           </div>
@@ -174,11 +175,11 @@ export default function CriarDenuncia() {
       )}
 
       {/* Form */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className={`${CARD} p-6`}>
         <form onSubmit={handleSubmit}>
           {/* Matrícula */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Matrícula do Veículo *
             </label>
             <input
@@ -187,24 +188,24 @@ export default function CriarDenuncia() {
               value={formData.matricula}
               onChange={handleInputChange}
               placeholder="Ex: AB-12-CD"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={INPUT}
               required
             />
             {fieldErrors.matricula && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.matricula}</p>
+              <p className="mt-1 text-sm text-rose-600">{fieldErrors.matricula}</p>
             )}
           </div>
 
           {/* Tipo de Infração */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Tipo de Infração *
             </label>
             <select
               name="tipoInfracao"
               value={formData.tipoInfracao}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={INPUT}
               required
             >
               <option value="">Selecione o tipo</option>
@@ -218,8 +219,8 @@ export default function CriarDenuncia() {
 
           {/* Sentido Permitido - Apenas se Contramão */}
           {formData.tipoInfracao === "Contramão" && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <label className="block text-sm font-medium text-gray-700 mb-3">
+            <div className="mb-6 p-4 rounded-2xl border border-blue-100 bg-blue-50">
+              <label className={`${LABEL} mb-3`}>
                 Sentido Permitido da Via *
               </label>
               <div className="flex gap-6">
@@ -233,7 +234,7 @@ export default function CriarDenuncia() {
                     className="w-4 h-4 text-blue-600"
                     required
                   />
-                  <span className="text-gray-700">Esquerda</span>
+                  <span className="text-gray-700 text-sm">Esquerda</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -245,7 +246,7 @@ export default function CriarDenuncia() {
                     className="w-4 h-4 text-blue-600"
                     required
                   />
-                  <span className="text-gray-700">Direita</span>
+                  <span className="text-gray-700 text-sm">Direita</span>
                 </label>
               </div>
             </div>
@@ -253,7 +254,7 @@ export default function CriarDenuncia() {
 
           {/* Localização */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Localização *
             </label>
             <input
@@ -262,17 +263,17 @@ export default function CriarDenuncia() {
               value={formData.localizacao}
               onChange={handleInputChange}
               placeholder="Ex: Rua Principal, próximo ao mercado"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={INPUT}
               required
             />
             {fieldErrors.localizacao && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.localizacao}</p>
+              <p className="mt-1 text-sm text-rose-600">{fieldErrors.localizacao}</p>
             )}
           </div>
 
           {/* Local no mapa (opcional, mas recomendado) */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Marcar local no mapa
             </label>
             <LocationPicker
@@ -282,7 +283,7 @@ export default function CriarDenuncia() {
 
           {/* Descrição */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Descrição
             </label>
             <textarea
@@ -291,21 +292,21 @@ export default function CriarDenuncia() {
               onChange={handleInputChange}
               placeholder="Descreva a situação..."
               rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className={`${INPUT} resize-none`}
             />
             {fieldErrors.descricao && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.descricao}</p>
+              <p className="mt-1 text-sm text-rose-600">{fieldErrors.descricao}</p>
             )}
           </div>
 
           {/* Upload de Vídeo */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={LABEL}>
               Vídeo da Infração *
             </label>
 
             {!videoFile ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors">
+              <div className="rounded-2xl border-2 border-dashed border-gray-200 p-8 text-center hover:border-blue-400 transition-colors">
                 <input
                   type="file"
                   id="video-upload"
@@ -328,10 +329,10 @@ export default function CriarDenuncia() {
                 </label>
               </div>
             ) : (
-              <div className="border border-gray-300 rounded-lg p-4">
+              <div className="rounded-2xl border border-gray-200 p-4">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center">
+                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
                       <Upload className="text-blue-600" size={24} />
                     </div>
                     <div>
@@ -346,7 +347,7 @@ export default function CriarDenuncia() {
                   <button
                     type="button"
                     onClick={handleRemoveVideo}
-                    className="text-red-600 hover:text-red-700"
+                    className="text-rose-600 hover:text-rose-800"
                   >
                     <X size={20} />
                   </button>
@@ -356,7 +357,7 @@ export default function CriarDenuncia() {
                   <video
                     src={videoPreview}
                     controls
-                    className="w-full rounded-lg"
+                    className="w-full rounded-xl"
                   />
                 )}
               </div>
@@ -369,18 +370,18 @@ export default function CriarDenuncia() {
               type="button"
               onClick={handleCancel}
               disabled={isLoading}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className={BUTTON_SECONDARY}
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              className={BUTTON_PRIMARY}
             >
               {isLoading ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                   Enviando...
                 </>
               ) : (

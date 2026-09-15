@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { User, Mail, Phone, MapPin, Calendar, Save } from "lucide-react";
+import { User, Mail, Phone, Save, Loader2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 import { REGEX } from "../../utils/validationSchemas";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
 export default function CidadaoPerfil() {
   const [isEditing, setIsEditing] = useState(false);
@@ -114,20 +115,20 @@ export default function CidadaoPerfil() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Meu Perfil</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Meu Perfil</h1>
+        <p className="text-gray-500 mt-1">
           Gerencie suas informações pessoais
         </p>
       </div>
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
-          <Save className="text-green-600" size={24} />
-          <p className="text-green-800 font-medium">
+        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-center gap-3">
+          <Save className="text-emerald-600 shrink-0" size={24} />
+          <p className="text-emerald-800 font-medium">
             Perfil atualizado com sucesso!
           </p>
         </div>
@@ -136,16 +137,16 @@ export default function CidadaoPerfil() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Column - Profile Card */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className={`${CARD} p-6`}>
             {/* Avatar */}
             <div className="flex flex-col items-center mb-6">
               <div className="w-32 h-32 rounded-full bg-blue-600 flex items-center justify-center mb-4">
                 <span className="text-4xl font-bold text-white">{getInitials(cidadao?.nome)}</span>
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900">
                 {cidadao?.nome}
               </h2>
-              <p className="text-gray-600 text-sm">{cidadao?.email}</p>
+              <p className="text-gray-500 text-sm">{cidadao?.email}</p>
             </div>
 
             {/* Stats */}
@@ -153,10 +154,10 @@ export default function CidadaoPerfil() {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"
+                  className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0"
                 >
                   <span className="text-sm text-gray-600">{stat.label}</span>
-                  <span className="text-lg font-bold text-gray-900">
+                  <span className="text-lg font-semibold text-gray-900">
                     {stat.value}
                   </span>
                 </div>
@@ -167,15 +168,15 @@ export default function CidadaoPerfil() {
 
         {/* Right Column - Profile Form */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className={`${CARD} p-6`}>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900">
                 Informações Pessoais
               </h2>
               {!isEditing && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className={BUTTON_PRIMARY}
                 >
                   Editar Perfil
                 </button>
@@ -186,7 +187,7 @@ export default function CidadaoPerfil() {
               <div className="space-y-6">
                 {/* Nome */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={LABEL}>
                     <div className="flex items-center gap-2">
                       <User size={16} />
                       Nome Completo
@@ -198,16 +199,16 @@ export default function CidadaoPerfil() {
                     value={cidadao?.nome}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
+                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                   />
                   {fieldErrors.nome && (
-                    <p className="mt-1 text-sm text-red-600">{fieldErrors.nome}</p>
+                    <p className="mt-1 text-sm text-rose-600">{fieldErrors.nome}</p>
                   )}
                 </div>
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={LABEL}>
                     <div className="flex items-center gap-2">
                       <Mail size={16} />
                       Email
@@ -218,14 +219,15 @@ export default function CidadaoPerfil() {
                     name="email"
                     value={cidadao?.email}
                     onChange={handleInputChange}
-                    disabled={isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
+                    disabled
+                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                   />
+                  <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
                 </div>
 
                 {/* Telefone */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={LABEL}>
                     <div className="flex items-center gap-2">
                       <Phone size={16} />
                       Telefone
@@ -237,32 +239,30 @@ export default function CidadaoPerfil() {
                     value={cidadao?.numero}
                     onChange={handleInputChange}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-600"
+                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                   />
                   {fieldErrors.telefone && (
-                    <p className="mt-1 text-sm text-red-600">{fieldErrors.telefone}</p>
+                    <p className="mt-1 text-sm text-rose-600">{fieldErrors.telefone}</p>
                   )}
                 </div>
-
-
-
               </div>
 
               {/* Botões */}
               {isEditing && (
-                <div className="flex gap-4 justify-end mt-6 pt-6 border-t border-gray-200">
+                <div className="flex gap-4 justify-end mt-6 pt-6 border-t border-gray-100">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className={BUTTON_SECONDARY}
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    disabled={loading}
+                    className={BUTTON_PRIMARY}
                   >
-                    <Save size={18} />
+                    {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
                     Salvar Alterações
                   </button>
                 </div>
@@ -271,11 +271,11 @@ export default function CidadaoPerfil() {
           </div>
 
           {/* Alterar Senha */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <div className={`${CARD} p-6 mt-8`}>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Segurança
             </h2>
-            <button className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            <button className={BUTTON_SECONDARY}>
               Alterar Senha
             </button>
           </div>

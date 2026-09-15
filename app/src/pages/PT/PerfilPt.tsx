@@ -3,6 +3,7 @@ import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "lucide-react"
 import { toast } from "sonner";
 import { ptService, type PTUserResponse } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
 export default function PerfilPt() {
   const [isEditing, setIsEditing] = useState(false);
@@ -62,26 +63,26 @@ export default function PerfilPt() {
   ];
 
   return (
-    <div className="p-8">
+    <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Perfil</h1>
-        <p className="text-gray-600 mt-2">Gerir informações do seu perfil</p>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Perfil</h1>
+        <p className="text-gray-500 mt-1">Gerir informações do seu perfil</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Profile Card */}
         <div className="space-y-6">
           {/* Avatar and Basic Info */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className={`${CARD} p-6`}>
             <div className="flex flex-col items-center">
               <div className="w-24 h-24 rounded-full bg-blue-600 flex items-center justify-center text-white text-3xl font-bold mb-4">
                 PT
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900">
                 {pt?.nome}
               </h2>
-              <p className="text-gray-600 text-sm">{pt?.numero_agente}</p>
+              <p className="text-gray-500 text-sm">{pt?.numero_agente}</p>
               <div className="mt-4 flex items-center gap-2 text-gray-600">
                 <Shield size={16} />
                 <span className="text-sm">{pt?.localizacao}</span>
@@ -90,13 +91,13 @@ export default function PerfilPt() {
           </div>
 
           {/* Stats */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Estatísticas</h3>
+          <div className={`${CARD} p-6`}>
+            <h3 className="font-semibold text-gray-900 mb-4">Estatísticas</h3>
             <div className="space-y-4">
               {stats.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-sm text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-semibold text-gray-900">
                     {stat.value}
                   </p>
                 </div>
@@ -107,15 +108,15 @@ export default function PerfilPt() {
 
         {/* Right Column - Form */}
         <div className="lg:col-span-2">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div className={`${CARD} p-6`}>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-semibold text-gray-900">
                 Informações Pessoais
               </h2>
               {!isEditing ? (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className={BUTTON_PRIMARY}
                 >
                   Editar Perfil
                 </button>
@@ -125,9 +126,11 @@ export default function PerfilPt() {
             <div className="space-y-6">
               {/* Nome */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <User size={16} />
-                  Nome Completo
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <User size={16} />
+                    Nome Completo
+                  </div>
                 </label>
                 <input
                   type="text"
@@ -136,32 +139,34 @@ export default function PerfilPt() {
                     setFormData({ ...formData, nome: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
               </div>
 
               {/* Email */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Mail size={16} />
-                  Email
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <Mail size={16} />
+                    Email
+                  </div>
                 </label>
                 <input
                   type="email"
                   value={pt?.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  disabled
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
+                <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
               </div>
 
               {/* Telefone */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Phone size={16} />
-                  Telefone
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <Phone size={16} />
+                    Telefone
+                  </div>
                 </label>
                 <input
                   type="tel"
@@ -170,21 +175,23 @@ export default function PerfilPt() {
                     setFormData({ ...formData, telefone: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
               </div>
 
               {/* Número de Agente */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Shield size={16} />
-                  Número de Agente
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <Shield size={16} />
+                    Número de Agente
+                  </div>
                 </label>
                 <input
                   type="text"
                   value={pt?.numero_agente}
                   disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Este campo não pode ser alterado
@@ -193,9 +200,11 @@ export default function PerfilPt() {
 
               {/* Divisão */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <MapPin size={16} />
-                  Divisão
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <MapPin size={16} />
+                    Divisão
+                  </div>
                 </label>
                 <select
                   value={pt?.localizacao}
@@ -203,7 +212,7 @@ export default function PerfilPt() {
                     setFormData({ ...formData, divisao: e.target.value })
                   }
                   disabled={!isEditing}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 >
                   <option value="Maputo Central">Maputo Central</option>
                   <option value="Maputo Norte">Maputo Norte</option>
@@ -214,15 +223,17 @@ export default function PerfilPt() {
 
               {/* Data de Cadastro */}
               <div>
-                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                  <Calendar size={16} />
-                  Data de Cadastro
+                <label className={LABEL}>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} />
+                    Data de Cadastro
+                  </div>
                 </label>
                 <input
                   type="text"
                   value={pt?.data_registo}
                   disabled
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                 />
               </div>
 
@@ -231,14 +242,14 @@ export default function PerfilPt() {
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={handleSave}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                    className={`${BUTTON_PRIMARY} flex-1`}
                   >
-                    <Save size={20} />
+                    <Save size={18} />
                     Salvar Alterações
                   </button>
                   <button
                     onClick={() => setIsEditing(false)}
-                    className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                    className={BUTTON_SECONDARY}
                   >
                     Cancelar
                   </button>
@@ -248,9 +259,9 @@ export default function PerfilPt() {
           </div>
 
           {/* Security Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">Segurança</h2>
-            <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-900 px-6 py-3 rounded-lg font-medium transition-colors">
+          <div className={`${CARD} p-6 mt-6`}>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Segurança</h2>
+            <button className={BUTTON_SECONDARY}>
               Alterar Senha
             </button>
           </div>
