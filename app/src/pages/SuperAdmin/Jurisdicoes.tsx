@@ -13,7 +13,7 @@ import {
 } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
-import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/uiClasses";
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 const BADGE_TAG = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0";
@@ -153,6 +153,7 @@ export default function Jurisdicoes() {
               vias={vias}
               adminId={adminSelecionado}
               onViaAdicionada={() => carregarVias(adminSelecionado)}
+              onRemoverVia={handleRemover}
             />
           ) : (
             <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
@@ -465,11 +466,13 @@ function MapaVias({
   vias,
   adminId,
   onViaAdicionada,
+  onRemoverVia,
 }: {
   apiKey: string;
   vias: ViaJurisdicao[];
   adminId: number;
   onViaAdicionada: () => void;
+  onRemoverVia: (viaId: number) => void | Promise<void>;
 }) {
   // Desenho manual sem depender do DrawingManager do Google (a biblioteca
   // "drawing" foi descontinuada na Maps JS API v3.65) - construído à mão a
@@ -478,6 +481,11 @@ function MapaVias({
   const [pontos, setPontos] = useState<PontoVia[]>([]);
   const [nomeVia, setNomeVia] = useState("");
   const [guardando, setGuardando] = useState(false);
+
+  // Seleccionar uma via existente clicando no seu traçado/retângulo no mapa,
+  // para a poder remover sem ter de a procurar na lista "Vias atribuídas".
+  const [viaSeleccionadaId, setViaSeleccionadaId] = useState<number | null>(null);
+  const [removendo, setRemovendo] = useState(false);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
@@ -505,6 +513,24 @@ function MapaVias({
     setDesenhando(true);
     setPontos([]);
     setNomeVia("");
+    setViaSeleccionadaId(null);
+  };
+
+  const handleSelecionarVia = (viaId: number) => {
+    if (desenhando) return; // não seleccionar por engano enquanto se desenha
+    setViaSeleccionadaId((atual) => (atual === viaId ? null : viaId));
+  };
+
+  const handleRemoverSelecionada = async () => {
+    if (viaSeleccionadaId === null) return;
+
+    try {
+      setRemovendo(true);
+      await onRemoverVia(viaSeleccionadaId);
+      setViaSeleccionadaId(null);
+    } finally {
+      setRemovendo(false);
+    }
   };
 
   const handleConcluirTracado = () => {
@@ -546,7 +572,7 @@ function MapaVias({
       <div className="flex items-center justify-between mb-2 gap-3">
         <p className="text-xs text-gray-500">
           Não encontras a via na pesquisa (comum: muitas ruas ainda não têm nome no OpenStreetMap)? Desenha-a
-          directamente no mapa.
+          directamente no mapa. Clica num traçado já desenhado para o seleccionar e remover.
         </p>
         <div className="flex gap-2 shrink-0">
           {desenhando && (
@@ -559,7 +585,13 @@ function MapaVias({
               Cancelar
             </button>
           )}
-          {!desenhando && pontos.length === 0 && (
+          {viaSeleccionadaId !== null && (
+            <button onClick={handleRemoverSelecionada} disabled={removendo} className={BUTTON_DANGER}>
+              {removendo ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              Remover via seleccionada
+            </button>
+          )}
+          {!desenhando && pontos.length === 0 && viaSeleccionadaId === null && (
             <button onClick={handleIniciarDesenho} className={BUTTON_PRIMARY}>
               <PenLine size={16} />
               Desenhar via
@@ -610,29 +642,39 @@ function MapaVias({
         {vias.map((v) => {
           if (!v.geometria) return null;
 
+          const seleccionada = v.id === viaSeleccionadaId;
+          const cor = seleccionada ? "#E11D48" : "#2563EB";
+
           return (
             <div key={v.id} style={{ display: "contents" }}>
               {v.geometria.path ? (
                 <Polyline
                   path={v.geometria.path}
-                  options={{ strokeColor: "#2563EB", strokeOpacity: 0.8, strokeWeight: 4, clickable: false }}
+                  options={{ strokeColor: cor, strokeOpacity: 0.9, strokeWeight: seleccionada ? 6 : 4, clickable: !desenhando }}
+                  onClick={() => handleSelecionarVia(v.id)}
                 />
               ) : (
                 v.geometria.bounds && (
                   <Rectangle
                     bounds={v.geometria.bounds}
                     options={{
-                      strokeColor: "#2563EB",
+                      strokeColor: cor,
                       strokeOpacity: 0.8,
-                      strokeWeight: 2,
-                      fillColor: "#2563EB",
-                      fillOpacity: 0.15,
-                      clickable: false,
+                      strokeWeight: seleccionada ? 3 : 2,
+                      fillColor: cor,
+                      fillOpacity: seleccionada ? 0.25 : 0.15,
+                      clickable: !desenhando,
                     }}
+                    onClick={() => handleSelecionarVia(v.id)}
                   />
                 )
               )}
-              <MarkerF position={v.geometria} title={v.nome_via} clickable={!desenhando} />
+              <MarkerF
+                position={v.geometria}
+                title={v.nome_via}
+                clickable={!desenhando}
+                onClick={() => handleSelecionarVia(v.id)}
+              />
             </div>
           );
         })}
