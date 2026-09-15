@@ -8,10 +8,20 @@ export interface LimitesVia {
   west: number;
 }
 
+export interface PontoVia {
+  lat: number;
+  lng: number;
+}
+
 export interface GeometriaVia {
   lat: number;
   lng: number;
   bounds?: LimitesVia;
+  // Só presente em vias desenhadas manualmente no mapa (ver DesenharVia em
+  // Jurisdicoes.tsx) - o traçado exacto, em vez de só um retângulo
+  // aproximado. `bounds` continua a ser o que o backend usa para decidir a
+  // que posto pertence uma coordenada.
+  path?: PontoVia[];
 }
 
 export interface ViaJurisdicao {

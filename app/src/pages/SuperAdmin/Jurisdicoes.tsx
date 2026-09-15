@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { GoogleMap, MarkerF, Rectangle, useJsApiLoader } from "@react-google-maps/api";
-import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route } from "lucide-react";
+import { GoogleMap, MarkerF, Rectangle, Polyline, DrawingManager, useJsApiLoader } from "@react-google-maps/api";
+import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
 import {
@@ -8,6 +8,8 @@ import {
   type ViaJurisdicao,
   type ViaEncontrada,
   type BairroEncontrado,
+  type PontoVia,
+  type LimitesVia,
 } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
@@ -146,7 +148,12 @@ export default function Jurisdicoes() {
           />
 
           {apiKey ? (
-            <MapaVias apiKey={apiKey} vias={vias} />
+            <MapaVias
+              apiKey={apiKey}
+              vias={vias}
+              adminId={adminSelecionado}
+              onViaAdicionada={() => carregarVias(adminSelecionado)}
+            />
           ) : (
             <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
               <MapPinned size={16} />
@@ -442,7 +449,33 @@ function PesquisaJurisdicao({
   );
 }
 
-function MapaVias({ apiKey, vias }: { apiKey: string; vias: ViaJurisdicao[] }) {
+function calcularBoundsDoPath(path: PontoVia[]): LimitesVia {
+  const lats = path.map((p) => p.lat);
+  const lngs = path.map((p) => p.lng);
+  return {
+    north: Math.max(...lats),
+    south: Math.min(...lats),
+    east: Math.max(...lngs),
+    west: Math.min(...lngs),
+  };
+}
+
+function MapaVias({
+  apiKey,
+  vias,
+  adminId,
+  onViaAdicionada,
+}: {
+  apiKey: string;
+  vias: ViaJurisdicao[];
+  adminId: number;
+  onViaAdicionada: () => void;
+}) {
+  const [desenhando, setDesenhando] = useState(false);
+  const [pathPendente, setPathPendente] = useState<PontoVia[] | null>(null);
+  const [nomeVia, setNomeVia] = useState("");
+  const [guardando, setGuardando] = useState(false);
+
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
     googleMapsApiKey: apiKey,
@@ -458,38 +491,141 @@ function MapaVias({ apiKey, vias }: { apiKey: string; vias: ViaJurisdicao[] }) {
     );
   }
 
+  const handlePolylineCompleta = (polyline: google.maps.Polyline) => {
+    const path = polyline
+      .getPath()
+      .getArray()
+      .map((p) => ({ lat: p.lat(), lng: p.lng() }));
+
+    polyline.setMap(null); // o traçado definitivo passa a vir do estado, via <Polyline>, depois de guardado
+    setDesenhando(false);
+
+    if (path.length < 2) return;
+    setPathPendente(path);
+  };
+
+  const handleGuardar = async () => {
+    if (!pathPendente || !nomeVia.trim()) return;
+
+    const bounds = calcularBoundsDoPath(pathPendente);
+    const centro = pathPendente[Math.floor(pathPendente.length / 2)];
+
+    try {
+      setGuardando(true);
+      await jurisdicaoService.adicionarVia(adminId, {
+        nome_via: nomeVia.trim(),
+        place_id: `manual:${Date.now()}`,
+        geometria: { lat: centro.lat, lng: centro.lng, bounds, path: pathPendente },
+      });
+      setPathPendente(null);
+      setNomeVia("");
+      onViaAdicionada();
+    } catch (err) {
+      alert("Erro ao guardar via desenhada.");
+    } finally {
+      setGuardando(false);
+    }
+  };
+
+  const handleCancelarDesenho = () => {
+    setDesenhando(false);
+    setPathPendente(null);
+    setNomeVia("");
+  };
+
   return (
     <div className={`${CARD} p-4 mb-6`}>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs text-gray-500">
+          Não encontras a via na pesquisa (comum: muitas ruas ainda não têm nome no OpenStreetMap)? Desenha-a
+          directamente no mapa.
+        </p>
+        <button
+          onClick={() => (desenhando ? handleCancelarDesenho() : setDesenhando(true))}
+          className={`${desenhando ? BUTTON_SECONDARY : BUTTON_PRIMARY} shrink-0 ml-3`}
+          disabled={!!pathPendente}
+        >
+          <PenLine size={16} />
+          {desenhando ? "Cancelar desenho" : "Desenhar via"}
+        </button>
+      </div>
+
+      {desenhando && (
+        <p className="mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+          Clica no mapa para marcar pontos ao longo da rua; termina com duplo-clique no último ponto.
+        </p>
+      )}
+
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
         zoom={vias.some((v) => v.geometria) ? 13 : 11}
       >
+        <DrawingManager
+          drawingMode={desenhando ? google.maps.drawing.OverlayType.POLYLINE : null}
+          options={{
+            drawingControl: false,
+            polylineOptions: { strokeColor: "#2563EB", strokeWeight: 4 },
+          }}
+          onPolylineComplete={handlePolylineCompleta}
+        />
+
+        {pathPendente && (
+          <Polyline path={pathPendente} options={{ strokeColor: "#2563EB", strokeWeight: 4 }} />
+        )}
+
         {vias.map((v) => {
           if (!v.geometria) return null;
 
           return (
             <div key={v.id} style={{ display: "contents" }}>
-              {v.geometria.bounds && (
-                <Rectangle
-                  bounds={v.geometria.bounds}
-                  options={{
-                    strokeColor: "#2563EB",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: "#2563EB",
-                    fillOpacity: 0.15,
-                  }}
+              {v.geometria.path ? (
+                <Polyline
+                  path={v.geometria.path}
+                  options={{ strokeColor: "#2563EB", strokeOpacity: 0.8, strokeWeight: 4 }}
                 />
+              ) : (
+                v.geometria.bounds && (
+                  <Rectangle
+                    bounds={v.geometria.bounds}
+                    options={{
+                      strokeColor: "#2563EB",
+                      strokeOpacity: 0.8,
+                      strokeWeight: 2,
+                      fillColor: "#2563EB",
+                      fillOpacity: 0.15,
+                    }}
+                  />
+                )
               )}
               <MarkerF position={v.geometria} title={v.nome_via} />
             </div>
           );
         })}
       </GoogleMap>
-      <p className="mt-2 text-xs text-gray-500">
-        A área a azul é aproximada (limites da via/bairro no OpenStreetMap), não é o traçado exato da estrada.
-      </p>
+
+      {pathPendente ? (
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            type="text"
+            value={nomeVia}
+            onChange={(e) => setNomeVia(e.target.value)}
+            placeholder="Nome desta via..."
+            className={INPUT}
+            autoFocus
+          />
+          <button onClick={handleCancelarDesenho} className={BUTTON_SECONDARY} disabled={guardando}>
+            Cancelar
+          </button>
+          <button onClick={handleGuardar} disabled={guardando || !nomeVia.trim()} className={BUTTON_PRIMARY}>
+            {guardando ? <Loader2 size={16} className="animate-spin" /> : "Guardar"}
+          </button>
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-gray-500">
+          A área/traçado a azul vem do OpenStreetMap (aproximado) ou foi desenhado à mão.
+        </p>
+      )}
     </div>
   );
 }
