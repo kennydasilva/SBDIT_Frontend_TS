@@ -364,7 +364,7 @@ function PesquisaJurisdicao({
       <label className={LABEL}>Adicionar à jurisdição</label>
       <p className="text-xs text-gray-500 mb-2">
         Pesquisa o nome de uma via (ex: "Avenida Vladimir Lenine") para a adicionar directamente, ou o nome de um
-        bairro (ex: "Albazine") para escolher, de uma vez, quais das suas vias adicionar.
+        bairro (ex: "Albazine") para adicionar logo o bairro inteiro como zona.
       </p>
 
       <div className="relative">
@@ -387,31 +387,34 @@ function PesquisaJurisdicao({
             const chave = `${b.osm_type}-${b.osm_id}`;
             return (
               <li key={`bairro-${chave}`} className="flex items-center justify-between gap-2 px-4 py-2.5 hover:bg-blue-50/60">
+                {/* Acção principal: clicar no bairro desenha logo a zona
+                    (contorno real), sem passos extra - é o que se espera ao
+                    pesquisar um bairro (igual ao TruckFreightEasy). */}
                 <button
-                  onClick={() => handleEscolherBairro(b)}
-                  className="flex items-center gap-3 text-left flex-1 min-w-0"
-                  title="Ver e escolher vias individuais deste bairro"
+                  onClick={() => handleAdicionarZona(b)}
+                  disabled={adicionandoZonaId === chave}
+                  className="flex items-center gap-3 text-left flex-1 min-w-0 disabled:opacity-60"
+                  title="Adicionar o bairro inteiro (contorno real) como zona"
                 >
                   <span className={`${BADGE_TAG} bg-blue-50 text-blue-700`}>
-                    <LandPlot size={12} />
+                    {adicionandoZonaId === chave ? (
+                      <Loader2 size={12} className="animate-spin" />
+                    ) : (
+                      <LandPlot size={12} />
+                    )}
                     Bairro
                   </span>
                   <span className="text-sm text-gray-700 truncate">{b.display_name}</span>
                 </button>
+                {/* Secundário: para quem quer escolher vias individuais em
+                    vez do bairro inteiro (raro - só quando o Overpass tem
+                    ruas com nome que interessa cobrir à parte). */}
                 <button
-                  onClick={() => handleAdicionarZona(b)}
-                  disabled={adicionandoZonaId === chave}
-                  className={`${BUTTON_PRIMARY} !py-1.5 !px-2.5 text-xs shrink-0`}
-                  title="Adicionar o bairro inteiro (contorno real) como zona"
+                  onClick={() => handleEscolherBairro(b)}
+                  className="text-xs text-gray-400 hover:text-blue-700 underline shrink-0"
+                  title="Ver e escolher vias individuais deste bairro, em vez do bairro inteiro"
                 >
-                  {adicionandoZonaId === chave ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <>
-                      <Plus size={14} />
-                      Zona
-                    </>
-                  )}
+                  vias
                 </button>
               </li>
             );
