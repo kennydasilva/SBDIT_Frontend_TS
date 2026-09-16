@@ -634,11 +634,20 @@ function MapaVias({
     );
   }
 
-  const pronto = modo !== null && !aDesenhar && pontos.length >= minPontos;
+  // Já não é preciso clicar em "Concluir" antes de poder nomear/guardar -
+  // assim que há pontos suficientes, o campo de nome e o botão Guardar já
+  // aparecem (podes continuar a acrescentar pontos, escrever o nome a
+  // qualquer momento, ou duplo-clique no mapa para fechar de vez).
+  const pronto = modo !== null && pontos.length >= minPontos;
 
   const handleMapClick = (e: google.maps.MapMouseEvent) => {
     if (!aDesenhar || !e.latLng) return;
     setPontos((prev) => [...prev, { lat: e.latLng!.lat(), lng: e.latLng!.lng() }]);
+  };
+
+  const handleMapDblClick = () => {
+    if (!aDesenhar || pontos.length < minPontos) return;
+    setADesenhar(false);
   };
 
   const handleIniciarDesenho = (tipo: "via" | "zona") => {
@@ -783,8 +792,8 @@ function MapaVias({
       {aDesenhar && (
         <p className="mb-2 text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
           {modo === "zona"
-            ? `Clica no mapa para marcar os cantos da área (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Quando tiveres pelo menos 3, clica em "Concluir zona" - o contorno fecha-se sozinho.`
-            : `Clica no mapa para marcar pontos ao longo da rua (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Quando tiveres pelo menos 2, clica em "Concluir traçado".`}
+            ? `Clica no mapa para marcar os cantos da área (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Duplo-clique fecha o contorno sozinho - já podes escrever o nome a qualquer momento.`
+            : `Clica no mapa para marcar pontos ao longo da rua (${pontos.length} marcado${pontos.length === 1 ? "" : "s"}). Duplo-clique termina o traçado - já podes escrever o nome a qualquer momento.`}
         </p>
       )}
 
@@ -830,7 +839,13 @@ function MapaVias({
         zoom={vias.some((v) => v.geometria) ? 13 : 11}
         onLoad={(map) => (mapRef.current = map)}
         onClick={handleMapClick}
-        options={{ draggableCursor: aDesenhar ? "crosshair" : undefined }}
+        onDblClick={handleMapDblClick}
+        options={{
+          draggableCursor: aDesenhar ? "crosshair" : undefined,
+          // Duplo-clique no mapa fecha o desenho (ver handleMapDblClick) -
+          // sem isto, o duplo-clique também fazia zoom no mapa por baixo.
+          disableDoubleClickZoom: aDesenhar,
+        }}
       >
         {pontos.length > 0 && (
           <>
