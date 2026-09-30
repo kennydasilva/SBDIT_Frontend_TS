@@ -39,6 +39,34 @@ export interface ViaJurisdicao {
   nome_via: string;
   place_id: string;
   geometria: GeometriaVia | null;
+  // Só nas zonas (polígono): área em km² calculada no backend.
+  area_km2?: number | null;
+}
+
+// Jurisdições de todos os postos ao mesmo tempo (mapa de cobertura).
+export interface PostoJurisdicao {
+  admin_id: number;
+  posto: string;
+  total_zonas: number;
+  total_vias: number;
+  area_km2_total: number;
+  itens: ViaJurisdicao[];
+}
+
+// Denúncias que caíram fora de qualquer jurisdição.
+export interface CoberturaJurisdicoes {
+  total_sem_posto: number;
+  sem_coordenadas: number;
+  total_denuncias: number;
+  pontos: {
+    id: number;
+    tipo_infracao: string;
+    estado: string;
+    latitude: number;
+    longitude: number;
+    localizacao: string | null;
+    data_registo: string;
+  }[];
 }
 
 export interface AddViaData {
@@ -64,6 +92,16 @@ export interface BairroEncontrado {
 }
 
 export const jurisdicaoService = {
+  async visaoGeral(): Promise<PostoJurisdicao[]> {
+    const response = await api.get<PostoJurisdicao[]>("/jurisdicoes/visao-geral/");
+    return response.data;
+  },
+
+  async cobertura(): Promise<CoberturaJurisdicoes> {
+    const response = await api.get<CoberturaJurisdicoes>("/jurisdicoes/cobertura/");
+    return response.data;
+  },
+
   async listarPorAdmin(adminId: number): Promise<ViaJurisdicao[]> {
     try {
       const response = await api.get<ViaJurisdicao[]>(`/admin/${adminId}/vias/`);

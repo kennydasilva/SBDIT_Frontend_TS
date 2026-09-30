@@ -10,10 +10,10 @@ import {
   type BairroEncontrado,
   type PontoVia,
   type LimitesVia,
-  type PoligonoGeoJSON,
 } from "../../api/jurisdicaoService";
 import { configService } from "../../api/configService";
-import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
+import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA, geoJsonParaAneis } from "../../utils/maps";
+import MapaCobertura from "./MapaCobertura";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/uiClasses";
 import { mostrarErro } from "../../utils/mensagens";
 
@@ -40,6 +40,7 @@ export default function Jurisdicoes() {
   const [loadingVias, setLoadingVias] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [aba, setAba] = useState<"gerir" | "cobertura">("gerir");
 
   useEffect(() => {
     carregarAdmins();
@@ -128,6 +129,35 @@ export default function Jurisdicoes() {
         </p>
       </div>
 
+      <div className="flex gap-1 mb-6 border-b border-gray-200">
+        {[
+          { id: "gerir" as const, label: "Gerir posto" },
+          { id: "cobertura" as const, label: "Mapa de cobertura" },
+        ].map((t) => (
+          <button
+            key={t.id}
+            onClick={() => setAba(t.id)}
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+              aba === t.id ? "border-blue-600 text-blue-700" : "border-transparent text-gray-500 hover:text-gray-800"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {aba === "cobertura" ? (
+        apiKey ? (
+          <MapaCobertura apiKey={apiKey} />
+        ) : (
+          <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+            <MapPinned size={16} />
+            A carregar mapa...
+          </div>
+        )
+      ) : (
+      <>
+
       <div className={`${CARD} p-4 mb-6`}>
         <label className={LABEL}>Posto (Administrador)</label>
         <select
@@ -170,6 +200,14 @@ export default function Jurisdicoes() {
             <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
               <MapPinned size={18} className="text-gray-500" />
               <h2 className="font-semibold text-gray-900">Vias atribuídas ({vias.length})</h2>
+              {vias.some((v) => v.area_km2 != null) && (
+                <span className="ml-auto text-sm text-gray-500">
+                  Área em zonas:{" "}
+                  <strong className="text-gray-900">
+                    {vias.reduce((t, v) => t + (v.area_km2 ?? 0), 0).toFixed(2)} km²
+                  </strong>
+                </span>
+              )}
             </div>
 
             {loadingVias ? (
@@ -182,7 +220,12 @@ export default function Jurisdicoes() {
               <ul className="divide-y divide-gray-50">
                 {vias.map((v) => (
                   <li key={v.id} className="flex items-center justify-between px-6 py-3">
-                    <span className="text-sm text-gray-900">{v.nome_via}</span>
+                    <span className="text-sm text-gray-900">
+                      {v.nome_via}
+                      {v.area_km2 != null && (
+                        <span className="ml-2 text-xs text-gray-500">zona · {v.area_km2} km²</span>
+                      )}
+                    </span>
                     <button
                       onClick={() => handleRemover(v.id)}
                       className="text-rose-600 hover:text-rose-800"
@@ -195,6 +238,8 @@ export default function Jurisdicoes() {
             )}
           </div>
         </>
+      )}
+      </>
       )}
     </div>
   );
@@ -523,21 +568,6 @@ function calcularBoundsDoPath(path: PontoVia[]): LimitesVia {
   };
 }
 
-/**
- * GeoJSON Polygon/MultiPolygon -> anéis para o <Polygon> do Google Maps.
- * Só o anel exterior de cada polígono (sem buracos) - suficiente para
- * mostrar a forma, mesma simplificação já usada no TruckFreightEasy.
- */
-function geoJsonParaAneis(geojson: PoligonoGeoJSON): PontoVia[][] {
-  const paraLatLng = (anel: number[][]): PontoVia[] => anel.map(([lng, lat]) => ({ lat, lng }));
-
-  if (geojson.type === "Polygon") {
-    return [paraLatLng((geojson.coordinates as number[][][])[0])];
-  }
-
-  return (geojson.coordinates as number[][][][]).map((poligono) => paraLatLng(poligono[0]));
-}
-
 function MapaVias({
   apiKey,
   vias,
@@ -838,7 +868,9 @@ function MapaVias({
         mapContainerStyle={containerStyle}
         center={vias.find((v) => v.geometria)?.geometria ?? CENTRO_PADRAO_MAPA}
         zoom={vias.some((v) => v.geometria) ? 13 : 11}
-        onLoad={(map) => (mapRef.current = map)}
+        onLoad={(map) => {
+          mapRef.current = map;
+        }}
         onClick={handleMapClick}
         onDblClick={handleMapDblClick}
         options={{
