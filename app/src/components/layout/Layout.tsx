@@ -8,9 +8,11 @@ import {
   FileText,
   Settings,
   MapPinned,
-  LogOut
+  LogOut,
+  Bell
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useNotificacoesNaoLidas } from "../../hooks/useNotificacoesNaoLidas";
 import { logout } from "../../api/authService";
 
 
@@ -23,6 +25,7 @@ const menuItems = [
   { path: "/super-admin/denuncias", icon: AlertTriangle, label: "Denúncias" },
   { path: "/super-admin/jurisdicoes", icon: MapPinned, label: "Jurisdições" },
   { path: "/super-admin/relatorios", icon: FileText, label: "Relatórios" },
+  { path: "/super-admin/notificacoes", icon: Bell, label: "Notificações" },
   { path: "/super-admin/configuracoes", icon: Settings, label: "Configurações" },
 ];
 export default function Layout() {
@@ -30,6 +33,8 @@ export default function Layout() {
   const navigate = useNavigate();
 
   const {user, loading}= useAuth();
+
+  const naoLidas = useNotificacoesNaoLidas();
 
   if(loading){
     return <div className="flex justify-cnter items-center h-screen">Carregando...</div>;
@@ -71,6 +76,11 @@ export default function Layout() {
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
+                {item.path.endsWith("/notificacoes") && naoLidas > 0 && (
+                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center">
+                    {naoLidas > 99 ? "99+" : naoLidas}
+                  </span>
+                )}
               </Link>
             );
           })}

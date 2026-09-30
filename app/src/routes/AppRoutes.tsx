@@ -5,6 +5,7 @@ import SignupPage from "../pages/Signup/SignupPage";
 import RecuperarSenhaPage from "../pages/RecuperarSenha/RecuperarSenhaPage";
 import RedefinirSenhaPage from "../pages/RecuperarSenha/RedefinirSenhaPage";
 import RouteGuard from "../components/protect/RouteGuard";
+import Notificacoes from "../pages/Notificacoes/Notificacoes";
 
 // Super Admin Layout e Pages
 import SuperAdminLayout from "../components/layout/Layout";
@@ -66,6 +67,7 @@ export default function AppRoutes() {
           <Route path="/super-admin/relatorios" element={<SuperAdminRelatorios />} />
           <Route path="/super-admin/configuracoes" element={<SuperAdminConfiguracoes />} />
           <Route path="/super-admin/jurisdicoes" element={<SuperAdminJurisdicoes />} />
+          <Route path="/super-admin/notificacoes" element={<Notificacoes />} />
         </Route>
 
         {/* Admin Routes */}
@@ -73,6 +75,7 @@ export default function AppRoutes() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/policiais" element={<AdminPoliciais />} />
           <Route path="/admin/acidentes" element={<AdminAcidentes />} />
+          <Route path="/admin/notificacoes" element={<Notificacoes />} />
           {/*<Route path="/admin/denuncias" element={<AdminDenuncias />} />*/}
         </Route>
 
@@ -84,6 +87,7 @@ export default function AppRoutes() {
           <Route path="/pt/denuncias" element={<DenunciasPt />} />
           <Route path="/pt/minhas-decisoes" element={<MinhasDecisoesPt />} />
           <Route path="/pt/perfil" element={<PerfilPt />} />
+          <Route path="/pt/notificacoes" element={<Notificacoes />} />
           <Route path="/pt/denuncias/:id" element={<DetalhesDenunciaPt />} /> 
         </Route>
 
@@ -94,6 +98,7 @@ export default function AppRoutes() {
           <Route path="/cidadao/denuncias/:id" element={<DetalhesDenuncia />} />
           <Route path="/cidadao/minhas-denuncias" element={<MinhasDenuncias />} />
           <Route path="/cidadao/perfil" element={<CidadaoPerfil />} />
+          <Route path="/cidadao/notificacoes" element={<Notificacoes />} />
 
         </Route>
       </Route>

@@ -4,9 +4,11 @@ import {
   PlusCircle,
   FileText,
   User,
-  LogOut
+  LogOut,
+  Bell
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
+import { useNotificacoesNaoLidas } from "../../hooks/useNotificacoesNaoLidas";
 import { useEffect, useState } from "react";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 import { logout } from "../../api/authService";
@@ -15,6 +17,7 @@ const menuItems = [
   { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/cidadao/criar-denuncia", icon: PlusCircle, label: "Criar Denúncia" },
   { path: "/cidadao/minhas-denuncias", icon: FileText, label: "Minhas Denúncias" },
+  { path: "/cidadao/notificacoes", icon: Bell, label: "Notificações" },
   { path: "/cidadao/perfil", icon: User, label: "Perfil" },
 ];
 
@@ -23,6 +26,8 @@ export default function CidadaoLayout() {
   const navigate = useNavigate();
 
   const { user, loading: authLoading } = useAuth();
+
+  const naoLidas = useNotificacoesNaoLidas();
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | null>(null);
   const[cidadao, setCidadao]= useState<cidadaoResponse  | null>(null);
@@ -102,6 +107,11 @@ export default function CidadaoLayout() {
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
+                {item.path.endsWith("/notificacoes") && naoLidas > 0 && (
+                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center">
+                    {naoLidas > 99 ? "99+" : naoLidas}
+                  </span>
+                )}
               </Link>
             );
           })}
