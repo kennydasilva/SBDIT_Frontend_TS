@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
 import { Siren, AlertTriangle, Loader2, MapPin, CheckCircle, Paperclip } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { ptService, type PT } from "../../api/ptService";
@@ -130,7 +131,8 @@ export default function Acidentes() {
 
       {agentes.length === 0 && (
         <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
-          O seu posto ainda não tem agentes registados - crie-os em Policiais para os poder designar.
+          O seu posto ainda não tem agentes registados.{" "}
+          <Link to="/admin/policiais" className="font-medium underline">Crie um agente</Link> para o poder designar aos acidentes.
         </div>
       )}
 
@@ -204,12 +206,23 @@ export default function Acidentes() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-sm">
+                    {agentes.length === 0 ? (
+                      // Sem agentes no posto não há quem designar: em vez de
+                      // um combobox vazio e desactivado (parecia avariado),
+                      // diz porquê e leva a criar um agente.
+                      <div className="min-w-[220px] text-xs text-amber-700">
+                        Sem agentes no posto.{" "}
+                        <Link to="/admin/policiais" className="font-medium text-blue-600 hover:underline">
+                          Criar agente
+                        </Link>
+                      </div>
+                    ) : (
                     <div className="flex gap-2 min-w-[260px]">
                       <select
                         value={escolhas[a.id] ?? ""}
                         onChange={(e) => setEscolhas((s) => ({ ...s, [a.id]: e.target.value }))}
                         className={INPUT}
-                        disabled={agentes.length === 0 || aDesignar === a.id}
+                        disabled={aDesignar === a.id}
                       >
                         <option value="">{a.pt_id ? "Trocar agente..." : "Escolher agente..."}</option>
                         {agentes.map((pt) => (
@@ -226,6 +239,7 @@ export default function Acidentes() {
                         {aDesignar === a.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Designar"}
                       </button>
                     </div>
+                    )}
                   </td>
                 </tr>
               ))
