@@ -69,10 +69,11 @@ export const ptService={
 
     },
 
-    async listarPT(adminId: number, page: number = 1): Promise<PaginatedResponse<PT>> {
+    async listarPT(adminId: number, page: number = 1, pageSize?: number): Promise<PaginatedResponse<PT>> {
         try{
 
-            return await cachedGet<PaginatedResponse<PT>>(api, `/pts/admin/${adminId}/`, { params: { page } });
+            const params = pageSize ? { page, page_size: pageSize } : { page };
+            return await cachedGet<PaginatedResponse<PT>>(api, `/pts/admin/${adminId}/`, { params });
 
         }
         catch(error)

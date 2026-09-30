@@ -21,6 +21,7 @@ import SuperAdminJurisdicoes from "../pages/SuperAdmin/Jurisdicoes";
 import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/Admin/Dashboard";
 import AdminPoliciais from "../pages/Admin/Policias";
+import AdminAcidentes from "../pages/Admin/Acidentes";
 import CidadaoLayout from "../components/layout/CidadaoLayout";
 import CidadaoDashboard from "../pages/cidadao/CidadaoDashboard";
 import CriarDenuncia from "../pages/cidadao/CriarDenuncia";
@@ -71,6 +72,7 @@ export default function AppRoutes() {
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/policiais" element={<AdminPoliciais />} />
+          <Route path="/admin/acidentes" element={<AdminAcidentes />} />
           {/*<Route path="/admin/denuncias" element={<AdminDenuncias />} />*/}
         </Route>
 

@@ -25,7 +25,8 @@ export interface CreateDenunciaData{
     tipo_infracao:string;
     localizacao:string;
     sentido_direccao:string;
-    caminho_ficheiro:File;
+    // Opcional só para ACIDENTE (reporte directo, sem análise de vídeo)
+    caminho_ficheiro?: File | null;
     latitude?: number | null;
     longitude?: number | null;
 }
@@ -64,6 +65,8 @@ export interface DenunciaDetalhada {
     infracao_detectada: boolean | null;
     latitude: number | null;
     longitude: number | null;
+    pt_id?: number | null;
+    data_registo?: string | null;
 }
 
 export const denunciaService = {
@@ -88,7 +91,9 @@ export const denunciaService = {
                 formData.append("longitude", String(data.longitude));
             }
 
-            formData.append("caminho_ficheiro", data.caminho_ficheiro);
+            if (data.caminho_ficheiro){
+                formData.append("caminho_ficheiro", data.caminho_ficheiro);
+            }
 
             const response=await api.post("/denuncias/", formData, {
                 headers:{
@@ -171,6 +176,31 @@ export const denunciaService = {
         }
         catch(error){
             console.error("Erro ao listar denúncias por Policia de Transito:", error);
+            throw error;
+        }
+    },
+
+
+    // Acidentes na jurisdição do posto do Admin autenticado (o posto é
+    // lido do token no backend, nunca enviado daqui).
+    async listarAcidentesAdmin(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+        try{
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/admin/acidentes/`, { params: { page } });
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar acidentes:", error);
+            throw error;
+        }
+    },
+
+    async designarPtAcidente(denunciaId: number, ptId: number): Promise<{message:string; id:number}>{
+        try{
+            const response= await api.patch(`denuncias/admin/designar-pt/`, { denuncia_id: denunciaId, pt_id: ptId });
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao designar agente:", error);
             throw error;
         }
     },

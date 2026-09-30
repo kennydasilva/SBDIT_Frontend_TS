@@ -9,6 +9,7 @@ export interface Admin{
     nome:string;
     email:string;
     posto:string;
+    numero?: string | null;
     dataCriacao?: string;
     status?:"Ativo" | "Inativo";
 }
@@ -18,12 +19,14 @@ export interface CreateAdminData{
     email:string;
     password:string;
     posto:string;
+    numero:string;
 }
 
 export interface UpdateAdminData {
   admin_id: number;
   nome?: string;
   posto?: string;
+  numero?: string;
 }
 
 export interface AdminResponse {
@@ -31,6 +34,7 @@ export interface AdminResponse {
   nome: string;
   email: string;
   posto: string;
+  numero: string | null;
 }
 
 
@@ -48,6 +52,7 @@ export const adminService={
                     nome: admin.nome,
                     email: admin.email,
                     posto: admin.posto,
+                    numero: admin.numero,
                     dataCriacao: new Date().toISOString().split('T')[0],
                     status: "Ativo"
                 })),

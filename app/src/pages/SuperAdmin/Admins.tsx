@@ -36,6 +36,7 @@ export default function Admins() {
     email: "",
     senha: "",
     posto: "",
+    numero: "",
     status: "Ativo" as "Ativo" | "Inativo"
   });
   const [fieldErrors, setFieldErrors] = useState<{
@@ -43,6 +44,7 @@ export default function Admins() {
     email?: string;
     senha?: string;
     posto?: string;
+    numero?: string;
   }>({});
 
   const validate = (isCreate: boolean) => {
@@ -62,6 +64,12 @@ export default function Admins() {
 
     if (!REGEX.posto.test(formData.posto)) {
       errors.posto = "Indique o nome do posto (2-100 caracteres)";
+    }
+
+    // Obrigatório: é para este número que vai o SMS de acidente na
+    // jurisdição do posto - sem ele o Admin nunca é avisado.
+    if (!REGEX.telefone.test(formData.numero)) {
+      errors.numero = "Digite um número válido no formato +258 8XX XXX XXX";
     }
 
     setFieldErrors(errors);
@@ -107,7 +115,7 @@ export default function Admins() {
         email: formData.email,
         password: formData.senha,
         posto: formData.posto,
-
+        numero: formData.numero,
       };
 
 
@@ -139,6 +147,7 @@ export default function Admins() {
       email: admin.email,
       senha: "",
       posto: admin.posto,
+      numero: admin.numero || "",
       status: (admin.status ==="Inativo" ? "Inativo" : "Ativo") as "Ativo" | "Inativo"
     });
     setShowCreateModal(true);
@@ -155,9 +164,10 @@ export default function Admins() {
         admin_id: selectedAdmin.id,
         nome: formData.nome,
         posto: formData.posto,
+        numero: formData.numero,
       }
 
-      adminService.atualizarAdmin(updateData);
+      await adminService.atualizarAdmin(updateData);
       await carregarAdmins();
       setShowCreateModal(false);
       setSelectedAdmin(null);
@@ -198,6 +208,7 @@ export default function Admins() {
       email: "",
       senha: "",
       posto: "",
+      numero: "",
       status: "Ativo"
     });
     setFieldErrors({});
@@ -269,6 +280,7 @@ export default function Admins() {
               <th className={TABLE_HEAD_CELL}>Nome</th>
               <th className={TABLE_HEAD_CELL}>Email</th>
               <th className={TABLE_HEAD_CELL}>Posto</th>
+              <th className={TABLE_HEAD_CELL}>Telemóvel</th>
               <th className={TABLE_HEAD_CELL}>Data de Criação</th>
               <th className={TABLE_HEAD_CELL}>Status</th>
               <th className={TABLE_HEAD_CELL}>Ações</th>
@@ -277,7 +289,7 @@ export default function Admins() {
           <tbody className="divide-y divide-gray-50">
             {filteredAdmins.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
                   Nenhum administrador encontrado
                 </td>
               </tr>
@@ -288,6 +300,9 @@ export default function Admins() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{admin.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.posto}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                    {admin.numero || <span className="text-amber-600">Sem número (não recebe SMS)</span>}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{admin.dataCriacao || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
@@ -426,6 +441,24 @@ export default function Admins() {
                 })()}
                 {fieldErrors.posto && (
                   <p className="text-xs text-rose-600 mt-1">{fieldErrors.posto}</p>
+                )}
+              </div>
+
+              <div>
+                <label className={LABEL}>Telemóvel</label>
+                <input
+                  type="tel"
+                  value={formData.numero}
+                  onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
+                  placeholder="+258 84 123 4567"
+                  className={INPUT}
+                  disabled={submitting}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Recebe por SMS os acidentes reportados na jurisdição deste posto.
+                </p>
+                {fieldErrors.numero && (
+                  <p className="text-xs text-rose-600 mt-1">{fieldErrors.numero}</p>
                 )}
               </div>
 

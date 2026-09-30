@@ -8,8 +8,9 @@ import {
 
 const CHAVES_CONHECIDAS = [
   { chave: "GOOGLE_MAPS_API_KEY", descricao: "Chave JS do Google Maps (pública)", publica: true },
-  { chave: "FIREBASE_SERVICE_ACCOUNT_JSON", descricao: "JSON do Firebase Admin SDK (privada)", publica: false },
-  { chave: "FIREBASE_SERVER_KEY", descricao: "Chave de servidor do Firebase (privada)", publica: false },
+  { chave: "MOZESMS_API_KEY", descricao: "API Key da MozeSMS - SMS de acidentes (privada)", publica: false },
+  { chave: "MOZESMS_API_SECRET", descricao: "API Secret da MozeSMS - SMS de acidentes (privada)", publica: false },
+  { chave: "MOZESMS_SENDER_ID", descricao: "Nome de remetente aprovado na MozeSMS (opcional)", publica: false },
 ];
 
 const OUTRA_CHAVE = "__OUTRA__";
@@ -130,7 +131,7 @@ export default function Configuracoes() {
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Configurações</h1>
           <p className="text-gray-500 mt-1">
-            Credenciais de integrações externas (Google Maps, Firebase, etc.)
+            Credenciais de integrações externas (Google Maps, MozeSMS, etc.)
           </p>
         </div>
         <button
@@ -148,7 +149,7 @@ export default function Configuracoes() {
       <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
         <strong>Público</strong> = seguro para expor ao browser (ex: chave JS do Google Maps,
         protegida por restrição de domínio na Google Cloud Console). Nunca marques como
-        pública uma credencial de servidor (ex: chave privada do Firebase Admin SDK).
+        pública uma credencial de servidor (ex: API Secret da MozeSMS).
       </div>
 
       <div className={`${CARD} overflow-hidden`}>
@@ -241,7 +242,7 @@ export default function Configuracoes() {
                 <textarea
                   value={formData.valor}
                   onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                  placeholder="Cola aqui a chave/segredo (ex: uma chave simples ou um JSON completo do Firebase Admin SDK)"
+                  placeholder="Cola aqui a chave/segredo (ex: API Key ou API Secret da MozeSMS)"
                   rows={6}
                   className={`${INPUT} font-mono text-sm`}
                   disabled={submitting}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload, X, CheckCircle, Loader2 } from "lucide-react";
+import { Upload, X, CheckCircle, Loader2, Siren } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
@@ -26,6 +26,7 @@ export default function CriarDenuncia() {
     matricula?: string;
     localizacao?: string;
     descricao?: string;
+    mapa?: string;
   }>({});
   const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -37,10 +38,18 @@ export default function CriarDenuncia() {
       return "PARADO";
     case "Excesso de Velocidade":
       return "VELOCIDADE";
+    case "Acidente de Viação":
+      return "ACIDENTE";
     default:
       return "";
   }
 };
+
+  // Acidente é reporte directo ao posto responsável pela zona (SMS ao
+  // Admin), sem análise de vídeo por IA: matrícula e ficheiro são
+  // opcionais, mas o ponto no mapa é obrigatório - é ele que decide qual
+  // posto é avisado.
+  const ehAcidente = formData.tipoInfracao === "Acidente de Viação";
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -52,13 +61,14 @@ export default function CriarDenuncia() {
   };
 
   const VIDEO_MAX_SIZE_MB = 100;
+  const ehImagem = videoFile?.type.startsWith("image/") ?? false;
 
   const handleVideoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     if (file.size > VIDEO_MAX_SIZE_MB * 1024 * 1024) {
-      alert(`Vídeo demasiado grande (máximo ${VIDEO_MAX_SIZE_MB}MB). Reduza a duração ou a qualidade do vídeo.`);
+      alert(`Ficheiro demasiado grande (máximo ${VIDEO_MAX_SIZE_MB}MB). Reduza a duração ou a qualidade do vídeo.`);
       e.target.value = "";
       return;
     }
@@ -77,10 +87,15 @@ export default function CriarDenuncia() {
   };
 
   const validate = () => {
-    const errors: { matricula?: string; localizacao?: string; descricao?: string } = {};
+    const errors: typeof fieldErrors = {};
 
-    if (!REGEX.matricula.test(formData.matricula)) {
+    const matriculaObrigatoria = !ehAcidente || formData.matricula !== "";
+    if (matriculaObrigatoria && !REGEX.matricula.test(formData.matricula)) {
       errors.matricula = "Digite uma matrícula válida no formato AB-12-CD";
+    }
+
+    if (ehAcidente && !coordenadas) {
+      errors.mapa = "Marque no mapa o local exacto do acidente - é assim que o posto responsável pela zona é avisado";
     }
 
     if (!REGEX.localizacao.test(formData.localizacao)) {
@@ -100,7 +115,12 @@ export default function CriarDenuncia() {
 
     if (!validate()) return;
 
-    if (!videoFile){
+    if (!ehAcidente && ehImagem){
+      alert("Para este tipo de infração é necessário um vídeo (fotos só são aceites em acidentes).");
+      return;
+    }
+
+    if (!videoFile && !ehAcidente){
       alert("Por favor, faça upload de um vídeo da infração.");
       return;
     }
@@ -123,7 +143,7 @@ export default function CriarDenuncia() {
           formData.tipoInfracao === "Contramão" 
           ? formData.sentidoPermitido 
           : "",
-        caminho_ficheiro: videoFile,
+        caminho_ficheiro: videoFile ?? null,
         latitude: coordenadas?.lat ?? null,
         longitude: coordenadas?.lng ?? null,
       });
@@ -168,6 +188,7 @@ export default function CriarDenuncia() {
               Denúncia enviada com sucesso!
             </p>
             <p className="text-emerald-700 text-sm">
+              {ehAcidente && "O posto responsável pela zona foi avisado por SMS. "}
               Você será redirecionado para suas denúncias...
             </p>
           </div>
@@ -180,7 +201,7 @@ export default function CriarDenuncia() {
           {/* Matrícula */}
           <div className="mb-6">
             <label className={LABEL}>
-              Matrícula do Veículo *
+              Matrícula do Veículo {ehAcidente ? "(opcional)" : "*"}
             </label>
             <input
               type="text"
@@ -189,7 +210,7 @@ export default function CriarDenuncia() {
               onChange={handleInputChange}
               placeholder="Ex: AB-12-CD"
               className={INPUT}
-              required
+              required={!ehAcidente}
             />
             {fieldErrors.matricula && (
               <p className="mt-1 text-sm text-rose-600">{fieldErrors.matricula}</p>
@@ -214,8 +235,19 @@ export default function CriarDenuncia() {
               <option value="Excesso de Velocidade">
                 Excesso de Velocidade
               </option>
+              <option value="Acidente de Viação">Acidente de Viação</option>
             </select>
           </div>
+
+          {ehAcidente && (
+            <div className="mb-6 p-4 rounded-2xl border border-rose-100 bg-rose-50 flex gap-3">
+              <Siren className="text-rose-600 shrink-0" size={22} />
+              <p className="text-sm text-rose-800">
+                O acidente é enviado directamente, por SMS, ao posto policial responsável pela zona
+                marcada no mapa, que designa um agente para o local. Não passa por análise de vídeo.
+              </p>
+            </div>
+          )}
 
           {/* Sentido Permitido - Apenas se Contramão */}
           {formData.tipoInfracao === "Contramão" && (
@@ -274,11 +306,14 @@ export default function CriarDenuncia() {
           {/* Local no mapa (opcional, mas recomendado) */}
           <div className="mb-6">
             <label className={LABEL}>
-              Marcar local no mapa
+              Marcar local no mapa {ehAcidente && "*"}
             </label>
             <LocationPicker
               onChange={(lat, lng) => setCoordenadas({ lat, lng })}
             />
+            {fieldErrors.mapa && (
+              <p className="mt-1 text-sm text-rose-600">{fieldErrors.mapa}</p>
+            )}
           </div>
 
           {/* Descrição */}
@@ -302,7 +337,7 @@ export default function CriarDenuncia() {
           {/* Upload de Vídeo */}
           <div className="mb-6">
             <label className={LABEL}>
-              Vídeo da Infração *
+              {ehAcidente ? "Foto ou vídeo do acidente (opcional)" : "Vídeo da Infração *"}
             </label>
 
             {!videoFile ? (
@@ -310,10 +345,10 @@ export default function CriarDenuncia() {
                 <input
                   type="file"
                   id="video-upload"
-                  accept=".mp4,.avi,.mov"
+                  accept={ehAcidente ? ".mp4,.avi,.mov,.jpg,.jpeg,.png" : ".mp4,.avi,.mov"}
                   onChange={handleVideoUpload}
                   className="hidden"
-                  required
+                  required={!ehAcidente}
                 />
                 <label
                   htmlFor="video-upload"
@@ -324,7 +359,7 @@ export default function CriarDenuncia() {
                     Clique para fazer upload ou arraste o arquivo
                   </p>
                   <p className="text-gray-500 text-sm">
-                    Formatos aceitos: MP4, AVI, MOV
+                    Formatos aceitos: MP4, AVI, MOV{ehAcidente && ", JPG, PNG"}
                   </p>
                 </label>
               </div>
@@ -353,13 +388,19 @@ export default function CriarDenuncia() {
                   </button>
                 </div>
 
-                {videoPreview && (
+                {videoPreview && (ehImagem ? (
+                  <img
+                    src={videoPreview}
+                    alt="Pré-visualização"
+                    className="w-full rounded-xl"
+                  />
+                ) : (
                   <video
                     src={videoPreview}
                     controls
                     className="w-full rounded-xl"
                   />
-                )}
+                ))}
               </div>
             )}
           </div>

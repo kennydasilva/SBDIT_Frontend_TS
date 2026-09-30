@@ -5,7 +5,8 @@ import {
   UserCircle,
   AlertTriangle,
   FileText,
-  LogOut
+  LogOut,
+  Siren
 } from "lucide-react";
 
 import { useAuth } from "../../hooks/useAuth";
@@ -15,6 +16,7 @@ import { logout } from "../../api/authService";
 const menuItems = [
   { path: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/admin/policiais", icon: Shield, label: "Policiais" },
+  { path: "/admin/acidentes", icon: Siren, label: "Acidentes" },
   { path: "/admin/cidadaos", icon: UserCircle, label: "Cidadãos" },
   { path: "/admin/denuncias", icon: AlertTriangle, label: "Denúncias" },
   { path: "/admin/relatorios", icon: FileText, label: "Relatórios" },
