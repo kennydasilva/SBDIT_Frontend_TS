@@ -76,7 +76,7 @@ export default function CidadaoPerfil() {
     }
 
     if (!cidadao?.numero || !REGEX.telefone.test(cidadao.numero)) {
-      errors.telefone = "Digite um número válido no formato +258 8XX XXX XXX";
+      errors.telefone = "Indique um número válido no formato +258 8XX XXX XXX";
     }
 
     setFieldErrors(errors);
@@ -263,7 +263,7 @@ export default function CidadaoPerfil() {
                     className={BUTTON_PRIMARY}
                   >
                     {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    Salvar Alterações
+                    Guardar alterações
                   </button>
                 </div>
               )}

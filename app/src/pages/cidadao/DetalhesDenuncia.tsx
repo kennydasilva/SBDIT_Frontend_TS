@@ -10,56 +10,13 @@ import {
   AlertTriangle,
   Shield,
   Siren,
+  Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
 import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
-
-const denunciaDetalhes = {
-  id: 1,
-  matricula: "AB-12-CD",
-  tipo: "Contramão",
-  estado: "Aprovada",
-  descricao:
-    "Veículo trafegando em sentido contrário na Rua Principal, próximo ao mercado central.",
-  codigoLegal: "Art. 184 - CTB",
-  dataRegistro: "2026-04-05 14:30",
-  localizacao: "Rua Principal, próximo ao mercado",
-  sentidoPermitido: "Esquerda",
-  videoOriginal: true,
-  videoProcessado: true,
-  processamentoCompleto: true,
-  analiseAutomatica: {
-    infracaoDetectada: true,
-    confianca: 87,
-    descricao:
-      "Sistema detectou veículo trafegando em sentido contrário ao permitido. Análise de movimento confirma infração.",
-    timestamp: "2026-04-05 14:35",
-  },
-  timeline: [
-    {
-      status: "Denúncia enviada",
-      data: "2026-04-05 14:30",
-      concluido: true,
-      icon: FileText,
-    },
-    {
-      status: "Análise automática",
-      data: "2026-04-05 14:35",
-      concluido: true,
-      icon: AlertTriangle,
-      resultado: "Validada",
-    },
-    {
-      status: "Análise do PT",
-      data: "2026-04-05 16:20",
-      concluido: true,
-      icon: Shield,
-      resultado: "Aprovada",
-    },
-  ],
-};
+import { ALERT_ERROR, CARD, PAGE, PAGE_SUBTITLE, PAGE_TITLE, SECTION_TITLE } from "../../utils/uiClasses";
 
 export default function DetalhesDenuncia() {
   const { user, loading: authLoading } = useAuth();
@@ -93,9 +50,20 @@ export default function DetalhesDenuncia() {
 
   
 
-  if (loading) return <div className="p-8">Carregando...</div>;
-  if (error) return <div className="p-8 text-red-600">{error}</div>;
-  if (!denuncia) return <div className="p-8">Denúncia não encontrada.</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+  if (error || !denuncia) {
+    return (
+      <div className={PAGE}>
+        <div className={ALERT_ERROR}>{error ?? "Denúncia não encontrada."}</div>
+      </div>
+    );
+  }
 
   // Acidente não passa por análise de vídeo nem pelo PT: vai directo ao
   // Admin do posto da zona (SMS), que designa um agente para o local.
@@ -150,7 +118,7 @@ export default function DetalhesDenuncia() {
 ];
 
   return (
-    <div className="p-8">
+    <div className={PAGE}>
       {/* Back Button */}
       <Link
         to="/cidadao/minhas-denuncias"
@@ -163,10 +131,10 @@ export default function DetalhesDenuncia() {
       {/* Header */}
       <div className="mb-8 flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className={PAGE_TITLE}>
             Denúncia #{id}
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className={PAGE_SUBTITLE}>
             Detalhes completos da denúncia
           </p>
         </div>
@@ -181,29 +149,29 @@ export default function DetalhesDenuncia() {
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
             <FileText className="text-blue-600" size={20} />
             <p className="text-sm text-gray-600">Matrícula</p>
           </div>
-          <p className="text-xl font-bold text-gray-900">
+          <p className={SECTION_TITLE}>
             {denuncia.matricula}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
             <AlertTriangle className="text-orange-600" size={20} />
             <p className="text-sm text-gray-600">Tipo</p>
           </div>
-          <p className="text-xl font-bold text-gray-900">
+          <p className={SECTION_TITLE}>
             {labelTipo(denuncia.tipo_infracao)}
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
-            <MapPin className="text-red-600" size={20} />
+            <MapPin className="text-rose-600" size={20} />
             <p className="text-sm text-gray-600">Localização</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
@@ -211,7 +179,7 @@ export default function DetalhesDenuncia() {
           </p>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
             <Calendar className="text-purple-600" size={20} />
             <p className="text-sm text-gray-600">Data</p>
@@ -226,8 +194,8 @@ export default function DetalhesDenuncia() {
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* Informações */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
+          <div className={`${CARD} p-6`}>
+            <h2 className={`${SECTION_TITLE} mb-4`}>
               Informações da Denúncia
             </h2>
             <div className="space-y-4">
@@ -271,8 +239,8 @@ export default function DetalhesDenuncia() {
           </div>
 
           {ehAcidente ? (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
+            <div className={`${CARD} p-6`}>
+              <h2 className={`${SECTION_TITLE} mb-6`}>
                 Foto/vídeo do acidente
               </h2>
               {denuncia.ficheiro_original ? (
@@ -292,8 +260,8 @@ export default function DetalhesDenuncia() {
               )}
             </div>
           ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <div className={`${CARD} p-6`}>
+              <h2 className={`${SECTION_TITLE} mb-6`}>
                 Vídeos da Denúncia
               </h2>
 
@@ -322,9 +290,9 @@ export default function DetalhesDenuncia() {
                     </div>
                   ) : (
                     denuncia.estado === "PENDENTE" ? (
-                      <div className="flex items-center justify-center bg-yellow-50 rounded-lg">
+                      <div className="flex items-center justify-center bg-amber-50 rounded-lg">
                         <div className="text-center p-6">
-                          <Clock className="mx-auto text-yellow-600 mb-2" size={32} />
+                          <Clock className="mx-auto text-amber-600 mb-2" size={32} />
                           <p>Processando vídeo...</p>
                         </div>
                       </div>
@@ -352,8 +320,8 @@ export default function DetalhesDenuncia() {
 
           {/* Resultado da Análise Automática */}
           {denuncia.ficheiro_processado && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
+            <div className={`${CARD} p-6`}>
+              <h2 className={`${SECTION_TITLE} mb-4`}>
                 Resultado da Análise Automática
               </h2>
 
@@ -361,7 +329,7 @@ export default function DetalhesDenuncia() {
                 <div className="flex items-center gap-3">
                   {denuncia.infracao_detectada ? (
                     <>
-                      <CheckCircle className="text-green-600" size={24} />
+                      <CheckCircle className="text-emerald-600" size={24} />
                       <div>
                         <p className="font-medium text-gray-900">
                           Infração Detectada
@@ -373,7 +341,7 @@ export default function DetalhesDenuncia() {
                     </>
                   ) : (
                     <>
-                      <XCircle className="text-red-600" size={24} />
+                      <XCircle className="text-rose-600" size={24} />
                       <div>
                         <p className="font-medium text-gray-900">
                           Infração Não Detectada
@@ -389,7 +357,7 @@ export default function DetalhesDenuncia() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex justify-between items-center mb-2">
                     <p className="text-sm text-gray-600">Nível de Confiança</p>
-                    <p className="text-lg font-bold text-gray-900">
+                    <p className={SECTION_TITLE}>
                       {denuncia.confianca}%
                     </p>
                   </div>
@@ -425,8 +393,8 @@ export default function DetalhesDenuncia() {
 
         {/* Right Column - Timeline */}
         <div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">
+          <div className={`${CARD} p-6 sticky top-8`}>
+            <h2 className={`${SECTION_TITLE} mb-6`}>
               Estado do Processo
             </h2>
 
@@ -448,7 +416,7 @@ export default function DetalhesDenuncia() {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           item.concluido
-                            ? "bg-green-100 text-green-600"
+                            ? "bg-emerald-100 text-emerald-600"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >

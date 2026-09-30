@@ -74,7 +74,7 @@ export default function Dashboard() {
         <div className={`${CARD} p-6`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-gray-500 text-sm font-medium">Policiais do Posto</p>
+              <p className="text-gray-500 text-sm font-medium">Agentes do posto</p>
               <p className="text-3xl font-semibold text-gray-900 mt-1.5">{totalPoliciais}</p>
             </div>
             <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl">

@@ -109,7 +109,7 @@ export default function Notificacoes() {
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Notificações</h1>
-          <p className="text-gray-500 mt-1">Actualizações sobre as denúncias que lhe dizem respeito</p>
+          <p className="text-gray-500 mt-1">Atualizações sobre as denúncias que lhe dizem respeito</p>
         </div>
         <button
           onClick={marcarTodas}

@@ -13,6 +13,7 @@ import {
   CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER,
   BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
 } from "../../utils/uiClasses";
+import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
 
 const OUTRO_POSTO = "__OUTRO__";
 const TAMANHO_PAGINA = 20;
@@ -55,7 +56,7 @@ export default function Admins() {
     }
 
     if (isCreate && !REGEX.email.test(formData.email)) {
-      errors.email = "Digite um email válido";
+      errors.email = "Indique um email válido";
     }
 
     if (isCreate && !REGEX.password.test(formData.senha)) {
@@ -69,7 +70,7 @@ export default function Admins() {
     // Obrigatório: é para este número que vai o SMS de acidente na
     // jurisdição do posto - sem ele o Admin nunca é avisado.
     if (!REGEX.telefone.test(formData.numero)) {
-      errors.numero = "Digite um número válido no formato +258 8XX XXX XXX";
+      errors.numero = "Indique um número válido no formato +258 8XX XXX XXX";
     }
 
     setFieldErrors(errors);
@@ -120,6 +121,7 @@ export default function Admins() {
 
 
       await adminService.criarAdmin(createData);
+      mostrarSucesso("Administrador criado.");
       await carregarAdmins();
       setShowCreateModal(false);
       resetForm();
@@ -132,7 +134,7 @@ export default function Admins() {
         const axiosError = error as { response?: { data?: { message?: string } } };
         errorMessage = axiosError.response?.data?.message || errorMessage;
       }
-      alert(errorMessage);
+      mostrarErro(error, errorMessage);
 
   }
   finally{
@@ -168,6 +170,7 @@ export default function Admins() {
       }
 
       await adminService.atualizarAdmin(updateData);
+      mostrarSucesso("Administrador atualizado.");
       await carregarAdmins();
       setShowCreateModal(false);
       setSelectedAdmin(null);
@@ -176,7 +179,7 @@ export default function Admins() {
     }
     catch(error: any){
       console.error("Erro ao atualizar administrador: ", error);
-      alert(error.response?.data?.message || "Erro ao atualizar administrador");
+      mostrarErro(error, "Erro ao atualizar o administrador");
 
     }
     finally{
@@ -190,12 +193,13 @@ export default function Admins() {
     try{
       setSubmitting(true);
       await adminService.apagarAdmin(selectedAdmin.id);
+      mostrarSucesso("Administrador eliminado.");
       await carregarAdmins();
       setShowDeleteModal(false);
       setSelectedAdmin(null);
     }catch(error: any){
       console.error("Erro ao excluir administrador: ", error);
-      alert(error.response?.data?.message || "Erro ao excluir administrador");
+      mostrarErro(error, "Erro ao eliminar o administrador");
     }
     finally{
       setSubmitting(false);
@@ -263,7 +267,7 @@ export default function Admins() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Buscar por nome ou email..."
+            placeholder="Pesquisar por nome ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`${INPUT} pl-10`}
@@ -282,7 +286,7 @@ export default function Admins() {
               <th className={TABLE_HEAD_CELL}>Posto</th>
               <th className={TABLE_HEAD_CELL}>Telemóvel</th>
               <th className={TABLE_HEAD_CELL}>Data de Criação</th>
-              <th className={TABLE_HEAD_CELL}>Status</th>
+              <th className={TABLE_HEAD_CELL}>Estado</th>
               <th className={TABLE_HEAD_CELL}>Ações</th>
             </tr>
           </thead>
@@ -463,7 +467,7 @@ export default function Admins() {
               </div>
 
               <div>
-                <label className={`${LABEL} mb-2`}>Status</label>
+                <label className={`${LABEL} mb-2`}>Estado</label>
                 <div className="flex gap-4">
                   <label className="flex items-center text-sm text-gray-700">
                     <input
@@ -512,7 +516,7 @@ export default function Admins() {
                 {submitting ? (
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                 ) : (
-                  "Salvar"
+                  "Guardar"
                 )}
               </button>
             </div>
@@ -530,7 +534,7 @@ export default function Admins() {
 
             <h2 className="text-lg font-semibold text-gray-900 text-center mb-2">Confirmar Exclusão</h2>
             <p className="text-gray-600 text-center mb-6">
-              Tem certeza que deseja excluir o administrador <strong>{selectedAdmin.nome}</strong>?
+              Tem a certeza de que quer eliminar o administrador <strong>{selectedAdmin.nome}</strong>?
             </p>
 
             <div className="flex gap-3">
@@ -552,7 +556,7 @@ export default function Admins() {
                 {submitting ? (
                   <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                 ) : (
-                  "Excluir"
+                  "Eliminar"
                 )}
               </button>
             </div>

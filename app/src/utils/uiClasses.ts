@@ -36,5 +36,23 @@ export const BADGE = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full 
 export const TABLE_HEAD_CELL = "px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide";
 export const TABLE_ROW_HOVER = "hover:bg-gray-50/60 transition-colors";
 
+// Estrutura de página: todas as páginas internas usam o mesmo fundo,
+// margens e hierarquia de títulos.
+export const PAGE = "p-8 bg-gray-50/50 min-h-full";
+export const PAGE_TITLE = "text-2xl font-semibold text-gray-900 tracking-tight";
+export const PAGE_SUBTITLE = "text-gray-500 mt-1";
+export const SECTION_TITLE = "text-lg font-semibold text-gray-900";
+
+export const FIELD_ERROR = "mt-1 text-xs text-rose-600";
+export const FIELD_HINT = "mt-1 text-xs text-gray-500";
+
+// Caixas de aviso dentro da página (em vez de alert() do browser).
+export const ALERT_ERROR = "rounded-xl border border-rose-100 bg-rose-50 p-4 text-sm text-rose-800";
+export const ALERT_SUCCESS = "rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-sm text-emerald-800";
+export const ALERT_WARNING = "rounded-xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800";
+export const ALERT_INFO = "rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800";
+
+export const LINK = "text-blue-600 hover:text-blue-700 hover:underline font-medium";
+
 export const MODAL_OVERLAY = "fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4";
 export const MODAL_CARD = "bg-white rounded-2xl shadow-xl w-full max-w-md p-6";

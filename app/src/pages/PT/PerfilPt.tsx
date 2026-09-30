@@ -221,12 +221,12 @@ export default function PerfilPt() {
                 </select>
               </div>
 
-              {/* Data de Cadastro */}
+              {/* Data de registo */}
               <div>
                 <label className={LABEL}>
                   <div className="flex items-center gap-2">
                     <Calendar size={16} />
-                    Data de Cadastro
+                    Data de registo
                   </div>
                 </label>
                 <input
@@ -245,7 +245,7 @@ export default function PerfilPt() {
                     className={`${BUTTON_PRIMARY} flex-1`}
                   >
                     <Save size={18} />
-                    Salvar Alterações
+                    Guardar alterações
                   </button>
                   <button
                     onClick={() => setIsEditing(false)}

@@ -3,19 +3,14 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import AuthLayout from "../../components/auth/AuthLayout";
 import { confirmPasswordReset } from "../../api/authService";
 import { passwordSchema } from "../../utils/validationSchemas";
+import { INPUT, LABEL, BUTTON_PRIMARY, ALERT_ERROR, FIELD_HINT, LINK } from "../../utils/uiClasses";
+import { mensagemDeErro } from "../../utils/mensagens";
 
 const redefinirSenhaSchema = z
   .object({
@@ -50,96 +45,60 @@ export default function RedefinirSenhaPage() {
     try {
       await confirmPasswordReset(uid, token, data.password);
       navigate("/login", { state: { senhaRedefinida: true } });
-    } catch (error: any) {
-      const mensagem =
-        error?.response?.data?.error ||
-        "Link inválido ou expirado. Solicite uma nova recuperação de senha.";
-      setErro(mensagem);
+    } catch (error) {
+      setErro(mensagemDeErro(error, "Link inválido ou expirado. Peça uma nova recuperação de senha."));
     }
   };
 
+  const aEnviar = form.formState.isSubmitting;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-xl">
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1E40AF] shadow-lg">
-            <span className="text-3xl font-bold text-white">SGDIT</span>
-          </div>
-          <h2 className="text-3xl font-bold text-[#1E40AF]">Redefinir Senha</h2>
-          <p className="mt-3 text-base text-gray-600">
-            Escolha uma nova senha para a sua conta
-          </p>
+    <AuthLayout
+      titulo="Redefinir senha"
+      subtitulo="Escolha uma nova senha para a sua conta"
+      rodape={<Link to="/login" className={LINK}>Voltar a entrar</Link>}
+    >
+      {erro && (
+        <div className={`${ALERT_ERROR} mb-5`}>
+          {erro}{" "}
+          <Link to="/recuperar-senha" className="font-medium underline">Pedir novo link</Link>
         </div>
+      )}
 
-        {erro && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-            {erro}
-          </div>
-        )}
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Nova senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Mínimo 8 caracteres, maiúscula, minúscula e número"
-                      type="password"
-                      autoComplete="new-password"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmarPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Confirmar nova senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Repita a senha"
-                      type="password"
-                      autoComplete="new-password"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-[#1E40AF] hover:bg-[#2563EB] transition-colors"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? "A redefinir..." : "Redefinir Senha"}
-            </Button>
-
-            <div className="text-center">
-              <Link
-                to="/login"
-                className="text-sm text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors"
-              >
-                Voltar ao login
-              </Link>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={LABEL}>Nova senha</FormLabel>
+                <FormControl>
+                  <input type="password" autoComplete="new-password" placeholder="Crie uma senha" disabled={aEnviar} className={INPUT} {...field} />
+                </FormControl>
+                <p className={FIELD_HINT}>Mínimo 8 caracteres, com maiúscula, minúscula e número.</p>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmarPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className={LABEL}>Confirmar nova senha</FormLabel>
+                <FormControl>
+                  <input type="password" autoComplete="new-password" placeholder="Repita a senha" disabled={aEnviar} className={INPUT} {...field} />
+                </FormControl>
+                <FormMessage className="text-xs" />
+              </FormItem>
+            )}
+          />
+          <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full mt-2`}>
+            {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A guardar...</> : "Guardar nova senha"}
+          </button>
+        </form>
+      </Form>
+    </AuthLayout>
   );
 }

@@ -1,287 +1,171 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Search } from "lucide-react";
-import { useAuth } from "../../hooks/useAuth";
+import { Search, Loader2, AlertTriangle, ChevronRight } from "lucide-react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
+import { labelTipo, TIPO_LABEL } from "../../utils/estadoDenuncia";
+import { mensagemDeErro } from "../../utils/mensagens";
+import {
+  PAGE, PAGE_TITLE, PAGE_SUBTITLE, CARD, INPUT, LABEL, BADGE, BUTTON_PRIMARY,
+  TABLE_HEAD_CELL, TABLE_ROW_HOVER,
+} from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
 
-const denunciasData = [
-  {
-    id: 145,
-    matricula: "AB-12-CD",
-    tipo: "Contramão",
-    data: "2026-04-10 09:15",
-    estado: "Validada",
-    confianca: 95,
-  },
-  {
-    id: 144,
-    matricula: "EF-34-GH",
-    tipo: "Veículo Parado",
-    data: "2026-04-10 08:45",
-    estado: "Validada",
-    confianca: 88,
-  },
-  {
-    id: 143,
-    matricula: "IJ-56-KL",
-    tipo: "Excesso de Velocidade",
-    data: "2026-04-09 18:30",
-    estado: "Validada",
-    confianca: 92,
-  },
-  {
-    id: 142,
-    matricula: "MN-78-OP",
-    tipo: "Contramão",
-    data: "2026-04-09 15:20",
-    estado: "Aprovada",
-    confianca: 97,
-    ptId: "PT-2145",
-  },
-  {
-    id: 141,
-    matricula: "QR-90-ST",
-    tipo: "Veículo Parado",
-    data: "2026-04-09 12:10",
-    estado: "Arquivada",
-    confianca: 76,
-    ptId: "PT-2145",
-  },
-  {
-    id: 140,
-    matricula: "UV-11-WX",
-    tipo: "Sinal Vermelho",
-    data: "2026-04-08 16:45",
-    estado: "Validada",
-    confianca: 90,
-  },
-  {
-    id: 139,
-    matricula: "YZ-22-AB",
-    tipo: "Excesso de Velocidade",
-    data: "2026-04-08 14:30",
-    estado: "Aprovada",
-    confianca: 94,
-    ptId: "PT-2145",
-  },
-];
+// Cor da confiança da análise automática (0-1 no backend).
+const toneConfianca = (c: number) =>
+  c >= 0.75 ? "bg-emerald-50 text-emerald-700" : c >= 0.5 ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700";
 
-const getStatusColor = (estado: string) => {
-  switch (estado) {
-    case "Validada":
-      return "bg-blue-100 text-blue-800";
-    case "Aprovada":
-      return "bg-green-100 text-green-800";
-    case "Arquivada":
-      return "bg-gray-100 text-gray-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
+// Fila de revisão do agente: só denúncias validadas pela análise automática,
+// da jurisdição do seu posto (ou sem posto). Cada uma aguarda a sua decisão.
 export default function DenunciasPt() {
-
   const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
   const [loading, setLoading] = useState(true);
-  const[error, setError]= useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterEstado, setFilterEstado] = useState("todas");
+  const [filtroTipo, setFiltroTipo] = useState("");
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalItens, setTotalItens] = useState(0);
 
   useEffect(() => {
+    carregarDenuncias(paginaAtual);
+  }, [paginaAtual]);
 
-            carregarDenuncias(paginaAtual);
-
-    }, [paginaAtual]);
-
-
-
-    const carregarDenuncias = async (pagina: number) => {
-
-
-      try{
-        setLoading(true);
-
-        const data= await denunciaService.listarValidadas(pagina);
-
-        setDenuncias(data.results);
-        setTotalItens(data.count);
-      }
-      catch(error){
-        setError("Erro ao carregar denúncias.");
-      }
-      finally{
-        setLoading(false);
-      }
+  const carregarDenuncias = async (pagina: number) => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await denunciaService.listarValidadas(pagina);
+      setDenuncias(data.results);
+      setTotalItens(data.count);
+    } catch (err) {
+      setError(mensagemDeErro(err, "Erro ao carregar as denúncias"));
+    } finally {
+      setLoading(false);
     }
+  };
 
-  
-  const filteredDenuncias = denuncias.filter((denuncia) => {
-    
-    const matchesSearch = denuncia.matricula
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-
-    let matchesEstado = true;
-    if (filterEstado === "validadas") {
-      matchesEstado = denuncia.estado === "VALIDADA";
-    } else if (filterEstado === "todas") {
-      matchesEstado =
-        denuncia.estado === "VALIDADA" ;
-    }
-
-    return matchesSearch && matchesEstado;
-  });
+  const filtradas = denuncias.filter((d) =>
+    (d.matricula ?? "").toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (!filtroTipo || d.tipo_infracao === filtroTipo)
+  );
 
   return (
-    <div className="p-8">
-      {/* Header */}
+    <div className={PAGE}>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Denúncias</h1>
-        <p className="text-gray-600 mt-2">
-          Gerir e analisar denúncias de trânsito
+        <h1 className={PAGE_TITLE}>Denúncias para revisão</h1>
+        <p className={PAGE_SUBTITLE}>
+          Confirmadas pela análise automática, na jurisdição do seu posto. Abra cada uma para aprovar ou rejeitar.
         </p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className={`${CARD} p-4 mb-6`}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Search */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Pesquisar por Matrícula
-            </label>
+            <label className={LABEL}>Pesquisar por matrícula</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
                 placeholder="Ex: AB-12-CD"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`${INPUT} pl-10`}
               />
             </div>
           </div>
-
-          {/* Filter by Estado */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Filtrar por Estado
-            </label>
-            <select
-              value={filterEstado}
-              onChange={(e) => setFilterEstado(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="todas">Todas</option>
-              <option value="validadas">Validadas</option>
-              <option value="aprovadas">Aprovadas (minhas)</option>
-              <option value="arquivadas">Arquivadas (minhas)</option>
+            <label className={LABEL}>Tipo de infração</label>
+            <select value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value)} className={INPUT}>
+              <option value="">Todos</option>
+              {Object.entries(TIPO_LABEL)
+                .filter(([tipo]) => tipo !== "ACIDENTE")
+                .map(([tipo, label]) => (
+                  <option key={tipo} value={tipo}>{label}</option>
+                ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Matrícula
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Tipo de Infração
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Data de Captura
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Estado
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Confiança
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Ações
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredDenuncias.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                    Nenhuma denúncia encontrada
-                  </td>
+      <div className={`${CARD} overflow-hidden`}>
+        {error ? (
+          <div className="text-center py-14">
+            <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
+            <p className="text-rose-600">{error}</p>
+            <button onClick={() => carregarDenuncias(paginaAtual)} className={`${BUTTON_PRIMARY} mt-4`}>
+              Tentar novamente
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className={TABLE_HEAD_CELL}>#</th>
+                  <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                  <th className={TABLE_HEAD_CELL}>Tipo</th>
+                  <th className={TABLE_HEAD_CELL}>Data</th>
+                  <th className={TABLE_HEAD_CELL}>Confiança</th>
+                  <th className={TABLE_HEAD_CELL}></th>
                 </tr>
-              ) : (
-                filteredDenuncias.map((denuncia) => (
-                  <tr key={denuncia.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      #{denuncia.id}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {denuncia.matricula}
-                      {denuncia.localizacao_contraditoria && (
-                        <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
-                          ⚠️ possível falsa
-                        </span>
-                      )}
-                      {!!denuncia.total_relacionadas && (
-                        <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-700">
-                          +{denuncia.total_relacionadas} {denuncia.total_relacionadas === 1 ? "testemunha" : "testemunhas"}
-                        </span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {denuncia.tipo_infracao}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.data_captura}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                          denuncia.estado
-                        )}`}
-                      >
-                        {denuncia.estado}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      <span className="font-medium">{denuncia.confianca}%</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      {denuncia.estado === "Validada" ? (
-                        <Link
-                          to={`/pt/denuncias/${denuncia.id}`}
-                          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                        >
-                          Analisar
-                        </Link>
-                      ) : (
-                        <Link
-                          to={`/pt/denuncias/${denuncia.id}`}
-                          className="text-gray-600 hover:text-gray-700 text-sm font-medium"
-                        >
-                          Ver Detalhes
-                        </Link>
-                      )}
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : filtradas.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                      {denuncias.length === 0 ? "Não há denúncias à espera de revisão" : "Nenhuma denúncia corresponde aos filtros"}
+                    </td>
+                  </tr>
+                ) : (
+                  filtradas.map((d) => (
+                    <tr key={d.id} className={TABLE_ROW_HOVER}>
+                      <td className="px-6 py-4 text-sm text-gray-500">{d.id}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {d.matricula}
+                          {d.localizacao_contraditoria && (
+                            <span className={`${BADGE} bg-rose-50 text-rose-700`}>⚠️ possível falsa</span>
+                          )}
+                          {!!d.total_relacionadas && (
+                            <span className={`${BADGE} bg-violet-50 text-violet-700`}>
+                              +{d.total_relacionadas} {d.total_relacionadas === 1 ? "testemunha" : "testemunhas"}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-700">{labelTipo(d.tipo_infracao)}</td>
+                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{d.data_captura || d.data_registo}</td>
+                      <td className="px-6 py-4 text-sm">
+                        {d.confianca != null ? (
+                          <span className={`${BADGE} ${toneConfianca(d.confianca)}`}>
+                            {Math.round(d.confianca * 100)}%
+                          </span>
+                        ) : (
+                          <span className="text-gray-400">—</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <Link
+                          to={`/pt/denuncias/${d.id}`}
+                          className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          Analisar <ChevronRight size={16} />
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
         <Paginacao
           paginaAtual={paginaAtual}
           totalItens={totalItens}

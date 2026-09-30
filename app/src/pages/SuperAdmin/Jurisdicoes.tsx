@@ -15,6 +15,7 @@ import {
 import { configService } from "../../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../../utils/maps";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/uiClasses";
+import { mostrarErro } from "../../utils/mensagens";
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 const BADGE_TAG = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0";
@@ -74,7 +75,7 @@ export default function Jurisdicoes() {
       const data = await jurisdicaoService.listarPorAdmin(adminId);
       setVias(data);
     } catch (err) {
-      alert("Erro ao carregar vias da jurisdição.");
+      mostrarErro(err, "Erro ao carregar as vias da jurisdição");
     } finally {
       setLoadingVias(false);
     }
@@ -88,7 +89,7 @@ export default function Jurisdicoes() {
       await carregarVias(adminSelecionado);
       return true;
     } catch (err) {
-      alert("Erro ao remover via.");
+      mostrarErro(err, "Erro ao remover a via");
       return false;
     }
   };
@@ -274,7 +275,7 @@ function PesquisaJurisdicao({
       setBairros([]);
       onViasAdicionadas();
     } catch (err) {
-      alert("Erro ao adicionar via.");
+      mostrarErro(err, "Erro ao adicionar a via");
     } finally {
       setAdicionandoId(null);
     }
@@ -350,7 +351,7 @@ function PesquisaJurisdicao({
       setViasDoBairro([]);
       onViasAdicionadas();
     } catch (err) {
-      alert("Erro ao adicionar vias do bairro.");
+      mostrarErro(err, "Erro ao adicionar as vias do bairro");
     } finally {
       setAdicionando(false);
     }

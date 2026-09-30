@@ -3,6 +3,7 @@ import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
 import { superAdminService, type cidadao } from "../../api/superAdminService";
 import Paginacao from "../../components/Paginacao";
 import { CARD, INPUT, BUTTON_PRIMARY, BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+import { mostrarErro } from "../../utils/mensagens";
 
 const TAMANHO_PAGINA = 20;
 
@@ -46,7 +47,7 @@ export default function Cidadaos() {
         prev.map(c => (c.id === cidadao.id ? { ...c, ativo: !c.ativo } : c))
       );
     } catch (err) {
-      alert("Erro ao alterar estado do cidadão");
+      mostrarErro(err, "Erro ao alterar o estado do cidadão");
     } finally {
       setAtualizandoId(null);
     }
@@ -90,7 +91,7 @@ export default function Cidadaos() {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
           <input
             type="text"
-            placeholder="Buscar por nome ou email..."
+            placeholder="Pesquisar por nome ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className={`${INPUT} pl-10`}
@@ -108,7 +109,7 @@ export default function Cidadaos() {
               <th className={TABLE_HEAD_CELL}>Email</th>
               <th className={TABLE_HEAD_CELL}>Número</th>
               <th className={TABLE_HEAD_CELL}>Data de Registo</th>
-              <th className={TABLE_HEAD_CELL}>Status</th>
+              <th className={TABLE_HEAD_CELL}>Estado</th>
               <th className={TABLE_HEAD_CELL}>Ações</th>
             </tr>
           </thead>

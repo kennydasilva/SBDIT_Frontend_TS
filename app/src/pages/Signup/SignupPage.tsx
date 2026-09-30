@@ -3,24 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2 } from "lucide-react";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import AuthLayout from "../../components/auth/AuthLayout";
 import { signup } from "../../api/authService";
-import {
-  nomeSchema,
-  emailSchema,
-  passwordSchema,
-  telefoneSchema,
-} from "../../utils/validationSchemas";
+import { nomeSchema, emailSchema, passwordSchema, telefoneSchema } from "../../utils/validationSchemas";
+import { INPUT, LABEL, BUTTON_PRIMARY, ALERT_ERROR, FIELD_HINT, LINK } from "../../utils/uiClasses";
+import { mensagemDeErro } from "../../utils/mensagens";
 
 const signupSchema = z
   .object({
@@ -37,187 +27,83 @@ const signupSchema = z
 
 type SignupFormData = z.infer<typeof signupSchema>;
 
+const CAMPOS: {
+  name: keyof SignupFormData;
+  label: string;
+  type: string;
+  placeholder: string;
+  autoComplete: string;
+  dica?: string;
+}[] = [
+  { name: "nome", label: "Nome completo", type: "text", placeholder: "Ex: Ana Machava", autoComplete: "name" },
+  { name: "email", label: "Email", type: "email", placeholder: "nome@exemplo.com", autoComplete: "email" },
+  { name: "numero", label: "Telemóvel", type: "tel", placeholder: "+258 84 123 4567", autoComplete: "tel" },
+  {
+    name: "password", label: "Senha", type: "password", placeholder: "Crie uma senha", autoComplete: "new-password",
+    dica: "Mínimo 8 caracteres, com maiúscula, minúscula e número.",
+  },
+  { name: "confirmarPassword", label: "Confirmar senha", type: "password", placeholder: "Repita a senha", autoComplete: "new-password" },
+];
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const [erro, setErro] = useState<string | null>(null);
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
-    defaultValues: {
-      nome: "",
-      email: "",
-      numero: "",
-      password: "",
-      confirmarPassword: "",
-    },
+    defaultValues: { nome: "", email: "", numero: "", password: "", confirmarPassword: "" },
   });
 
   const onSubmit = async (data: SignupFormData) => {
     setErro(null);
-
     try {
-      await signup({
-        nome: data.nome,
-        email: data.email,
-        password: data.password,
-        numero: data.numero,
-      });
-
+      await signup({ nome: data.nome, email: data.email, password: data.password, numero: data.numero });
       navigate("/login", { state: { cadastroSucesso: true } });
-    } catch (error: any) {
-      const mensagem =
-        error?.response?.data?.error ||
-        "Não foi possível concluir o cadastro. Tente novamente.";
-      setErro(mensagem);
+    } catch (error) {
+      setErro(mensagemDeErro(error, "Não foi possível concluir o registo. Tente novamente."));
     }
   };
 
+  const aEnviar = form.formState.isSubmitting;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-xl">
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1E40AF] shadow-lg">
-            <span className="text-3xl font-bold text-white">SGDIT</span>
-          </div>
-          <h2 className="text-3xl font-bold text-[#1E40AF]">
-            Criar Conta de Cidadão
-          </h2>
-          <p className="mt-3 text-base text-gray-600">
-            Preencha os dados para se registar no sistema
-          </p>
-        </div>
+    <AuthLayout
+      titulo="Criar conta"
+      subtitulo="Registe-se para denunciar infrações de trânsito"
+      rodape={
+        <>
+          Já tem conta?{" "}
+          <Link to="/login" className={LINK}>Entrar</Link>
+        </>
+      }
+    >
+      {erro && <div className={`${ALERT_ERROR} mb-5`}>{erro}</div>}
 
-        {erro && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">
-            {erro}
-          </div>
-        )}
-
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          {CAMPOS.map((c) => (
             <FormField
+              key={c.name}
               control={form.control}
-              name="nome"
+              name={c.name}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700">Nome completo</FormLabel>
+                  <FormLabel className={LABEL}>{c.label}</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Ex: João Manuel"
-                      autoComplete="name"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
+                    <input type={c.type} autoComplete={c.autoComplete} placeholder={c.placeholder} disabled={aEnviar} className={INPUT} {...field} />
                   </FormControl>
-                  <FormMessage />
+                  {c.dica && <p className={FIELD_HINT}>{c.dica}</p>}
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
+          ))}
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="seu.email@exemplo.com"
-                      type="email"
-                      autoComplete="email"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="numero"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Número de telefone</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="+258 84 123 4567"
-                      autoComplete="tel"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Mínimo 8 caracteres, maiúscula, minúscula e número"
-                      type="password"
-                      autoComplete="new-password"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="confirmarPassword"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700">Confirmar senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Repita a senha"
-                      type="password"
-                      autoComplete="new-password"
-                      disabled={form.formState.isSubmitting}
-                      className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button
-              type="submit"
-              className="w-full bg-[#1E40AF] hover:bg-[#2563EB] transition-colors"
-              disabled={form.formState.isSubmitting}
-            >
-              {form.formState.isSubmitting ? "A criar conta..." : "Criar Conta"}
-            </Button>
-
-            <div className="text-center text-sm text-gray-600">
-              Já tem uma conta?{" "}
-              <Link
-                to="/login"
-                className="text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors font-medium"
-              >
-                Entrar
-              </Link>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </div>
+          <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full mt-2`}>
+            {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A criar conta...</> : "Criar conta"}
+          </button>
+        </form>
+      </Form>
+    </AuthLayout>
   );
 }

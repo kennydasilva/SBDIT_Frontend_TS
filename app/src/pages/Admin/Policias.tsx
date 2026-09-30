@@ -1,70 +1,39 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
-import { ptService} from "../../api/ptService";
-import type { 
-  CreatePTData,
-  UpdatePTData,
-  PT
-} from "../../api/ptService";
+import { ptService } from "../../api/ptService";
+import type { CreatePTData, UpdatePTData, PT } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";
 import { REGEX } from "../../utils/validationSchemas";
 import Paginacao from "../../components/Paginacao";
+import { mostrarSucesso, mensagemDeErro } from "../../utils/mensagens";
+import {
+  PAGE, PAGE_TITLE, PAGE_SUBTITLE, CARD, INPUT, LABEL, FIELD_ERROR, FIELD_HINT,
+  BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, ALERT_ERROR,
+  TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
+} from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
 
+const FORM_VAZIO = { nome: "", email: "", senha: "", numero_agente: "", localizacao: "" };
 
+type Erros = Partial<Record<keyof typeof FORM_VAZIO, string>>;
 
-
+// Agentes (PT) do posto do Admin autenticado.
 export default function PTs() {
-
   const { user, loading: authLoading } = useAuth();
   const [pts, setPts] = useState<PT[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showFormModal, setShowFormModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedPt, setSelectedPt] = useState<PT | null>(null);
-  const [loading, setLoading]= useState(true);
-  const [submitting, setSubmitting]= useState(false);
-  const [error, setError]= useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [erroModal, setErroModal] = useState<string | null>(null);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalItens, setTotalItens] = useState(0);
-  const [formData, setFormData] = useState({
-    nome: "",
-    email: "",
-    senha: "",
-    numero_agente: "",
-    localizacao: "Maputo"
-  });
-  const [fieldErrors, setFieldErrors] = useState<{
-    nome?: string;
-    email?: string;
-    senha?: string;
-    numero_agente?: string;
-  }>({});
-
-  const validate = (isCreate: boolean) => {
-    const errors: typeof fieldErrors = {};
-
-    if (!REGEX.nome.test(formData.nome)) {
-      errors.nome = "O nome deve conter apenas letras e espaços (2-100 caracteres)";
-    }
-
-    if (isCreate && !REGEX.email.test(formData.email)) {
-      errors.email = "Digite um email válido";
-    }
-
-    if (isCreate && !REGEX.password.test(formData.senha)) {
-      errors.senha = "A senha deve ter no mínimo 8 caracteres, com maiúscula, minúscula e número";
-    }
-
-    if (!REGEX.numeroAgente.test(formData.numero_agente)) {
-      errors.numero_agente = "Número de agente inválido (apenas letras, números e hífen)";
-    }
-
-    setFieldErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
+  const [formData, setFormData] = useState(FORM_VAZIO);
+  const [fieldErrors, setFieldErrors] = useState<Erros>({});
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -72,169 +41,140 @@ export default function PTs() {
     }
   }, [authLoading, user, paginaAtual]);
 
-
   const carregarPts = async (pagina: number = paginaAtual) => {
     if (!user) return;
-
     try {
       setLoading(true);
       setError(null);
-
       const data = await ptService.listarPT(user.id, pagina);
       setPts(data.results);
       setTotalItens(data.count);
-
-    } catch (error: any) {
-      console.error("Erro ao carregar Policias:", error);
-      setError(error.response?.data?.message || "Erro ao carregar Policias");
+    } catch (err) {
+      setError(mensagemDeErro(err, "Erro ao carregar os agentes"));
     } finally {
       setLoading(false);
     }
   };
 
-  const filteredPoliciais = pts.filter(pts =>
-    pts.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    pts.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const validate = (isCreate: boolean) => {
+    const errors: Erros = {};
+    if (!REGEX.nome.test(formData.nome)) errors.nome = "Apenas letras e espaços (2-100 caracteres)";
+    if (isCreate && !REGEX.email.test(formData.email)) errors.email = "Indique um email válido";
+    if (isCreate && !REGEX.password.test(formData.senha)) errors.senha = "Mínimo 8 caracteres, com maiúscula, minúscula e número";
+    if (!REGEX.numeroAgente.test(formData.numero_agente)) errors.numero_agente = "Apenas letras, números e hífen (2-20)";
+    if (!REGEX.localizacao.test(formData.localizacao)) errors.localizacao = "Indique a zona de atuação (3-200 caracteres)";
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
-  const handleCreate = async() => {
-    if (!user) {
-        alert("Usuário não autenticado.");
-        return;
-    }
+  const abrirCriar = () => {
+    setSelectedPt(null);
+    setFormData(FORM_VAZIO);
+    setFieldErrors({});
+    setErroModal(null);
+    setShowFormModal(true);
+  };
 
-    if (!validate(true)) return;
+  const abrirEditar = (pt: PT) => {
+    setSelectedPt(pt);
+    setFormData({ nome: pt.nome, email: pt.email, senha: "", numero_agente: pt.numero_agente, localizacao: pt.localizacao });
+    setFieldErrors({});
+    setErroModal(null);
+    setShowFormModal(true);
+  };
 
-    try{
+  const fecharModal = () => {
+    setShowFormModal(false);
+    setSelectedPt(null);
+  };
 
+  const handleGuardar = async () => {
+    if (!user || !validate(!selectedPt)) return;
 
-        setSubmitting(true);
+    try {
+      setSubmitting(true);
+      setErroModal(null);
 
+      if (selectedPt) {
+        const updateData: UpdatePTData = {
+          pt_id: selectedPt.id,
+          nome: formData.nome,
+          numero_agente: formData.numero_agente,
+          localizacao: formData.localizacao,
+        };
+        await ptService.atualizarPT(updateData);
+        mostrarSucesso("Agente atualizado.");
+      } else {
         const createData: CreatePTData = {
           nome: formData.nome,
           email: formData.email,
           password: formData.senha,
           numero_agente: formData.numero_agente,
           localizacao: formData.localizacao,
-          admin_id: user.id
-      
+          admin_id: user.id,
         };
-
-
         await ptService.criarPT(createData);
-        await carregarPts();
-        setShowCreateModal(false);
-        resetForm();
-    
-  
-  }catch(error){
-      console.error("Erro ao criar Policia: ", error);
-      
-      let errorMessage = "Erro ao criar policia";
-      if (error && typeof error === 'object' && 'response' in error) {
-        const axiosError = error as { response?: { data?: { message?: string } } };
-        errorMessage = axiosError.response?.data?.message || errorMessage;
-      }
-      alert(errorMessage);
-
-  }
-  finally{
-    setSubmitting(false);
-  }
-  
-  };
-
-  const handleEdit = (pt: PT) => {
-    setSelectedPt(pt);
-    setFormData({
-      nome: pt.nome,
-      email: pt.email,
-      senha: "",
-      numero_agente: pt.numero_agente,
-      localizacao:pt.localizacao,
-    });
-    setShowCreateModal(true);
-  };
-
-  const handleUpdate = async () => {
-    if (!selectedPt) return;
-    if (!validate(false)) return;
-
-    try{
-      setSubmitting(true);
-
-      const updateData: UpdatePTData={
-        pt_id: selectedPt.id,
-        nome: formData.nome,
-        numero_agente: formData.numero_agente,
-        localizacao: formData.localizacao,
+        mostrarSucesso("Agente criado.");
       }
 
-      ptService.atualizarPT(updateData);
+      fecharModal();
       await carregarPts();
-      setShowCreateModal(false);
-      setSelectedPt(null);
-      resetForm();
-
-    }
-    catch(error: any){
-      console.error("Erro ao atualizar Policia: ", error);
-      alert(error.response?.data?.message || "Erro ao atualizar Policia");
-
-    }
-    finally{
+    } catch (err) {
+      setErroModal(mensagemDeErro(err, selectedPt ? "Erro ao atualizar o agente" : "Erro ao criar o agente"));
+    } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async () => {
     if (!selectedPt) return;
-
-    try{
+    try {
       setSubmitting(true);
       await ptService.apagarPT(selectedPt.id);
-      await carregarPts();
+      mostrarSucesso("Agente eliminado.");
       setShowDeleteModal(false);
       setSelectedPt(null);
-    }catch(error: any){
-      console.error("Erro ao excluir Policia: ", error);
-      alert(error.response?.data?.message || "Erro ao excluir Policia");
-    }
-    finally{
+      await carregarPts();
+    } catch (err) {
+      setErroModal(mensagemDeErro(err, "Erro ao eliminar o agente"));
+    } finally {
       setSubmitting(false);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      nome: "",
-      email: "",
-      senha: "",
-      numero_agente:"",
-      localizacao:"Maputo"
-    });
-    setFieldErrors({});
-  };
+  const filtrados = pts.filter((p) =>
+    p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-  
+  const campo = (
+    nome: keyof typeof FORM_VAZIO,
+    label: string,
+    props: React.InputHTMLAttributes<HTMLInputElement> = {},
+    dica?: string
+  ) => (
+    <div>
+      <label className={LABEL}>{label}</label>
+      <input
+        value={formData[nome]}
+        onChange={(e) => setFormData({ ...formData, [nome]: e.target.value })}
+        className={INPUT}
+        disabled={submitting}
+        {...props}
+      />
+      {dica && <p className={FIELD_HINT}>{dica}</p>}
+      {fieldErrors[nome] && <p className={FIELD_ERROR}>{fieldErrors[nome]}</p>}
+    </div>
+  );
+
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-full min-h-[60vh]">
         <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => carregarPts(paginaAtual)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Tentar Novamente
+          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
+          <p className="text-rose-600">{error}</p>
+          <button onClick={() => carregarPts(paginaAtual)} className={`${BUTTON_PRIMARY} mt-4`}>
+            Tentar novamente
           </button>
         </div>
       </div>
@@ -242,82 +182,78 @@ export default function PTs() {
   }
 
   return (
-    <div className="p-8">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Gestão de Policias</h1>
-        <button
-          onClick={() => {
-            setSelectedPt(null);
-            resetForm();
-            setShowCreateModal(true);
-          }}
-          className="flex items-center gap-2 bg-[#2563EB] text-white px-4 py-2 rounded-lg hover:bg-[#1E40AF] transition-colors"
-        >
-          <Plus size={20} />
-          Novo Policia
+    <div className={PAGE}>
+      <div className="flex items-start justify-between gap-4 mb-8">
+        <div>
+          <h1 className={PAGE_TITLE}>Agentes do posto</h1>
+          <p className={PAGE_SUBTITLE}>Agentes de trânsito que respondem pela jurisdição do seu posto</p>
+        </div>
+        <button onClick={abrirCriar} className={BUTTON_PRIMARY}>
+          <Plus size={18} />
+          Novo agente
         </button>
       </div>
 
-      {/* Search Bar */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
+      <div className={`${CARD} p-4 mb-6`}>
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
           <input
             type="text"
-            placeholder="Buscar por nome ou email..."
+            placeholder="Pesquisar por nome ou email..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`${INPUT} pl-10`}
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Numero do Agente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localizacao</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th className={TABLE_HEAD_CELL}>Nome</th>
+              <th className={TABLE_HEAD_CELL}>Email</th>
+              <th className={TABLE_HEAD_CELL}>N.º de agente</th>
+              <th className={TABLE_HEAD_CELL}>Zona de atuação</th>
+              <th className={`${TABLE_HEAD_CELL} text-right`}>Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredPoliciais.length === 0 ? (
+          <tbody className="divide-y divide-gray-50">
+            {loading ? (
               <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                  Nenhum policia encontrado
+                <td colSpan={5} className="px-6 py-10 text-center">
+                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+                </td>
+              </tr>
+            ) : filtrados.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                  {searchTerm ? "Nenhum agente corresponde à pesquisa" : "Ainda não há agentes neste posto"}
                 </td>
               </tr>
             ) : (
-              filteredPoliciais.map((pts) => (
-                <tr key={pts.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{pts.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pts.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.numero_agente}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pts.localizacao}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+              filtrados.map((pt) => (
+                <tr key={pt.id} className={TABLE_ROW_HOVER}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pt.nome}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.numero_agente}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.localizacao}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <button
-                      onClick={() => handleEdit(pts)}
-                      className="text-[#2563EB] hover:text-[#1E40AF] mr-3"
+                      onClick={() => abrirEditar(pt)}
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 mr-1"
+                      title="Editar"
                       disabled={submitting}
                     >
-                      <Pencil size={18} />
+                      <Pencil size={17} />
                     </button>
                     <button
-                      onClick={() => {
-                        setSelectedPt(pts);
-                        setShowDeleteModal(true);
-                      }}
-                      className="text-red-600 hover:text-red-800"
+                      onClick={() => { setSelectedPt(pt); setErroModal(null); setShowDeleteModal(true); }}
+                      className="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50"
+                      title="Eliminar"
                       disabled={submitting}
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={17} />
                     </button>
                   </td>
                 </tr>
@@ -334,155 +270,64 @@ export default function PTs() {
         />
       </div>
 
-      {/* Create/Edit Modal */}
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {selectedPt ? "Editar Administrador" : "Criar Novo Administrador"}
+      {showFormModal && (
+        <div className={MODAL_OVERLAY}>
+          <div className={MODAL_CARD}>
+            <h2 className="text-lg font-semibold text-gray-900 mb-5">
+              {selectedPt ? "Editar agente" : "Novo agente"}
             </h2>
 
+            {erroModal && <div className={`${ALERT_ERROR} mb-4`}>{erroModal}</div>}
+
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                <input
-                  type="text"
-                  value={formData.nome}
-                  onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting}
-                />
-                {fieldErrors.nome && (
-                  <p className="text-xs text-red-600 mt-1">{fieldErrors.nome}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting || !!selectedPt}
-                />
-                {selectedPt && (
-                  <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
-                )}
-                {fieldErrors.email && (
-                  <p className="text-xs text-red-600 mt-1">{fieldErrors.email}</p>
-                )}
-              </div>
-
-              {!selectedPt && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Senha</label>
-                  <input
-                    type="password"
-                    value={formData.senha}
-                    onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    disabled={submitting}
-                  />
-                  {fieldErrors.senha && (
-                    <p className="text-xs text-red-600 mt-1">{fieldErrors.senha}</p>
-                  )}
-                </div>
+              {campo("nome", "Nome completo", { placeholder: "Ex: João Cossa" })}
+              {campo(
+                "email", "Email",
+                { type: "email", disabled: submitting || !!selectedPt, placeholder: "nome@exemplo.com" },
+                selectedPt ? "O email não pode ser alterado." : undefined
               )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Numero do agente</label>
-                <input
-                  type="text"
-                  value={formData.numero_agente}
-                  onChange={(e) => setFormData({ ...formData, numero_agente: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting}
-                />
-                {fieldErrors.numero_agente && (
-                  <p className="text-xs text-red-600 mt-1">{fieldErrors.numero_agente}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
-                <select
-                  value={formData.localizacao}
-                  onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={submitting}
-                >
-                  <option value="Comando Geral">Comando Geral</option>
-                  <option value="Regional">Regional</option>
-                  <option value="Municipal">Municipal</option>
-                </select>
-              </div>
-
-             
+              {!selectedPt && campo(
+                "senha", "Senha inicial",
+                { type: "password", autoComplete: "new-password" },
+                "Mínimo 8 caracteres, com maiúscula, minúscula e número."
+              )}
+              {campo("numero_agente", "N.º de agente", { placeholder: "Ex: PT-0452" })}
+              {campo("localizacao", "Zona de atuação", { placeholder: "Ex: Av. Julius Nyerere / Mavalane" })}
             </div>
 
             <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowCreateModal(false);
-                  setSelectedPt(null);
-                  resetForm();
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                disabled={submitting}
-              >
+              <button onClick={fecharModal} className={`${BUTTON_SECONDARY} flex-1`} disabled={submitting}>
                 Cancelar
               </button>
-              <button
-                onClick={selectedPt ? handleUpdate : handleCreate}
-                className="flex-1 px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1E40AF] transition-colors disabled:opacity-50"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                ) : (
-                  "Salvar"
-                )}
+              <button onClick={handleGuardar} className={`${BUTTON_PRIMARY} flex-1`} disabled={submitting}>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Delete Modal */}
       {showDeleteModal && selectedPt && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <div className="flex items-center justify-center w-12 h-12 bg-red-100 rounded-full mx-auto mb-4">
-              <AlertTriangle className="text-red-600" size={24} />
+        <div className={MODAL_OVERLAY}>
+          <div className={MODAL_CARD}>
+            <div className="flex items-center justify-center w-12 h-12 bg-rose-50 rounded-full mx-auto mb-4">
+              <AlertTriangle className="text-rose-600" size={24} />
             </div>
-
-            <h2 className="text-xl font-bold text-gray-900 text-center mb-2">Confirmar Exclusão</h2>
-            <p className="text-gray-600 text-center mb-6">
-              Tem certeza que deseja excluir o policia <strong>{selectedPt.nome}</strong>?
+            <h2 className="text-lg font-semibold text-gray-900 text-center mb-2">Eliminar agente</h2>
+            <p className="text-sm text-gray-600 text-center mb-6">
+              Tem a certeza de que quer eliminar <strong>{selectedPt.nome}</strong>? Esta ação não pode ser desfeita.
             </p>
-
+            {erroModal && <div className={`${ALERT_ERROR} mb-4`}>{erroModal}</div>}
             <div className="flex gap-3">
               <button
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setSelectedPt(null);
-                }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                onClick={() => { setShowDeleteModal(false); setSelectedPt(null); }}
+                className={`${BUTTON_SECONDARY} flex-1`}
                 disabled={submitting}
               >
                 Cancelar
               </button>
-              <button
-                onClick={handleDelete}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
-                disabled={submitting}
-              >
-                {submitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-                ) : (
-                  "Excluir"
-                )}
+              <button onClick={handleDelete} className={`${BUTTON_DANGER} flex-1`} disabled={submitting}>
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Eliminar"}
               </button>
             </div>
           </div>

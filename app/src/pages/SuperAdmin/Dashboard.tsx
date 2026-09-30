@@ -52,7 +52,7 @@ export default function Dashboard() {
 
   const stats = [
     { label: "Administradores", value: contagens.admins, icon: Users, bg: "bg-blue-50", fg: "text-blue-600" },
-    { label: "Policiais", value: contagens.policiais, icon: Shield, bg: "bg-indigo-50", fg: "text-indigo-600" },
+    { label: "Agentes", value: contagens.policiais, icon: Shield, bg: "bg-indigo-50", fg: "text-indigo-600" },
     { label: "Cidadãos", value: contagens.cidadaos, icon: UserCircle, bg: "bg-purple-50", fg: "text-purple-600" },
     { label: "Denúncias", value: contagens.denuncias, icon: AlertTriangle, bg: "bg-orange-50", fg: "text-orange-600" },
   ];

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Search, Eye } from "lucide-react";
+import { Search, Eye, Loader2 } from "lucide-react";
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
 import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { CARD, INPUT, PAGE, PAGE_SUBTITLE, PAGE_TITLE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
 
@@ -63,17 +64,17 @@ export default function MinhasDenuncias() {
   });
 
   return (
-    <div className="p-8">
+    <div className={PAGE}>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Minhas Denúncias</h1>
-        <p className="text-gray-600 mt-2">
-          Acompanhe o status de todas as suas denúncias
+        <h1 className={PAGE_TITLE}>Minhas Denúncias</h1>
+        <p className={PAGE_SUBTITLE}>
+          Acompanhe o estado de todas as suas denúncias
         </p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div className={`${CARD} p-6 mb-6`}>
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search Bar */}
           <div className="flex-1 relative">
@@ -83,10 +84,10 @@ export default function MinhasDenuncias() {
             />
             <input
               type="text"
-              placeholder="Buscar por matrícula ou estado..."
+              placeholder="Pesquisar por matrícula..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`${INPUT} pl-10`}
             />
           </div>
 
@@ -110,43 +111,51 @@ export default function MinhasDenuncias() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className={`${CARD} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50">
+            <thead className="border-b border-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   Matrícula
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   Tipo de Infração
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   Data
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   Estado
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className={TABLE_HEAD_CELL}>
                   Ações
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredDenuncias.length === 0 ? (
+            <tbody className="divide-y divide-gray-50">
+              {loading ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center">
-                    <p className="text-gray-500">
-                      Nenhuma denúncia encontrada
-                    </p>
+                  <td colSpan={6} className="px-6 py-10 text-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-rose-600">{error}</td>
+                </tr>
+              ) : filteredDenuncias.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
+                    {denuncias.length === 0 ? "Ainda não fez nenhuma denúncia" : "Nenhuma denúncia corresponde aos filtros"}
                   </td>
                 </tr>
               ) : (
                 filteredDenuncias.map((denuncia) => (
-                  <tr key={denuncia.id} className="hover:bg-gray-50">
+                  <tr key={denuncia.id} className={TABLE_ROW_HOVER}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       #{denuncia.id}
                     </td>

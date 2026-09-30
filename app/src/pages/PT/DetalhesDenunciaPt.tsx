@@ -4,7 +4,12 @@ import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2, Users } fro
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada, type DenunciaTestemunha } from "../../api/denunciaService";
-import { labelEstado, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { mensagemDeErro } from "../../utils/mensagens";
+import {
+  PAGE, PAGE_TITLE, CARD, SECTION_TITLE, INPUT, LABEL, BADGE,
+  BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, ALERT_ERROR,
+} from "../../utils/uiClasses";
 import { REGEX } from "../../utils/validationSchemas";
 
 export default function DetalhesDenunciaPt() {
@@ -69,7 +74,7 @@ export default function DetalhesDenunciaPt() {
 
   const handleAprovar = async () => {
     if (!codigoLegal.trim()) {
-      toast.error("Por favor, preencha o código legal");
+      toast.error("Indique o código legal para aprovar");
       return;
     }
 
@@ -87,10 +92,10 @@ export default function DetalhesDenunciaPt() {
         denuncia_id: denuncia?.id || 0,
         estado: "APROVADA"
       });
-      toast.success("Denúncia aprovada com sucesso!");
+      toast.success("Denúncia aprovada.");
       navigate("/pt/denuncias");
     } catch (error) {
-      toast.error("Erro ao aprovar denúncia");
+      toast.error(mensagemDeErro(error, "Erro ao aprovar a denúncia"));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -99,7 +104,7 @@ export default function DetalhesDenunciaPt() {
 
   const handleArquivar = async () => {
     if (!descricao.trim()) {
-      toast.error("Por favor, adicione uma descrição para arquivamento");
+      toast.error("Indique o motivo do arquivamento nas observações");
       return;
     }
 
@@ -112,10 +117,10 @@ export default function DetalhesDenunciaPt() {
         denuncia_id: denuncia?.id || 0,
         estado: "ARQUIVADA"
       });
-      toast.success("Denúncia arquivada com sucesso!");
+      toast.success("Denúncia arquivada.");
       navigate("/pt/denuncias");
     } catch (error) {
-      toast.error("Erro ao arquivar denúncia");
+      toast.error(mensagemDeErro(error, "Erro ao arquivar a denúncia"));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -137,10 +142,10 @@ export default function DetalhesDenunciaPt() {
         denuncia_id: denuncia?.id || 0,
         estado: denuncia?.estado || "VALIDADA"
       });
-      toast.success("Decisão atualizada com sucesso!");
+      toast.success("Decisão atualizada.");
       setIsEditing(false);
     } catch (error) {
-      toast.error("Erro ao atualizar decisão");
+      toast.error(mensagemDeErro(error, "Erro ao atualizar a decisão"));
       console.error(error);
     } finally {
       setIsSubmitting(false);
@@ -148,66 +153,73 @@ export default function DetalhesDenunciaPt() {
   };
   const confiancaPercent = Math.round((Number(denuncia?.confianca) || 0) * 100);
 
-  const getStatusColor = (estado: string) => {
-    switch (estado) {
-      case "VALIDADA":
-        return "bg-blue-100 text-blue-800";
-      case "APROVADA":
-        return "bg-green-100 text-green-800";
-      case "ARQUIVADA":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
+
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  if (error || !denuncia) {
+    return (
+      <div className={PAGE}>
+        <div className={ALERT_ERROR}>{error ?? "Denúncia não encontrada."}</div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-8">
+    <div className={PAGE}>
       {/* Header */}
       <div className="mb-8">
         <Link
           to="/pt/denuncias"
-          className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4"
+          className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 mb-4"
         >
-          <ArrowLeft size={20} className="mr-2" />
-          Voltar às Denúncias
+          <ArrowLeft size={18} className="mr-1.5" />
+          Voltar às denúncias
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">
-          Análise da Denúncia #{denuncia?.id}
-        </h1>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className={PAGE_TITLE}>Denúncia #{denuncia?.id}</h1>
+          {denuncia && (
+            <span className={`${BADGE} ${toneEstado(denuncia.estado)}`}>
+              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
+              {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Info Cards */}
         <div className="space-y-6">
           {/* Informações Gerais */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <div className={`${CARD} p-6`}>
+            <h2 className={`${SECTION_TITLE} mb-4`}>
               Informações Gerais
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Matrícula</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Matrícula</p>
                 <p className="font-medium text-gray-900">{denuncia?.matricula}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Tipo de Infração</p>
-                <p className="font-medium text-gray-900">{denuncia?.tipo_infracao}</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Infração</p>
+                <p className="font-medium text-gray-900">{labelTipo(denuncia?.tipo_infracao ?? "")}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Estado</p>
-                <span
-                  className={`inline-block px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                    denuncia?.estado || " "
-                  )}`}
-                >
-                  {denuncia?.estado}
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</p>
+                <span className={`${BADGE} ${toneEstado(denuncia?.estado ?? "")} mt-1`}>
+                  {labelEstado(denuncia?.estado ?? "", denuncia?.tipo_infracao)}
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={16} className="text-blue-500 mt-1" />
+                <MapPin size={16} className="text-gray-400 mt-1" />
                 <div>
-                  <p className="text-sm text-gray-600">Localização</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Localização</p>
                   <p className="font-medium text-gray-900">
                     {denuncia?.localizacao}
                   </p>
@@ -215,14 +227,14 @@ export default function DetalhesDenunciaPt() {
               </div>
               {denuncia?.sentido_direccao && (
                 <div>
-                  <p className="text-sm text-gray-600">Sentido</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Sentido</p>
                   <p className="font-medium text-gray-900">{denuncia?.sentido_direccao}</p>
                 </div>
               )}
               <div className="flex items-start gap-2">
-                <Calendar size={16} className="text-green-500 mt-1" />
+                <Calendar size={16} className="text-gray-400 mt-1" />
                 <div>
-                  <p className="text-sm text-gray-600">Data</p>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Data</p>
                   <p className="font-medium text-gray-900">
                     {denuncia?.data_captura}
                   </p>
@@ -232,19 +244,19 @@ export default function DetalhesDenunciaPt() {
           </div>
 
           {/* Resultado Automático */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Resultado Automático 
+          <div className={`${CARD} p-6`}>
+            <h2 className={`${SECTION_TITLE} mb-4`}>
+              Análise automática
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-sm text-gray-600">Infração Detectada</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Infração Detectada</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.infracao_detectada ? "Sim" : "Não"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Confiança</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Confiança</p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
@@ -259,13 +271,13 @@ export default function DetalhesDenunciaPt() {
                 </div>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Código Legal Sugerido</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Código Legal Sugerido</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.codigo_legal}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-600">Data da Análise</p>
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Data da Análise</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.data_analise}
                 </p>
@@ -277,9 +289,9 @@ export default function DetalhesDenunciaPt() {
         {/* Right Column - Videos and Decision */}
         <div className="lg:col-span-2 space-y-6">
           {/* Videos */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              Análise de Vídeo
+          <div className={`${CARD} p-6`}>
+            <h2 className={`${SECTION_TITLE} mb-4`}>
+              Vídeos
             </h2>
 
             {denuncia?.ficheiro_processado ? (
@@ -384,8 +396,8 @@ export default function DetalhesDenunciaPt() {
 
           {/* Vídeos das testemunhas */}
           {testemunhas.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+            <div className={`${CARD} p-6`}>
+              <h2 className={`${SECTION_TITLE} mb-1 flex items-center gap-2`}>
                 <Users size={20} className="text-violet-600" />
                 Vídeos das testemunhas ({testemunhas.length})
               </h2>
@@ -449,37 +461,33 @@ export default function DetalhesDenunciaPt() {
           )}
 
           {/* Decision Form */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
-              {denuncia?.estado === "VALIDADA" ? "Decisão do PT" : "Decisão Registrada"}
+          <div className={`${CARD} p-6`}>
+            <h2 className={`${SECTION_TITLE} mb-4`}>
+              {denuncia?.estado === "VALIDADA" ? "A sua decisão" : "Decisão registada"}
             </h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Código Legal
-                </label>
+                <label className={LABEL}>Código legal</label>
                 <input
                   type="text"
                   value={codigoLegal}
                   onChange={(e) => setCodigoLegal(e.target.value)}
                   disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed`}
                   placeholder="Ex: Art. 24º - Circulação em Contramão"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descrição do PT
-                </label>
+                <label className={LABEL}>Observações do agente</label>
                 <textarea
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
                   disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  placeholder="Adicione observações sobre a denúncia..."
+                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed`}
+                  placeholder="Motivo da decisão (obrigatório para arquivar)"
                 />
               </div>
 
@@ -489,26 +497,18 @@ export default function DetalhesDenunciaPt() {
                   <button
                     onClick={handleAprovar}
                     disabled={isSubmitting}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className={`${BUTTON_PRIMARY} flex-1 py-3`}
                   >
-                    {isSubmitting ? (
-                      <Loader2 className="animate-spin text-white" size={20} />
-                    ) : (
-                      <CheckCircle className="text-white" size={20} />
-                    )}
-                    Aprovar Denúncia
+                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
+                    Aprovar denúncia
                   </button>
                   <button
                     onClick={handleArquivar}
                     disabled={isSubmitting}
-                    className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className={`${BUTTON_DANGER} flex-1 py-3`}
                   >
-                    {isSubmitting ? (
-                      <Loader2 className="animate-spin text-white" size={20} />
-                    ) : (
-                      <Archive className="text-white" size={20} />
-                    )}
-                    Arquivar Denúncia
+                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Archive size={18} />}
+                    Arquivar denúncia
                   </button>
                 </div>
               )}
@@ -520,17 +520,15 @@ export default function DetalhesDenunciaPt() {
                       <button
                         onClick={handleAtualizar}
                         disabled={isSubmitting}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className={`${BUTTON_PRIMARY} flex-1`}
                       >
-                        {isSubmitting ? (
-                          <Loader2 className="animate-spin" size={20} />
-                        ) : null}
-                        Salvar Alterações
+                        {isSubmitting && <Loader2 className="animate-spin" size={18} />}
+                        Guardar alterações
                       </button>
                       <button
                         onClick={() => setIsEditing(false)}
                         disabled={isSubmitting}
-                        className="px-6 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={BUTTON_SECONDARY}
                       >
                         Cancelar
                       </button>
@@ -538,9 +536,9 @@ export default function DetalhesDenunciaPt() {
                   ) : (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                      className={`${BUTTON_SECONDARY} w-full`}
                     >
-                      Atualizar Decisão
+                      Alterar decisão
                     </button>
                   )}
                 </div>

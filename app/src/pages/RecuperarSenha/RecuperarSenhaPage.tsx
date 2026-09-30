@@ -3,23 +3,15 @@ import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Loader2, MailCheck } from "lucide-react";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "../../components/ui/form";
-import { Input } from "../../components/ui/input";
-import { Button } from "../../components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
+import AuthLayout from "../../components/auth/AuthLayout";
 import { requestPasswordReset } from "../../api/authService";
 import { emailSchema } from "../../utils/validationSchemas";
+import { INPUT, LABEL, BUTTON_PRIMARY, LINK } from "../../utils/uiClasses";
 
-const recuperarSenhaSchema = z.object({
-  email: emailSchema,
-});
+const recuperarSenhaSchema = z.object({ email: emailSchema });
 
 type RecuperarSenhaFormData = z.infer<typeof recuperarSenhaSchema>;
 
@@ -40,76 +32,45 @@ export default function RecuperarSenhaPage() {
     }
   };
 
+  const aEnviar = form.formState.isSubmitting;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
-      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-xl">
-        <div className="text-center">
-          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1E40AF] shadow-lg">
-            <span className="text-3xl font-bold text-white">SGDIT</span>
+    <AuthLayout
+      titulo="Recuperar senha"
+      subtitulo="Indique o seu email para receber um link de recuperação"
+      rodape={<Link to="/login" className={LINK}>Voltar a entrar</Link>}
+    >
+      {enviado ? (
+        <div className="text-center py-2">
+          <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+            <MailCheck size={24} />
           </div>
-          <h2 className="text-3xl font-bold text-[#1E40AF]">Recuperar Senha</h2>
-          <p className="mt-3 text-base text-gray-600">
-            Indique o seu email para receber um link de recuperação
+          <p className="text-sm text-gray-700">
+            Se o email existir no sistema, foi enviado um link com as instruções para redefinir a sua senha.
           </p>
         </div>
-
-        {enviado ? (
-          <div className="space-y-6 text-center">
-            <div className="rounded-md bg-green-50 p-4 text-sm text-green-700">
-              Se o email existir na nossa base de dados, foi enviado um link
-              com instruções para redefinir a sua senha.
-            </div>
-            <Link
-              to="/login"
-              className="text-sm text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors font-medium"
-            >
-              Voltar ao login
-            </Link>
-          </div>
-        ) : (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700">Email</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="seu.email@exemplo.com"
-                        type="email"
-                        autoComplete="email"
-                        disabled={form.formState.isSubmitting}
-                        className="border-gray-300 focus:border-[#2563EB] focus:ring-[#2563EB]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <Button
-                type="submit"
-                className="w-full bg-[#1E40AF] hover:bg-[#2563EB] transition-colors"
-                disabled={form.formState.isSubmitting}
-              >
-                {form.formState.isSubmitting ? "A enviar..." : "Enviar link de recuperação"}
-              </Button>
-
-              <div className="text-center">
-                <Link
-                  to="/login"
-                  className="text-sm text-[#1E40AF] hover:text-[#2563EB] hover:underline transition-colors"
-                >
-                  Voltar ao login
-                </Link>
-              </div>
-            </form>
-          </Form>
-        )}
-      </div>
-    </div>
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className={LABEL}>Email</FormLabel>
+                  <FormControl>
+                    <input type="email" autoComplete="email" placeholder="nome@exemplo.com" disabled={aEnviar} className={INPUT} {...field} />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
+            <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full`}>
+              {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A enviar...</> : "Enviar link de recuperação"}
+            </button>
+          </form>
+        </Form>
+      )}
+    </AuthLayout>
   );
 }

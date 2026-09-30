@@ -5,6 +5,7 @@ import {
   CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY,
   BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
 } from "../../utils/uiClasses";
+import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
 
 const CHAVES_CONHECIDAS = [
   { chave: "GOOGLE_MAPS_API_KEY", descricao: "Chave JS do Google Maps (pública)", publica: true },
@@ -70,7 +71,7 @@ export default function Configuracoes() {
 
   const handleSalvar = async () => {
     if (!formData.chave.trim() || !formData.valor.trim()) {
-      alert("Chave e valor são obrigatórios.");
+      mostrarAviso("A chave e o valor são obrigatórios.");
       return;
     }
 
@@ -81,7 +82,7 @@ export default function Configuracoes() {
       setShowModal(false);
       resetForm();
     } catch (err) {
-      alert("Erro ao guardar configuração.");
+      mostrarErro(err, "Erro ao guardar a configuração");
     } finally {
       setSubmitting(false);
     }
@@ -96,7 +97,7 @@ export default function Configuracoes() {
       await configService.apagar(chave);
       await carregarConfigs();
     } catch (err) {
-      alert("Erro ao apagar configuração.");
+      mostrarErro(err, "Erro ao apagar a configuração");
     }
   };
 

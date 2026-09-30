@@ -6,6 +6,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { REGEX } from "../../utils/validationSchemas";
 import LocationPicker from "../../components/LocationPicker";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
 
 
 export default function CriarDenuncia() {
@@ -76,7 +77,7 @@ export default function CriarDenuncia() {
     if (!file) return;
 
     if (file.size > VIDEO_MAX_SIZE_MB * 1024 * 1024) {
-      alert(`Ficheiro demasiado grande (máximo ${VIDEO_MAX_SIZE_MB}MB). Reduza a duração ou a qualidade do vídeo.`);
+      mostrarAviso(`Ficheiro demasiado grande (máximo ${VIDEO_MAX_SIZE_MB} MB). Reduza a duração ou a qualidade do vídeo.`);
       e.target.value = "";
       return;
     }
@@ -101,13 +102,13 @@ export default function CriarDenuncia() {
     // se for preenchida, tem sempre de ser válida.
     const matricula = formData.matricula.trim();
     if ((matricula || !ehAcidente) && !REGEX.matricula.test(matricula)) {
-      errors.matricula = "Digite uma matrícula válida no formato AB-12-CD";
+      errors.matricula = "Indique uma matrícula válida no formato AB-12-CD";
     }
 
     // Obrigatório em todos os tipos: é a localização da denúncia e é por
     // ele que se encontra o posto responsável pela zona.
     if (!local) {
-      errors.mapa = "Pesquise ou marque no mapa o local exacto onde aconteceu";
+      errors.mapa = "Pesquise ou marque no mapa o local exato onde aconteceu";
     }
 
 
@@ -127,17 +128,17 @@ export default function CriarDenuncia() {
     if (!validate()) return;
 
     if (!ehAcidente && ehImagem){
-      alert("Para este tipo de infração é necessário um vídeo (fotos só são aceites em acidentes).");
+      mostrarAviso("Para este tipo de infração é necessário um vídeo (fotos só são aceites em acidentes).");
       return;
     }
 
     if (!videoFile && !ehAcidente){
-      alert("Por favor, faça upload de um vídeo da infração.");
+      mostrarAviso("Adicione o vídeo da infração.");
       return;
     }
 
     if (!user) {
-      alert("Usuário não autenticado");
+      mostrarAviso("A sua sessão terminou. Entre de novo.");
       return;
     }
 
@@ -174,7 +175,7 @@ export default function CriarDenuncia() {
         enviada = true;
       } else {
         console.error(error);
-        alert(error?.response?.data?.error || "Erro ao enviar denúncia");
+        mostrarErro(error, "Erro ao enviar a denúncia");
       }
     }
     finally{
@@ -366,7 +367,7 @@ export default function CriarDenuncia() {
                 >
                   <Upload className="text-gray-400 mb-4" size={48} />
                   <p className="text-gray-600 font-medium mb-2">
-                    Clique para fazer upload ou arraste o arquivo
+                    Clique para escolher o ficheiro ou arraste-o para aqui
                   </p>
                   <p className="text-gray-500 text-sm">
                     Formatos aceitos: MP4, AVI, MOV{ehAcidente && ", JPG, PNG"}

@@ -73,7 +73,7 @@ export default function Policiais() {
     <div className="p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Gestão de Policiais (PT)</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Agentes de trânsito</h1>
       </div>
 
       {/* Filters */}
@@ -83,7 +83,7 @@ export default function Policiais() {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Buscar por nome ou email..."
+              placeholder="Pesquisar por nome ou email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`${INPUT} pl-10`}
