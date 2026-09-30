@@ -321,12 +321,23 @@ export default function DetalhesDenuncia() {
                       </video>
                     </div>
                   ) : (
-                    <div className="flex items-center justify-center bg-yellow-50 rounded-lg">
-                      <div className="text-center p-6">
-                        <Clock className="mx-auto text-yellow-600 mb-2" size={32} />
-                        <p>Processando vídeo...</p>
+                    denuncia.estado === "PENDENTE" ? (
+                      <div className="flex items-center justify-center bg-yellow-50 rounded-lg">
+                        <div className="text-center p-6">
+                          <Clock className="mx-auto text-yellow-600 mb-2" size={32} />
+                          <p>Processando vídeo...</p>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      // Esgotadas as tentativas de análise: rejeitada sem
+                      // vídeo processado.
+                      <div className="flex items-center justify-center bg-rose-50 rounded-lg">
+                        <div className="text-center p-6">
+                          <XCircle className="mx-auto text-rose-600 mb-2" size={32} />
+                          <p className="text-rose-800">Não foi possível analisar o vídeo</p>
+                        </div>
+                      </div>
+                    )
                   )}
 
                 </div>

@@ -76,6 +76,19 @@ export interface DenunciaDetalhada {
     total_relacionadas?: number;
 }
 
+// Denúncia de uma testemunha (outro cidadão, mesma infração), sem
+// identificar quem denunciou - só a evidência, para o agente decidir.
+export interface DenunciaTestemunha {
+    id: number;
+    estado: string;
+    descricao: string | null;
+    data_registo: string | null;
+    ficheiro_original: string | null;
+    ficheiro_processado: string | null;
+    infracao_detectada: boolean | null;
+    confianca: number | null;
+}
+
 export const denunciaService = {
 
     async criar (data:CreateDenunciaData):Promise<{message:string; id:number}>{
@@ -212,6 +225,18 @@ export const denunciaService = {
         }
         catch(error){
             console.error("Erro ao designar agente:", error);
+            throw error;
+        }
+    },
+
+
+    async listarRelacionadas(id: number): Promise<DenunciaTestemunha[]>{
+        try{
+            const response= await api.get<DenunciaTestemunha[]>(`denuncias/${id}/relacionadas/`);
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao listar testemunhas:", error);
             throw error;
         }
     },

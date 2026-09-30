@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
-import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+import { denunciaService, type DenunciaDetalhada, type DenunciaTestemunha } from "../../api/denunciaService";
+import { labelEstado, toneEstado } from "../../utils/estadoDenuncia";
 import { REGEX } from "../../utils/validationSchemas";
 
 export default function DetalhesDenunciaPt() {
@@ -13,6 +14,9 @@ export default function DetalhesDenunciaPt() {
 
   
   const [denuncia, setDenuncia] = useState<DenunciaDetalhada | null>(null);
+  // Outros cidadãos que denunciaram a mesma infração: o agente vê todos
+  // os vídeos antes de decidir (aprovar estende-se ao grupo).
+  const [testemunhas, setTestemunhas] = useState<DenunciaTestemunha[]>([]);
   const [loading, setLoading] = useState(true);
   const[error, setError]= useState<string | undefined>(undefined);
 
@@ -36,6 +40,17 @@ export default function DetalhesDenunciaPt() {
       setDescricao("");
     }
   }, [denuncia]);
+
+  useEffect(() => {
+    if (!denuncia?.total_relacionadas) {
+      setTestemunhas([]);
+      return;
+    }
+    denunciaService
+      .listarRelacionadas(denuncia.id)
+      .then(setTestemunhas)
+      .catch(() => setTestemunhas([]));
+  }, [denuncia?.id, denuncia?.total_relacionadas]);
 
   const carregarDenuncia = async () => {
     if (!user) return;
@@ -314,6 +329,62 @@ export default function DetalhesDenunciaPt() {
               </div>
             )}
           </div>
+
+          {/* Vídeos das testemunhas */}
+          {testemunhas.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-1 flex items-center gap-2">
+                <Users size={20} className="text-violet-600" />
+                Vídeos das testemunhas ({testemunhas.length})
+              </h2>
+              <p className="text-sm text-gray-500 mb-4">
+                Outros cidadãos denunciaram a mesma infração. Ao aprovar, as denúncias das testemunhas
+                ainda abertas são aprovadas também; ao rejeitar, continuam na fila para decisão própria.
+              </p>
+
+              <div className="space-y-6">
+                {testemunhas.map((t) => (
+                  <div key={t.id} className="border border-gray-100 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-gray-900">
+                        Denúncia #{t.id} <span className="text-gray-400 font-normal">· {t.data_registo}</span>
+                      </p>
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${toneEstado(t.estado)}`}>
+                        {labelEstado(t.estado)}
+                      </span>
+                    </div>
+                    {t.descricao && <p className="text-sm text-gray-600 mb-3">{t.descricao}</p>}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { titulo: "Vídeo Original", src: t.ficheiro_original },
+                        { titulo: "Vídeo Processado (IA)", src: t.ficheiro_processado },
+                      ].map((v) => (
+                        <div key={v.titulo}>
+                          <h3 className="text-xs font-medium text-gray-500 mb-2">{v.titulo}</h3>
+                          {v.src ? (
+                            <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                              <video controls className="w-full h-full">
+                                <source src={`${BASE_URL}${v.src}`} type="video/mp4" />
+                              </video>
+                            </div>
+                          ) : (
+                            <div className="aspect-video bg-gray-50 rounded-lg flex items-center justify-center text-sm text-gray-500">
+                              {v.titulo.includes("IA") ? "Análise ainda em curso" : "Sem vídeo"}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    {t.confianca != null && (
+                      <p className="text-xs text-gray-500 mt-2">
+                        Confiança da análise: {Math.round(t.confianca * 100)}%
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Decision Form */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
