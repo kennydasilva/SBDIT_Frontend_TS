@@ -167,9 +167,10 @@ export default function CriarDenuncia() {
 
     }
     catch(error: any){
-      if (error?.response?.status === 409) {
+      if (error?.response?.data?.codigo === "PEDIDO_REPETIDO") {
         // Este formulário já tinha sido enviado (pedido repetido) - a
-        // denúncia existe, não é um erro para o cidadão.
+        // denúncia existe, não é um erro para o cidadão. Outros 409
+        // (ficheiro já usado, denúncia aberta repetida) são recusas reais.
         enviada = true;
       } else {
         console.error(error);

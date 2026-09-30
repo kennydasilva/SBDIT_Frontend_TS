@@ -161,6 +161,11 @@ export default function Acidentes() {
                   <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{a.data_registo || "-"}</td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     <p>{a.localizacao}</p>
+                    {!!a.total_relacionadas && (
+                      <span className={`${BADGE} ${STATUS_TONES.rose} mt-1`}>
+                        {a.total_relacionadas + 1} reportes deste acidente
+                      </span>
+                    )}
                     <div className="flex gap-3 mt-1">
                       {a.latitude != null && a.longitude != null && (
                         <a

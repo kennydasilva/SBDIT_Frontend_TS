@@ -70,6 +70,10 @@ export interface DenunciaDetalhada {
     longitude: number | null;
     pt_id?: number | null;
     data_registo?: string | null;
+    // Mesma infração/acidente reportado por outros cidadãos: a principal
+    // conta as ligadas a ela; uma ligada aponta para a principal.
+    denuncia_principal_id?: number | null;
+    total_relacionadas?: number;
 }
 
 export const denunciaService = {

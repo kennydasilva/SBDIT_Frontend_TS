@@ -235,6 +235,13 @@ export default function DetalhesDenuncia() {
                 <p className="text-sm text-gray-600 mb-1">Descrição</p>
                 <p className="text-gray-900">{denuncia.descricao}</p>
               </div>
+              {denuncia.denuncia_principal_id && (
+                <p className="text-sm text-violet-800 bg-violet-50 border border-violet-100 rounded-lg p-3">
+                  {ehAcidente
+                    ? "Este acidente já tinha sido reportado por outra pessoa. O seu reporte foi juntado ao existente."
+                    : "Outro cidadão já tinha denunciado esta infração. A sua denúncia foi ligada à dele como testemunha e reforça o processo."}
+                </p>
+              )}
               {!ehAcidente && (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Código Legal</p>
