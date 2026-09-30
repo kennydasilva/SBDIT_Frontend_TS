@@ -29,6 +29,9 @@ export interface CreateDenunciaData{
     caminho_ficheiro?: File | null;
     latitude?: number | null;
     longitude?: number | null;
+    // Id único do formulário: o backend recusa (409) um segundo envio com
+    // o mesmo id - protecção contra duplo clique/reenvio.
+    pedido_id?: string;
 }
 
 export interface denunciaupdate{
@@ -89,6 +92,10 @@ export const denunciaService = {
             if (data.latitude != null && data.longitude != null){
                 formData.append("latitude", String(data.latitude));
                 formData.append("longitude", String(data.longitude));
+            }
+
+            if (data.pedido_id){
+                formData.append("pedido_id", data.pedido_id);
             }
 
             if (data.caminho_ficheiro){

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Upload, X, CheckCircle, Loader2, Siren } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
@@ -20,6 +20,16 @@ export default function CriarDenuncia() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  // Protecção contra duplo clique: o estado `isLoading` só desactiva o
+  // botão no próximo render, e dois cliques rápidos passam os dois antes
+  // disso. O ref bloqueia de forma síncrona; o `pedidoId` (um por
+  // formulário) faz o backend recusar um envio repetido que ainda chegue.
+  const enviandoRef = useRef(false);
+  const pedidoIdRef = useRef(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   const { user } = useAuth();
   const [fieldErrors, setFieldErrors] = useState<{
     matricula?: string;
@@ -112,6 +122,8 @@ export default function CriarDenuncia() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (enviandoRef.current || showSuccess) return;
+
     if (!validate()) return;
 
     if (!ehAcidente && ehImagem){
@@ -129,10 +141,14 @@ export default function CriarDenuncia() {
       return;
     }
 
+    enviandoRef.current = true;
+    let enviada = false;
+
     try{
       setIsLoading(true);
 
       await denunciaService.criar({
+        pedido_id: pedidoIdRef.current,
         cidadao_id: user.id,
         matricula: formData.matricula.trim().toUpperCase(),
         descricao: formData.descricao,
@@ -147,19 +163,30 @@ export default function CriarDenuncia() {
         longitude: local?.lng ?? null,
       });
 
+      enviada = true;
+
+    }
+    catch(error: any){
+      if (error?.response?.status === 409) {
+        // Este formulário já tinha sido enviado (pedido repetido) - a
+        // denúncia existe, não é um erro para o cidadão.
+        enviada = true;
+      } else {
+        console.error(error);
+        alert(error?.response?.data?.error || "Erro ao enviar denúncia");
+      }
+    }
+    finally{
+      setIsLoading(false);
+      // Depois de enviada, o formulário fica bloqueado até sair da página.
+      if (!enviada) enviandoRef.current = false;
+    }
+
+    if (enviada) {
       setShowSuccess(true);
       setTimeout(() => {
         navigate("/cidadao/minhas-denuncias");
       }, 2000);
-
-    }
-    catch(error){
-      console.error(error);
-      alert("Erro ao enviar denúncia");
-
-    }
-    finally{
-      setIsLoading(false);
     }
     
   };
@@ -399,7 +426,7 @@ export default function CriarDenuncia() {
             </button>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || showSuccess}
               className={BUTTON_PRIMARY}
             >
               {isLoading ? (
