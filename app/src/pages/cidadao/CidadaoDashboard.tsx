@@ -4,18 +4,9 @@ import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { cidadaoService, type RankingEntry } from "../../api/cidadaoService";
+import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 
 
-
-const STATUS_STYLE: Record<string, string> = {
-  PENDENTE: "bg-amber-50 text-amber-700",
-  VALIDADA: "bg-blue-50 text-blue-700",
-  APROVADA: "bg-emerald-50 text-emerald-700",
-  REJEITADA: "bg-rose-50 text-rose-700",
-  ARQUIVADA: "bg-gray-100 text-gray-600",
-};
-
-const getStatusStyle = (estado: string) => STATUS_STYLE[estado] ?? "bg-gray-100 text-gray-600";
 
 export default function CidadaoDashboard() {
 
@@ -214,19 +205,19 @@ export default function CidadaoDashboard() {
                       {denuncia.matricula}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.tipo_infracao}
+                      {labelTipo(denuncia.tipo_infracao)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {denuncia.data_captura}
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${getStatusStyle(
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${toneEstado(
                           denuncia.estado
                         )}`}
                       >
                         <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        {denuncia.estado}
+                        {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
                       </span>
                     </td>
                   </tr>

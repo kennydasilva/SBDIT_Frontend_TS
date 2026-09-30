@@ -14,7 +14,6 @@ export default function CriarDenuncia() {
     matricula: "",
     tipoInfracao: "",
     sentidoPermitido: "",
-    localizacao: "",
     descricao: "",
   });
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -24,11 +23,12 @@ export default function CriarDenuncia() {
   const { user } = useAuth();
   const [fieldErrors, setFieldErrors] = useState<{
     matricula?: string;
-    localizacao?: string;
     descricao?: string;
     mapa?: string;
   }>({});
-  const [coordenadas, setCoordenadas] = useState<{ lat: number; lng: number } | null>(null);
+  // Local vem só do mapa (pesquisa ou clique) - sem campo de texto à
+  // parte a repetir a mesma informação.
+  const [local, setLocal] = useState<{ lat: number; lng: number; endereco: string } | null>(null);
 
   const mapTipoInfracao = (tipo: string) => {
   switch (tipo) {
@@ -46,9 +46,7 @@ export default function CriarDenuncia() {
 };
 
   // Acidente é reporte directo ao posto responsável pela zona (SMS ao
-  // Admin), sem análise de vídeo por IA: matrícula e ficheiro são
-  // opcionais, mas o ponto no mapa é obrigatório - é ele que decide qual
-  // posto é avisado.
+  // Admin), sem análise de vídeo por IA: o ficheiro é opcional.
   const ehAcidente = formData.tipoInfracao === "Acidente de Viação";
 
   const handleInputChange = (
@@ -89,18 +87,16 @@ export default function CriarDenuncia() {
   const validate = () => {
     const errors: typeof fieldErrors = {};
 
-    const matriculaObrigatoria = !ehAcidente || formData.matricula !== "";
-    if (matriculaObrigatoria && !REGEX.matricula.test(formData.matricula)) {
+    if (!REGEX.matricula.test(formData.matricula.trim())) {
       errors.matricula = "Digite uma matrícula válida no formato AB-12-CD";
     }
 
-    if (ehAcidente && !coordenadas) {
-      errors.mapa = "Marque no mapa o local exacto do acidente - é assim que o posto responsável pela zona é avisado";
+    // Obrigatório em todos os tipos: é a localização da denúncia e é por
+    // ele que se encontra o posto responsável pela zona.
+    if (!local) {
+      errors.mapa = "Pesquise ou marque no mapa o local exacto onde aconteceu";
     }
 
-    if (!REGEX.localizacao.test(formData.localizacao)) {
-      errors.localizacao = "A localização deve ter entre 3 e 200 caracteres";
-    }
 
     if (formData.descricao && !REGEX.descricao.test(formData.descricao)) {
       errors.descricao = "A descrição deve ter entre 5 e 1000 caracteres";
@@ -135,17 +131,17 @@ export default function CriarDenuncia() {
 
       await denunciaService.criar({
         cidadao_id: user.id,
-        matricula: formData.matricula,
+        matricula: formData.matricula.trim().toUpperCase(),
         descricao: formData.descricao,
         tipo_infracao: mapTipoInfracao(formData.tipoInfracao),
-        localizacao: formData.localizacao,
+        localizacao: (local?.endereco ?? "").slice(0, 255),
         sentido_direccao:
           formData.tipoInfracao === "Contramão" 
           ? formData.sentidoPermitido 
           : "",
         caminho_ficheiro: videoFile ?? null,
-        latitude: coordenadas?.lat ?? null,
-        longitude: coordenadas?.lng ?? null,
+        latitude: local?.lat ?? null,
+        longitude: local?.lng ?? null,
       });
 
       setShowSuccess(true);
@@ -201,7 +197,7 @@ export default function CriarDenuncia() {
           {/* Matrícula */}
           <div className="mb-6">
             <label className={LABEL}>
-              Matrícula do Veículo {ehAcidente ? "(opcional)" : "*"}
+              Matrícula do Veículo *
             </label>
             <input
               type="text"
@@ -210,7 +206,7 @@ export default function CriarDenuncia() {
               onChange={handleInputChange}
               placeholder="Ex: AB-12-CD"
               className={INPUT}
-              required={!ehAcidente}
+              required
             />
             {fieldErrors.matricula && (
               <p className="mt-1 text-sm text-rose-600">{fieldErrors.matricula}</p>
@@ -284,32 +280,15 @@ export default function CriarDenuncia() {
             </div>
           )}
 
-          {/* Localização */}
+          {/* Localização (só pelo mapa) */}
           <div className="mb-6">
             <label className={LABEL}>
               Localização *
             </label>
-            <input
-              type="text"
-              name="localizacao"
-              value={formData.localizacao}
-              onChange={handleInputChange}
-              placeholder="Ex: Rua Principal, próximo ao mercado"
-              className={INPUT}
-              required
-            />
-            {fieldErrors.localizacao && (
-              <p className="mt-1 text-sm text-rose-600">{fieldErrors.localizacao}</p>
-            )}
-          </div>
-
-          {/* Local no mapa (opcional, mas recomendado) */}
-          <div className="mb-6">
-            <label className={LABEL}>
-              Marcar local no mapa {ehAcidente && "*"}
-            </label>
             <LocationPicker
-              onChange={(lat, lng) => setCoordenadas({ lat, lng })}
+              onChange={(lat, lng, endereco) =>
+                setLocal({ lat, lng, endereco: endereco || `${lat.toFixed(5)}, ${lng.toFixed(5)}` })
+              }
             />
             {fieldErrors.mapa && (
               <p className="mt-1 text-sm text-rose-600">{fieldErrors.mapa}</p>

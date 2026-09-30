@@ -9,10 +9,12 @@ import {
   Clock,
   AlertTriangle,
   Shield,
+  Siren,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
+import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 
 const denunciaDetalhes = {
   id: 1,
@@ -59,23 +61,6 @@ const denunciaDetalhes = {
   ],
 };
 
-const getStatusColor = (estado: string) => {
-  switch (estado) {
-    case "Pendente":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "Validada":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "Aprovada":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "Rejeitada":
-      return "bg-red-100 text-red-800 border-red-200";
-    case "Arquivada":
-      return "bg-gray-100 text-gray-800 border-gray-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
-};
-
 export default function DetalhesDenuncia() {
   const { user, loading: authLoading } = useAuth();
   const { id } = useParams();
@@ -112,7 +97,36 @@ export default function DetalhesDenuncia() {
   if (error) return <div className="p-8 text-red-600">{error}</div>;
   if (!denuncia) return <div className="p-8">Denúncia não encontrada.</div>;
 
-  const timeline = [
+  // Acidente não passa por análise de vídeo nem pelo PT: vai directo ao
+  // Admin do posto da zona (SMS), que designa um agente para o local.
+  const ehAcidente = denuncia.tipo_infracao === "ACIDENTE";
+  const ficheiroEhImagem = /\.(jpe?g|png)$/i.test(denuncia.ficheiro_original ?? "");
+
+  const timelineAcidente = [
+    {
+      status: "Denúncia enviada",
+      data: denuncia.data_registo,
+      concluido: true,
+      icon: FileText,
+      resultado: undefined as string | undefined,
+    },
+    {
+      status: "Enviada ao posto responsável",
+      data: null,
+      concluido: ["ENCAMINHADA", "EM_ATENDIMENTO"].includes(denuncia.estado),
+      icon: Siren,
+      resultado: denuncia.estado === "PENDENTE" ? "PENDENTE" : undefined,
+    },
+    {
+      status: "Agente designado para o local",
+      data: null,
+      concluido: denuncia.estado === "EM_ATENDIMENTO",
+      icon: Shield,
+      resultado: undefined,
+    },
+  ];
+
+  const timeline = ehAcidente ? timelineAcidente : [
   {
     status: "Denúncia enviada",
     data: denuncia.data_captura,
@@ -157,11 +171,11 @@ export default function DetalhesDenuncia() {
           </p>
         </div>
         <span
-          className={`px-4 py-2 rounded-full text-sm font-medium border ${getStatusColor(
+          className={`px-4 py-2 rounded-full text-sm font-medium border ${toneEstado(
             denuncia.estado
           )}`}
         >
-          {denuncia.estado}
+          {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
         </span>
       </div>
 
@@ -183,7 +197,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Tipo</p>
           </div>
           <p className="text-xl font-bold text-gray-900">
-            {denuncia.tipo_infracao}
+            {labelTipo(denuncia.tipo_infracao)}
           </p>
         </div>
 
@@ -203,7 +217,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Data</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
-            {denuncia.data_captura}
+            {denuncia.data_captura || denuncia.data_registo}
           </p>
         </div>
       </div>
@@ -221,12 +235,21 @@ export default function DetalhesDenuncia() {
                 <p className="text-sm text-gray-600 mb-1">Descrição</p>
                 <p className="text-gray-900">{denuncia.descricao}</p>
               </div>
-              <div>
-                <p className="text-sm text-gray-600 mb-1">Código Legal</p>
-                <p className="font-medium text-gray-900">
-                  {denuncia.codigo_legal}
+              {!ehAcidente && (
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Código Legal</p>
+                  <p className="font-medium text-gray-900">
+                    {denuncia.codigo_legal}
+                  </p>
+                </div>
+              )}
+              {ehAcidente && (
+                <p className="text-sm text-violet-800 bg-violet-50 border border-violet-100 rounded-lg p-3">
+                  {denuncia.estado === "PENDENTE"
+                    ? "O local marcado não pertence a nenhuma jurisdição registada, por isso nenhum posto foi avisado automaticamente."
+                    : "Esta denúncia foi enviada directamente, por SMS, ao posto policial responsável pela zona, que designa um agente para o local."}
                 </p>
-              </div>
+              )}
               {denuncia.sentido_direccao&& (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">
@@ -240,6 +263,28 @@ export default function DetalhesDenuncia() {
             </div>
           </div>
 
+          {ehAcidente ? (
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Foto/vídeo do acidente
+              </h2>
+              {denuncia.ficheiro_original ? (
+                ficheiroEhImagem ? (
+                  <img
+                    src={`${BASE_URL}${denuncia.ficheiro_original}`}
+                    alt="Foto do acidente"
+                    className="w-full max-w-xl rounded-lg"
+                  />
+                ) : (
+                  <video controls className="w-full max-w-xl rounded-lg">
+                    <source src={`${BASE_URL}${denuncia.ficheiro_original}`} type="video/mp4" />
+                  </video>
+                )
+              ) : (
+                <p className="text-gray-500 text-sm">Nenhuma foto ou vídeo enviado.</p>
+              )}
+            </div>
+          ) : (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">
                 Vídeos da Denúncia
@@ -285,6 +330,7 @@ export default function DetalhesDenuncia() {
                 </div>
               )}
             </div>
+          )}
 
           {/* Resultado da Análise Automática */}
           {denuncia.ficheiro_processado && (
@@ -411,11 +457,11 @@ export default function DetalhesDenuncia() {
                         </p>
                         {item.resultado && (
                           <span
-                            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium border ${toneEstado(
                               item.resultado
                             )}`}
                           >
-                            {item.resultado}
+                            {labelEstado(item.resultado, denuncia.tipo_infracao)}
                           </span>
                         )}
                       </div>

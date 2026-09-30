@@ -5,7 +5,10 @@ import { configService } from "../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../utils/maps";
 
 interface LocationPickerProps {
-  onChange: (lat: number, lng: number) => void;
+  // `endereco` chega depois das coordenadas (pesquisa ou geocodificação
+  // inversa do ponto) - é o texto de localização da denúncia, para o
+  // cidadão não ter de escrever à mão o mesmo local que marcou no mapa.
+  onChange: (lat: number, lng: number, endereco?: string) => void;
   initialLat?: number | null;
   initialLng?: number | null;
 }
@@ -69,6 +72,7 @@ function LocationPickerMapa({
     initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
   );
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [endereco, setEndereco] = useState<string | null>(null);
 
   useEffect(() => {
     // GPS atual serve só para centrar o mapa como ponto de partida - nunca
@@ -90,26 +94,41 @@ function LocationPickerMapa({
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
-  const handleMapClick = useCallback(
-    (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
+  // Ponto marcado à mão: pede ao Google o endereço desse ponto. Se a
+  // Geocoding API não estiver activa na chave (ou falhar), fica com as
+  // coordenadas - a denúncia nunca fica sem localização.
+  const marcarPonto = useCallback(
+    (lat: number, lng: number) => {
       setMarker({ lat, lng });
-      onChange(lat, lng);
+      const coordenadas = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      setEndereco(coordenadas);
+      onChange(lat, lng, coordenadas);
+
+      new google.maps.Geocoder()
+        .geocode({ location: { lat, lng } })
+        .then(({ results }) => {
+          const texto = results[0]?.formatted_address;
+          if (!texto) return;
+          setEndereco(texto);
+          onChange(lat, lng, texto);
+        })
+        .catch(() => {});
     },
     [onChange]
   );
 
+  const handleMapClick = useCallback(
+    (e: google.maps.MapMouseEvent) => {
+      if (e.latLng) marcarPonto(e.latLng.lat(), e.latLng.lng());
+    },
+    [marcarPonto]
+  );
+
   const handleMarkerDragEnd = useCallback(
     (e: google.maps.MapMouseEvent) => {
-      if (!e.latLng) return;
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      setMarker({ lat, lng });
-      onChange(lat, lng);
+      if (e.latLng) marcarPonto(e.latLng.lat(), e.latLng.lng());
     },
-    [onChange]
+    [marcarPonto]
   );
 
   const handlePlaceChanged = () => {
@@ -119,9 +138,14 @@ function LocationPickerMapa({
 
     const lat = location.lat();
     const lng = location.lng();
+    const texto = [place?.name, place?.formatted_address]
+      .filter((t, i, lista) => t && lista.indexOf(t) === i)
+      .join(", ") || `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
     setCenter({ lat, lng });
     setMarker({ lat, lng });
-    onChange(lat, lng);
+    setEndereco(texto);
+    onChange(lat, lng, texto);
   };
 
   if (loadError || !isLoaded) {
@@ -157,7 +181,13 @@ function LocationPickerMapa({
       >
         {marker && <MarkerF position={marker} draggable onDragEnd={handleMarkerDragEnd} />}
       </GoogleMap>
-      <p className="mt-2 text-xs text-gray-500">
+      {endereco && (
+        <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-800">
+          <MapPin size={16} className="mt-0.5 shrink-0 text-rose-600" />
+          {endereco}
+        </p>
+      )}
+      <p className="mt-1 text-xs text-gray-500">
         {marker
           ? "Arraste o marcador ou clique noutro ponto do mapa para ajustar o local exato."
           : "Pesquise um local ou clique no mapa para marcar onde a infração aconteceu."}

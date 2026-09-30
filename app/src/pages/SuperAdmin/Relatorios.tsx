@@ -10,6 +10,8 @@ const ESTADO_LABEL: Record<string, string> = {
   APROVADA: "Aprovada",
   REJEITADA: "Rejeitada",
   ARQUIVADA: "Arquivada",
+  ENCAMINHADA: "Enviada ao posto",
+  EM_ATENDIMENTO: "Agente designado",
 };
 
 const ESTADO_COR: Record<string, string> = {
@@ -18,6 +20,8 @@ const ESTADO_COR: Record<string, string> = {
   APROVADA: "#10B981",
   REJEITADA: "#EF4444",
   ARQUIVADA: "#9CA3AF",
+  ENCAMINHADA: "#8B5CF6",
+  EM_ATENDIMENTO: "#14B8A6",
 };
 
 const TIPO_LABEL: Record<string, string> = {

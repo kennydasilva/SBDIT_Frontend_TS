@@ -4,6 +4,7 @@ import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
+import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 
 const TAMANHO_PAGINA = 20;
 
@@ -14,24 +15,9 @@ const estados = [
   "REJEITADA",
   "APROVADA",
   "ARQUIVADA",
+  "ENCAMINHADA",
+  "EM_ATENDIMENTO",
 ];
-
-const getStatusColor = (estado: string) => {
-  switch (estado) {
-    case "PENDENTE":
-      return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    case "VALIDADA":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "APROVADA":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "REJEITADA":
-      return "bg-red-100 text-red-800 border-red-200";
-    case "ARQUIVADA":
-      return "bg-gray-100 text-gray-800 border-gray-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
-};
 
 export default function MinhasDenuncias() {
   const { user, loading: authLoading } = useAuth();
@@ -116,7 +102,7 @@ export default function MinhasDenuncias() {
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                {estado}
+                {estado === "Todos" ? "Todos" : labelEstado(estado)}
               </button>
             ))}
           </div>
@@ -168,18 +154,18 @@ export default function MinhasDenuncias() {
                       {denuncia.matricula}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {denuncia.tipo_infracao}
+                      {labelTipo(denuncia.tipo_infracao)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {denuncia.data_captura}
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                        className={`px-3 py-1 rounded-full text-xs font-medium border ${toneEstado(
                           denuncia.estado
                         )}`}
                       >
-                        {denuncia.estado}
+                        {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
