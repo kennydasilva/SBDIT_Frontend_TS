@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GoogleMap, MarkerF, Polygon, Polyline, Rectangle, useJsApiLoader } from "@react-google-maps/api";
-import { Loader2, MapPinned, AlertTriangle, MapPinOff } from "lucide-react";
+import { Loader2, MapPinned, AlertTriangle, MapPinOff, Route } from "lucide-react";
 import {
   jurisdicaoService, type PostoJurisdicao, type CoberturaJurisdicoes,
 } from "../../api/jurisdicaoService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA, geoJsonParaAneis } from "../../utils/maps";
 import { labelEstado, labelTipo } from "../../utils/estadoDenuncia";
-import { CARD, SECTION_TITLE, ALERT_WARNING, BUTTON_PRIMARY } from "../../utils/uiClasses";
+import { CARD, SECTION_TITLE, ALERT_WARNING, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
 
 // Uma cor por posto (repete se houver mais postos do que cores).
 const CORES = ["#2563EB", "#059669", "#D97706", "#7C3AED", "#DB2777", "#0891B2", "#65A30D", "#DC2626", "#4F46E5", "#0D9488"];
@@ -25,6 +26,27 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
+  const [aReencaminhar, setAReencaminhar] = useState(false);
+
+  // Passa para o posto certo as denúncias sem posto que já caem numa
+  // jurisdição (útil depois de criar zonas).
+  const reencaminhar = async () => {
+    try {
+      setAReencaminhar(true);
+      const r = await jurisdicaoService.reencaminhar();
+      if (r.total === 0) {
+        mostrarSucesso("Nenhuma denúncia sem posto cai nas jurisdições actuais.");
+      } else {
+        const postos = Object.entries(r.por_posto).map(([p, n]) => `${p} (${n})`).join(", ");
+        mostrarSucesso(`${r.total} denúncia(s) reencaminhada(s) para: ${postos}.`);
+        await carregar();
+      }
+    } catch (err) {
+      mostrarErro(err, "Erro ao reencaminhar as denúncias");
+    } finally {
+      setAReencaminhar(false);
+    }
+  };
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
@@ -259,8 +281,15 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
               </ul>
             )}
             <p className="text-xs text-gray-400 mt-3">
-              Para cobrir estes locais, vá a "Gerir posto", escolha o posto responsável e adicione a zona ou as vias.
+              Para cobrir estes locais, vá a "Gerir posto", escolha o posto responsável e adicione a zona ou as vias —
+              as denúncias abertas que caírem nela passam logo para esse posto.
             </p>
+            {cobertura && cobertura.pontos.length > 0 && (
+              <button onClick={reencaminhar} disabled={aReencaminhar} className={`${BUTTON_SECONDARY} w-full mt-3`}>
+                {aReencaminhar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Route size={16} />}
+                Reencaminhar denúncias sem posto
+              </button>
+            )}
           </div>
         </div>
       </div>

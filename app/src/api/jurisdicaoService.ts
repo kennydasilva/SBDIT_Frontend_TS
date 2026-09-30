@@ -1,5 +1,26 @@
 import api from "./axios";
 import { limparCache } from "./httpCache";
+import { mostrarSucesso } from "../utils/mensagens";
+
+// Resultado do reencaminhamento: denúncias abertas sem posto que, com as
+// zonas/vias actuais, passaram para um posto.
+export interface Reencaminhamento {
+  total: number;
+  acidentes: number;
+  sms: number;
+  por_posto: Record<string, number>;
+}
+
+// Avisa quando adicionar uma zona/vias passou denúncias antigas sem posto
+// para um posto (feito automaticamente no backend).
+function avisarReencaminhadas(r?: Reencaminhamento) {
+  if (!r || r.total === 0) return;
+  const postos = Object.entries(r.por_posto).map(([p, n]) => `${p} (${n})`).join(", ");
+  mostrarSucesso(
+    `${r.total} ${r.total === 1 ? "denúncia sem posto passou" : "denúncias sem posto passaram"} para: ${postos}.` +
+      (r.sms ? ` ${r.sms} SMS de acidente recente enviado(s).` : "")
+  );
+}
 
 export interface LimitesVia {
   north: number;
@@ -97,6 +118,11 @@ export const jurisdicaoService = {
     return response.data;
   },
 
+  async reencaminhar(): Promise<Reencaminhamento> {
+    const response = await api.post<Reencaminhamento>("/jurisdicoes/reencaminhar/");
+    return response.data;
+  },
+
   async cobertura(): Promise<CoberturaJurisdicoes> {
     const response = await api.get<CoberturaJurisdicoes>("/jurisdicoes/cobertura/");
     return response.data;
@@ -114,8 +140,9 @@ export const jurisdicaoService = {
 
   async adicionarVia(adminId: number, data: AddViaData): Promise<{ message: string; id: number }> {
     try {
-      const response = await api.post<{ message: string; id: number }>(`/admin/${adminId}/vias/`, data);
+      const response = await api.post<{ message: string; id: number; reencaminhadas?: Reencaminhamento }>(`/admin/${adminId}/vias/`, data);
       limparCache(`/admin/${adminId}/vias/`);
+      avisarReencaminhadas(response.data.reencaminhadas);
       return response.data;
     } catch (error) {
       console.error("Erro ao adicionar via à jurisdição: ", error);
@@ -135,8 +162,9 @@ export const jurisdicaoService = {
 
   async adicionarViasBulk(adminId: number, vias: ViaEncontrada[]): Promise<{ message: string; total: number }> {
     try {
-      const response = await api.post<{ message: string; total: number }>(`/admin/${adminId}/vias-bulk/`, { vias });
+      const response = await api.post<{ message: string; total: number; reencaminhadas?: Reencaminhamento }>(`/admin/${adminId}/vias-bulk/`, { vias });
       limparCache(`/admin/${adminId}/vias/`);
+      avisarReencaminhadas(response.data.reencaminhadas);
       return response.data;
     } catch (error) {
       console.error("Erro ao adicionar vias em massa à jurisdição: ", error);
