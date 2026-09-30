@@ -87,7 +87,10 @@ export default function CriarDenuncia() {
   const validate = () => {
     const errors: typeof fieldErrors = {};
 
-    if (!REGEX.matricula.test(formData.matricula.trim())) {
+    // Opcional só em acidente (quem reporta pode não saber a matrícula);
+    // se for preenchida, tem sempre de ser válida.
+    const matricula = formData.matricula.trim();
+    if ((matricula || !ehAcidente) && !REGEX.matricula.test(matricula)) {
       errors.matricula = "Digite uma matrícula válida no formato AB-12-CD";
     }
 
@@ -197,7 +200,7 @@ export default function CriarDenuncia() {
           {/* Matrícula */}
           <div className="mb-6">
             <label className={LABEL}>
-              Matrícula do Veículo *
+              Matrícula do Veículo {ehAcidente ? "(opcional)" : "*"}
             </label>
             <input
               type="text"
@@ -206,7 +209,7 @@ export default function CriarDenuncia() {
               onChange={handleInputChange}
               placeholder="Ex: AB-12-CD"
               className={INPUT}
-              required
+              required={!ehAcidente}
             />
             {fieldErrors.matricula && (
               <p className="mt-1 text-sm text-rose-600">{fieldErrors.matricula}</p>
