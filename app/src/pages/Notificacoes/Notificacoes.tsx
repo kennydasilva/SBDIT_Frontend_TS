@@ -16,6 +16,7 @@ const ICONE_TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; cor: string }
   NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "bg-amber-50 text-amber-600" },
   ACIDENTE_REPORTADO: { icon: Siren, cor: "bg-rose-50 text-rose-600" },
   AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "bg-emerald-50 text-emerald-600" },
+  ANALISE_FALHOU: { icon: AlertTriangle, cor: "bg-rose-50 text-rose-600" },
 };
 
 // Página onde abrir a denúncia a que a notificação se refere, conforme o
