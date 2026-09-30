@@ -14,7 +14,7 @@ import SuperAdminAdmins from "../pages/SuperAdmin/Admins";
 import SuperAdminPoliciais from "../pages/SuperAdmin/Policiais";
 import SuperAdminCidadaos from "../pages/SuperAdmin/Cidadaos";
 import SuperAdminDenuncias from "../pages/SuperAdmin/Denuncias";
-import SuperAdminRelatorios from "../pages/SuperAdmin/Relatorios";
+import Relatorios from "../pages/Relatorios/Relatorios";
 import SuperAdminConfiguracoes from "../pages/SuperAdmin/Configuracoes";
 import SuperAdminJurisdicoes from "../pages/SuperAdmin/Jurisdicoes";
 
@@ -64,7 +64,7 @@ export default function AppRoutes() {
           <Route path="/super-admin/policiais" element={<SuperAdminPoliciais />} />
           <Route path="/super-admin/cidadaos" element={<SuperAdminCidadaos />} />
           <Route path="/super-admin/denuncias" element={<SuperAdminDenuncias />} />
-          <Route path="/super-admin/relatorios" element={<SuperAdminRelatorios />} />
+          <Route path="/super-admin/relatorios" element={<Relatorios />} />
           <Route path="/super-admin/configuracoes" element={<SuperAdminConfiguracoes />} />
           <Route path="/super-admin/jurisdicoes" element={<SuperAdminJurisdicoes />} />
           <Route path="/super-admin/notificacoes" element={<Notificacoes />} />
@@ -75,6 +75,7 @@ export default function AppRoutes() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/policiais" element={<AdminPoliciais />} />
           <Route path="/admin/acidentes" element={<AdminAcidentes />} />
+          <Route path="/admin/relatorios" element={<Relatorios />} />
           <Route path="/admin/notificacoes" element={<Notificacoes />} />
           {/*<Route path="/admin/denuncias" element={<AdminDenuncias />} />*/}
         </Route>
