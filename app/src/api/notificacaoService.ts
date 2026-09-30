@@ -3,7 +3,7 @@ import type { PaginatedResponse } from "./types";
 
 export interface Notificacao {
     id: number;
-    tipo: "DENUNCIA_RECEBIDA" | "ESTADO_ALTERADO" | "NOVA_PARA_REVISAO" | "ACIDENTE_REPORTADO" | "AGENTE_DESIGNADO" | "ANALISE_FALHOU";
+    tipo: "DENUNCIA_RECEBIDA" | "ESTADO_ALTERADO" | "NOVA_PARA_REVISAO" | "ACIDENTE_REPORTADO" | "AGENTE_DESIGNADO" | "ANALISE_FALHOU" | "DENUNCIA_RELACIONADA";
     titulo: string;
     mensagem: string;
     denuncia_id: number | null;

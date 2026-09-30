@@ -74,6 +74,9 @@ export interface DenunciaDetalhada {
     // conta as ligadas a ela; uma ligada aponta para a principal.
     denuncia_principal_id?: number | null;
     total_relacionadas?: number;
+    // Vídeo visualmente igual (cortado/recomprimido) ao de outra denúncia.
+    video_semelhante_a_id?: number | null;
+    video_semelhante_a_estado?: string | null;
 }
 
 // Denúncia de uma testemunha (outro cidadão, mesma infração), sem
@@ -87,6 +90,7 @@ export interface DenunciaTestemunha {
     ficheiro_processado: string | null;
     infracao_detectada: boolean | null;
     confianca: number | null;
+    video_semelhante_a_id: number | null;
 }
 
 export const denunciaService = {

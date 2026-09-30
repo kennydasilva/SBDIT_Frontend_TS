@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList,
+  Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList, Link2,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { notificacaoService, type Notificacao } from "../../api/notificacaoService";
@@ -17,6 +17,7 @@ const ICONE_TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; cor: string }
   ACIDENTE_REPORTADO: { icon: Siren, cor: "bg-rose-50 text-rose-600" },
   AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "bg-emerald-50 text-emerald-600" },
   ANALISE_FALHOU: { icon: AlertTriangle, cor: "bg-rose-50 text-rose-600" },
+  DENUNCIA_RELACIONADA: { icon: Link2, cor: "bg-violet-50 text-violet-600" },
 };
 
 // Página onde abrir a denúncia a que a notificação se refere, conforme o

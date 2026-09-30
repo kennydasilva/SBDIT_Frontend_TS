@@ -330,6 +330,31 @@ export default function DetalhesDenunciaPt() {
             )}
           </div>
 
+          {/* Ligação a outra denúncia (testemunha ou vídeo semelhante) */}
+          {(denuncia?.denuncia_principal_id || denuncia?.video_semelhante_a_id) && (
+            <div className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900 space-y-1">
+              {denuncia.video_semelhante_a_id && (
+                <p>
+                  ⚠️ O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
+                  <Link to={`/pt/denuncias/${denuncia.video_semelhante_a_id}`} className="underline font-medium">
+                    denúncia #{denuncia.video_semelhante_a_id}
+                  </Link>
+                  {denuncia.video_semelhante_a_estado && ` (${labelEstado(denuncia.video_semelhante_a_estado)})`}
+                  {" "}— pode ser o mesmo vídeo cortado ou recomprimido.
+                </p>
+              )}
+              {denuncia.denuncia_principal_id && (
+                <p>
+                  Ligada à{" "}
+                  <Link to={`/pt/denuncias/${denuncia.denuncia_principal_id}`} className="underline font-medium">
+                    denúncia #{denuncia.denuncia_principal_id}
+                  </Link>{" "}
+                  (a principal do grupo). Aprovar a principal aprova também esta, se ainda estiver aberta.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Vídeos das testemunhas */}
           {testemunhas.length > 0 && (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -348,6 +373,11 @@ export default function DetalhesDenunciaPt() {
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium text-gray-900">
                         Denúncia #{t.id} <span className="text-gray-400 font-normal">· {t.data_registo}</span>
+                        {t.video_semelhante_a_id && (
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                            vídeo semelhante ao da #{t.video_semelhante_a_id}
+                          </span>
+                        )}
                       </p>
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${toneEstado(t.estado)}`}>
                         {labelEstado(t.estado)}
