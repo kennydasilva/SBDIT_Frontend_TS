@@ -330,6 +330,33 @@ export default function DetalhesDenunciaPt() {
             )}
           </div>
 
+          {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
+          {denuncia?.localizacao_contraditoria && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+              <p className="font-semibold mb-1">⚠️ Possível denúncia falsa — localização contraditória</p>
+              <p>
+                O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:
+              </p>
+              <ul className="list-disc ml-5 mt-1">
+                <li>Esta denúncia: <strong>{denuncia.localizacao}</strong></li>
+                <li>
+                  Denúncia original #{denuncia.video_semelhante_a_id}: <strong>{denuncia.video_semelhante_a_localizacao}</strong>
+                </li>
+              </ul>
+              {denuncia.distancia_video_semelhante_m != null && (
+                <p className="mt-1">
+                  Distância entre os dois locais:{" "}
+                  {denuncia.distancia_video_semelhante_m >= 1000
+                    ? `${(denuncia.distancia_video_semelhante_m / 1000).toFixed(1)} km`
+                    : `${denuncia.distancia_video_semelhante_m} m`}
+                </p>
+              )}
+              <p className="mt-2 text-rose-800">
+                Ficou com o posto da denúncia original. Não é aprovada automaticamente com a original — decida-a à parte.
+              </p>
+            </div>
+          )}
+
           {/* Ligação a outra denúncia (testemunha ou vídeo semelhante) */}
           {(denuncia?.denuncia_principal_id || denuncia?.video_semelhante_a_id) && (
             <div className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900 space-y-1">
@@ -376,6 +403,11 @@ export default function DetalhesDenunciaPt() {
                         {t.video_semelhante_a_id && (
                           <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
                             vídeo semelhante ao da #{t.video_semelhante_a_id}
+                          </span>
+                        )}
+                        {t.localizacao_contraditoria && (
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+                            ⚠️ local contraditório: {t.localizacao}
                           </span>
                         )}
                       </p>

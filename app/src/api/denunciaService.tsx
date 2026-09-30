@@ -77,6 +77,11 @@ export interface DenunciaDetalhada {
     // Vídeo visualmente igual (cortado/recomprimido) ao de outra denúncia.
     video_semelhante_a_id?: number | null;
     video_semelhante_a_estado?: string | null;
+    // Mesmo vídeo declarado noutro local: provável denúncia falsa, fica
+    // com o posto da denúncia original.
+    localizacao_contraditoria?: boolean;
+    video_semelhante_a_localizacao?: string | null;
+    distancia_video_semelhante_m?: number | null;
 }
 
 // Denúncia de uma testemunha (outro cidadão, mesma infração), sem
@@ -91,6 +96,8 @@ export interface DenunciaTestemunha {
     infracao_detectada: boolean | null;
     confianca: number | null;
     video_semelhante_a_id: number | null;
+    localizacao_contraditoria: boolean;
+    localizacao: string | null;
 }
 
 export const denunciaService = {

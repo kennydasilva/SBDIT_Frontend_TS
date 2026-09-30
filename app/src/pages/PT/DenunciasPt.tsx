@@ -230,6 +230,11 @@ export default function DenunciasPt() {
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {denuncia.matricula}
+                      {denuncia.localizacao_contraditoria && (
+                        <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+                          ⚠️ possível falsa
+                        </span>
+                      )}
                       {!!denuncia.total_relacionadas && (
                         <span className="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium bg-violet-50 text-violet-700">
                           +{denuncia.total_relacionadas} {denuncia.total_relacionadas === 1 ? "testemunha" : "testemunhas"}
