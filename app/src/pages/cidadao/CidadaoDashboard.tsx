@@ -4,7 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { cidadaoService, type RankingEntry } from "../../api/cidadaoService";
-import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 
 
 

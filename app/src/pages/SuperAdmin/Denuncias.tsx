@@ -7,7 +7,7 @@ import { CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES } from "../../utils/ui
 
 const TAMANHO_PAGINA = 20;
 
-const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA", "ENCAMINHADA", "EM_ATENDIMENTO"] as const;
+const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA", "ENCAMINHADA", "EM_ATENDIMENTO", "DUVIDOSA"] as const;
 
 const ESTADO_LABEL: Record<string, string> = {
   PENDENTE: "Pendente",
@@ -17,6 +17,7 @@ const ESTADO_LABEL: Record<string, string> = {
   ARQUIVADA: "Arquivada",
   ENCAMINHADA: "Enviada ao posto",
   EM_ATENDIMENTO: "Agente designado",
+  DUVIDOSA: "Duvidosa",
 };
 
 const ESTADO_TONE: Record<string, string> = {
@@ -27,6 +28,7 @@ const ESTADO_TONE: Record<string, string> = {
   ARQUIVADA: STATUS_TONES.gray,
   ENCAMINHADA: STATUS_TONES.blue,
   EM_ATENDIMENTO: STATUS_TONES.emerald,
+  DUVIDOSA: STATUS_TONES.amber,
 };
 
 export default function Denuncias() {

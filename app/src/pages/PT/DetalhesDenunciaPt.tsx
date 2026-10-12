@@ -153,6 +153,16 @@ export default function DetalhesDenunciaPt() {
   };
   const confiancaPercent = Math.round((Number(denuncia?.confianca) || 0) * 100);
 
+  // A mesma página serve o Admin e o Super Admin (abrem-na a partir de uma
+  // notificação), só para consulta: quem decide é o agente.
+  const podeDecidir = user?.role === "PT";
+  const base = user?.role === "ADMIN" ? "/admin" : user?.role === "SUPER_ADMIN" ? "/super-admin" : "/pt";
+  const voltar = user?.role === "ADMIN"
+    ? { para: "/admin/notificacoes", texto: "Voltar às notificações" }
+    : { para: `${base}/denuncias`, texto: "Voltar às denúncias" };
+  // Validada pela IA, ou duvidosa (mesmo vídeo declarado noutra jurisdição).
+  const porDecidir = denuncia?.estado === "VALIDADA" || denuncia?.estado === "DUVIDOSA";
+
 
 
   if (loading) {
@@ -176,11 +186,11 @@ export default function DetalhesDenunciaPt() {
       {/* Header */}
       <div className="mb-8">
         <Link
-          to="/pt/denuncias"
+          to={voltar.para}
           className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 mb-4"
         >
           <ArrowLeft size={18} className="mr-1.5" />
-          Voltar às denúncias
+          {voltar.texto}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className={PAGE_TITLE}>Denúncia #{denuncia?.id}</h1>
@@ -345,7 +355,7 @@ export default function DetalhesDenunciaPt() {
           {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
           {denuncia?.localizacao_contraditoria && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-              <p className="font-semibold mb-1">⚠️ Possível denúncia falsa — localização contraditória</p>
+              <p className="font-semibold mb-1">⚠️ Possível denúncia falsa — declarada noutra jurisdição</p>
               <p>
                 O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:
               </p>
@@ -364,7 +374,7 @@ export default function DetalhesDenunciaPt() {
                 </p>
               )}
               <p className="mt-2 text-rose-800">
-                Ficou com o posto da denúncia original. Não é aprovada automaticamente com a original — decida-a à parte.
+                Ficou em estado duvidoso, com o posto da denúncia original. Não herda a decisão da original — é decidida à parte.
               </p>
             </div>
           )}
@@ -375,17 +385,18 @@ export default function DetalhesDenunciaPt() {
               {denuncia.video_semelhante_a_id && (
                 <p>
                   ⚠️ O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
-                  <Link to={`/pt/denuncias/${denuncia.video_semelhante_a_id}`} className="underline font-medium">
+                  <Link to={`${base}/denuncias/${denuncia.video_semelhante_a_id}`} className="underline font-medium">
                     denúncia #{denuncia.video_semelhante_a_id}
                   </Link>
                   {denuncia.video_semelhante_a_estado && ` (${labelEstado(denuncia.video_semelhante_a_estado)})`}
-                  {" "}— pode ser o mesmo vídeo cortado ou recomprimido.
+                  {" "}— o mesmo ficheiro, ou o mesmo vídeo cortado ou recomprimido.
+                  {!denuncia.localizacao_contraditoria && " Na mesma jurisdição: fica com o estado e a decisão dessa denúncia."}
                 </p>
               )}
               {denuncia.denuncia_principal_id && (
                 <p>
                   Ligada à{" "}
-                  <Link to={`/pt/denuncias/${denuncia.denuncia_principal_id}`} className="underline font-medium">
+                  <Link to={`${base}/denuncias/${denuncia.denuncia_principal_id}`} className="underline font-medium">
                     denúncia #{denuncia.denuncia_principal_id}
                   </Link>{" "}
                   (a principal do grupo). Aprovar a principal aprova também esta, se ainda estiver aberta.
@@ -463,7 +474,7 @@ export default function DetalhesDenunciaPt() {
           {/* Decision Form */}
           <div className={`${CARD} p-6`}>
             <h2 className={`${SECTION_TITLE} mb-4`}>
-              {denuncia?.estado === "VALIDADA" ? "A sua decisão" : "Decisão registada"}
+              {porDecidir && podeDecidir ? "A sua decisão" : porDecidir ? "Decisão do agente (por tomar)" : "Decisão registada"}
             </h2>
 
             <div className="space-y-4">
@@ -473,7 +484,7 @@ export default function DetalhesDenunciaPt() {
                   type="text"
                   value={codigoLegal}
                   onChange={(e) => setCodigoLegal(e.target.value)}
-                  disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
+                  disabled={!podeDecidir || (!porDecidir && !isEditing) || isSubmitting}
                   className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed`}
                   placeholder="Ex: Art. 24º - Circulação em Contramão"
                 />
@@ -484,7 +495,7 @@ export default function DetalhesDenunciaPt() {
                 <textarea
                   value={descricao}
                   onChange={(e) => setDescricao(e.target.value)}
-                  disabled={(denuncia?.estado !== "VALIDADA" && !isEditing) || isSubmitting}
+                  disabled={!podeDecidir || (!porDecidir && !isEditing) || isSubmitting}
                   rows={4}
                   className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed`}
                   placeholder="Motivo da decisão (obrigatório para arquivar)"
@@ -492,7 +503,7 @@ export default function DetalhesDenunciaPt() {
               </div>
 
               {/* Buttons */}
-              {denuncia?.estado === "VALIDADA" && (
+              {porDecidir && podeDecidir && (
                 <div className="flex gap-3 pt-4">
                   <button
                     onClick={handleAprovar}
@@ -513,7 +524,7 @@ export default function DetalhesDenunciaPt() {
                 </div>
               )}
 
-              {(denuncia?.estado === "APROVADA" || denuncia?.estado === "ARQUIVADA") && (
+              {podeDecidir && (denuncia?.estado === "APROVADA" || denuncia?.estado === "ARQUIVADA") && (
                 <div className="pt-4">
                   {isEditing ? (
                     <div className="flex gap-3">

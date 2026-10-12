@@ -68,6 +68,7 @@ export default function AppRoutes() {
           <Route path="/super-admin/configuracoes" element={<SuperAdminConfiguracoes />} />
           <Route path="/super-admin/jurisdicoes" element={<SuperAdminJurisdicoes />} />
           <Route path="/super-admin/notificacoes" element={<Notificacoes />} />
+          <Route path="/super-admin/denuncias/:id" element={<DetalhesDenunciaPt />} />
         </Route>
 
         {/* Admin Routes */}
@@ -77,6 +78,7 @@ export default function AppRoutes() {
           <Route path="/admin/acidentes" element={<AdminAcidentes />} />
           <Route path="/admin/relatorios" element={<Relatorios />} />
           <Route path="/admin/notificacoes" element={<Notificacoes />} />
+          <Route path="/admin/denuncias/:id" element={<DetalhesDenunciaPt />} />
           {/*<Route path="/admin/denuncias" element={<AdminDenuncias />} />*/}
         </Route>
 

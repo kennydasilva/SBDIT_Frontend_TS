@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
-import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 import { CARD, INPUT, PAGE, PAGE_SUBTITLE, PAGE_TITLE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 20;
@@ -18,6 +18,7 @@ const estados = [
   "ARQUIVADA",
   "ENCAMINHADA",
   "EM_ATENDIMENTO",
+  "DUVIDOSA",
 ];
 
 export default function MinhasDenuncias() {

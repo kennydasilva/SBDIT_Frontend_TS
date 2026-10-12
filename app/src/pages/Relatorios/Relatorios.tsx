@@ -21,6 +21,7 @@ const ESTADO_COR: Record<string, string> = {
   ARQUIVADA: "#9CA3AF",
   ENCAMINHADA: "#8B5CF6",
   EM_ATENDIMENTO: "#14B8A6",
+  DUVIDOSA: "#F97316",
 };
 
 const MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];

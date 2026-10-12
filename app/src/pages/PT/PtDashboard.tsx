@@ -9,6 +9,7 @@ import { CARD, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../
 const getStatusTone = (estado: string) => {
   switch (estado) {
     case "VALIDADA": return STATUS_TONES.blue;
+    case "DUVIDOSA": return STATUS_TONES.amber;
     case "APROVADA": return STATUS_TONES.emerald;
     case "ARQUIVADA": return STATUS_TONES.gray;
     default: return STATUS_TONES.gray;

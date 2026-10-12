@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
-import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 import { ALERT_ERROR, CARD, PAGE, PAGE_SUBTITLE, PAGE_TITLE, SECTION_TITLE } from "../../utils/uiClasses";
 
 export default function DetalhesDenuncia() {
