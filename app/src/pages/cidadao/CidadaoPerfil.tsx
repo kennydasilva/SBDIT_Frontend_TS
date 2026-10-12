@@ -1,3 +1,5 @@
+import AlterarSenhaModal from "../../components/AlterarSenhaModal";
+import TelefoneInput from "../../components/TelefoneInput";
 import { useEffect, useState } from "react";
 import { User, Mail, Phone, Save, Loader2 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -7,6 +9,7 @@ import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../util
 
 export default function CidadaoPerfil() {
   const [isEditing, setIsEditing] = useState(false);
+  const [aAlterarSenha, setAAlterarSenha] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [formData, setFormData] = useState({
     nome: "João da Silva",
@@ -76,7 +79,7 @@ export default function CidadaoPerfil() {
     }
 
     if (!cidadao?.numero || !REGEX.telefone.test(cidadao.numero)) {
-      errors.telefone = "Indique um número válido no formato +258 8XX XXX XXX";
+      errors.telefone = "Indique um número válido (9 dígitos, começado por 8)";
     }
 
     setFieldErrors(errors);
@@ -233,13 +236,11 @@ export default function CidadaoPerfil() {
                       Telefone
                     </div>
                   </label>
-                  <input
-                    type="tel"
+                  <TelefoneInput
                     name="telefone"
                     value={cidadao?.numero}
-                    onChange={handleInputChange}
+                    onChange={(numero) => setCidadao((prev) => (prev ? { ...prev, numero } : prev))}
                     disabled={!isEditing}
-                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
                   />
                   {fieldErrors.telefone && (
                     <p className="mt-1 text-sm text-rose-600">{fieldErrors.telefone}</p>
@@ -275,10 +276,11 @@ export default function CidadaoPerfil() {
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
               Segurança
             </h2>
-            <button className={BUTTON_SECONDARY}>
+            <button className={BUTTON_SECONDARY} onClick={() => setAAlterarSenha(true)}>
               Alterar Senha
             </button>
           </div>
+          {aAlterarSenha && <AlterarSenhaModal onFechar={() => setAAlterarSenha(false)} />}
         </div>
       </div>
     </div>

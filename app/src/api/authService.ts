@@ -108,3 +108,15 @@ export const confirmPasswordReset = async (
   });
   return response.data;
 };
+
+// Utilizador autenticado altera a própria senha, confirmando a actual.
+export const changePassword = async (
+  senhaAtual: string,
+  novaSenha: string
+): Promise<{ message: string }> => {
+  const response = await api.post<{ message: string }>("/password-change/", {
+    senha_atual: senhaAtual,
+    nova_senha: novaSenha,
+  });
+  return response.data;
+};

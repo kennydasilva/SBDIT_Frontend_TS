@@ -38,7 +38,7 @@ export const passwordSchema = z
 export const telefoneSchema = z
   .string()
   .min(1, "O número é obrigatório")
-  .regex(REGEX.telefone, "Digite um número válido no formato +258 8XX XXX XXX");
+  .regex(REGEX.telefone, "Indique um número válido (9 dígitos, começado por 8)");
 
 export const matriculaSchema = z
   .string()

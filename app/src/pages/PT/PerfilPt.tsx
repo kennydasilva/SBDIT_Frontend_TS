@@ -1,3 +1,4 @@
+import AlterarSenhaModal from "../../components/AlterarSenhaModal";
 import { useEffect, useState } from "react";
 import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +8,7 @@ import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../util
 
 export default function PerfilPt() {
   const [isEditing, setIsEditing] = useState(false);
+  const [aAlterarSenha, setAAlterarSenha] = useState(false);
   const [formData, setFormData] = useState({
     nome: "António Costa",
     email: "antonio.costa@pt.gov.mz",
@@ -261,10 +263,11 @@ export default function PerfilPt() {
           {/* Security Section */}
           <div className={`${CARD} p-6 mt-6`}>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Segurança</h2>
-            <button className={BUTTON_SECONDARY}>
+            <button className={BUTTON_SECONDARY} onClick={() => setAAlterarSenha(true)}>
               Alterar Senha
             </button>
           </div>
+          {aAlterarSenha && <AlterarSenhaModal onFechar={() => setAAlterarSenha(false)} />}
         </div>
       </div>
     </div>

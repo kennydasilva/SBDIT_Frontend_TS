@@ -1,3 +1,4 @@
+import TelefoneInput from "../../components/TelefoneInput";
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -37,7 +38,7 @@ const CAMPOS: {
 }[] = [
   { name: "nome", label: "Nome completo", type: "text", placeholder: "Ex: Ana Machava", autoComplete: "name" },
   { name: "email", label: "Email", type: "email", placeholder: "nome@exemplo.com", autoComplete: "email" },
-  { name: "numero", label: "Telemóvel", type: "tel", placeholder: "+258 84 123 4567", autoComplete: "tel" },
+  { name: "numero", label: "Telemóvel", type: "tel", placeholder: "84 123 4567", autoComplete: "tel" },
   {
     name: "password", label: "Senha", type: "password", placeholder: "Crie uma senha", autoComplete: "new-password",
     dica: "Mínimo 8 caracteres, com maiúscula, minúscula e número.",
@@ -90,7 +91,11 @@ export default function SignupPage() {
                 <FormItem>
                   <FormLabel className={LABEL}>{c.label}</FormLabel>
                   <FormControl>
-                    <input type={c.type} autoComplete={c.autoComplete} placeholder={c.placeholder} disabled={aEnviar} className={INPUT} {...field} />
+                    {c.name === "numero" ? (
+                      <TelefoneInput value={field.value} onChange={field.onChange} name={field.name} autoComplete={c.autoComplete} disabled={aEnviar} />
+                    ) : (
+                      <input type={c.type} autoComplete={c.autoComplete} placeholder={c.placeholder} disabled={aEnviar} className={INPUT} {...field} />
+                    )}
                   </FormControl>
                   {c.dica && <p className={FIELD_HINT}>{c.dica}</p>}
                   <FormMessage className="text-xs" />

@@ -1,3 +1,4 @@
+import TelefoneInput from "../../components/TelefoneInput";
 import { useState, useEffect } from "react";
 import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { adminService } from "../../api/superAdminService";
@@ -70,7 +71,7 @@ export default function Admins() {
     // Obrigatório: é para este número que vai o SMS de acidente na
     // jurisdição do posto - sem ele o Admin nunca é avisado.
     if (!REGEX.telefone.test(formData.numero)) {
-      errors.numero = "Indique um número válido no formato +258 8XX XXX XXX";
+      errors.numero = "Indique um número válido (9 dígitos, começado por 8)";
     }
 
     setFieldErrors(errors);
@@ -450,12 +451,9 @@ export default function Admins() {
 
               <div>
                 <label className={LABEL}>Telemóvel</label>
-                <input
-                  type="tel"
+                <TelefoneInput
                   value={formData.numero}
-                  onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
-                  placeholder="+258 84 123 4567"
-                  className={INPUT}
+                  onChange={(numero) => setFormData({ ...formData, numero })}
                   disabled={submitting}
                 />
                 <p className="text-xs text-gray-500 mt-1">

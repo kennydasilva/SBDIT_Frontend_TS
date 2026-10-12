@@ -14,7 +14,7 @@ import {
 
 const TAMANHO_PAGINA = 20;
 
-const FORM_VAZIO = { nome: "", email: "", senha: "", numero_agente: "", localizacao: "" };
+const FORM_VAZIO = { nome: "", email: "", senha: "", numero_agente: "" };
 
 type Erros = Partial<Record<keyof typeof FORM_VAZIO, string>>;
 
@@ -62,7 +62,6 @@ export default function PTs() {
     if (isCreate && !REGEX.email.test(formData.email)) errors.email = "Indique um email válido";
     if (isCreate && !REGEX.password.test(formData.senha)) errors.senha = "Mínimo 8 caracteres, com maiúscula, minúscula e número";
     if (!REGEX.numeroAgente.test(formData.numero_agente)) errors.numero_agente = "Apenas letras, números e hífen (2-20)";
-    if (!REGEX.localizacao.test(formData.localizacao)) errors.localizacao = "Indique a zona de atuação (3-200 caracteres)";
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -77,7 +76,7 @@ export default function PTs() {
 
   const abrirEditar = (pt: PT) => {
     setSelectedPt(pt);
-    setFormData({ nome: pt.nome, email: pt.email, senha: "", numero_agente: pt.numero_agente, localizacao: pt.localizacao });
+    setFormData({ nome: pt.nome, email: pt.email, senha: "", numero_agente: pt.numero_agente });
     setFieldErrors({});
     setErroModal(null);
     setShowFormModal(true);
@@ -100,7 +99,7 @@ export default function PTs() {
           pt_id: selectedPt.id,
           nome: formData.nome,
           numero_agente: formData.numero_agente,
-          localizacao: formData.localizacao,
+          localizacao: selectedPt.localizacao,
         };
         await ptService.atualizarPT(updateData);
         mostrarSucesso("Agente atualizado.");
@@ -110,7 +109,8 @@ export default function PTs() {
           email: formData.email,
           password: formData.senha,
           numero_agente: formData.numero_agente,
-          localizacao: formData.localizacao,
+          // O agente pertence ao posto do Admin; já não tem zona própria.
+          localizacao: "",
           admin_id: user.id,
         };
         await ptService.criarPT(createData);
@@ -214,20 +214,19 @@ export default function PTs() {
               <th className={TABLE_HEAD_CELL}>Nome</th>
               <th className={TABLE_HEAD_CELL}>Email</th>
               <th className={TABLE_HEAD_CELL}>N.º de agente</th>
-              <th className={TABLE_HEAD_CELL}>Zona de atuação</th>
               <th className={`${TABLE_HEAD_CELL} text-right`}>Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center">
+                <td colSpan={4} className="px-6 py-10 text-center">
                   <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
                 </td>
               </tr>
             ) : filtrados.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-10 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
                   {searchTerm ? "Nenhum agente corresponde à pesquisa" : "Ainda não há agentes neste posto"}
                 </td>
               </tr>
@@ -237,7 +236,6 @@ export default function PTs() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pt.nome}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.numero_agente}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.localizacao}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
                     <button
                       onClick={() => abrirEditar(pt)}
@@ -292,7 +290,6 @@ export default function PTs() {
                 "Mínimo 8 caracteres, com maiúscula, minúscula e número."
               )}
               {campo("numero_agente", "N.º de agente", { placeholder: "Ex: PT-0452" })}
-              {campo("localizacao", "Zona de atuação", { placeholder: "Ex: Av. Julius Nyerere / Mavalane" })}
             </div>
 
             <div className="flex gap-3 mt-6">
