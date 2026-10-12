@@ -14,7 +14,7 @@ const PRECISA = [
 
 const DESTAQUES = [
   { icon: Video, titulo: "Vídeo do telemóvel", texto: "MP4, AVI ou MOV" },
-  { icon: MapPin, titulo: "Local no mapa", texto: "Define o posto responsável" },
+  { icon: MapPin, titulo: "Local no mapa", texto: "Defina o local da ocorrência" },
   { icon: BellRing, titulo: "Notificações", texto: "A cada mudança de estado" },
   { icon: Gavel, titulo: "Decisão de um agente", texto: "Aprova ou arquiva" },
 ];
