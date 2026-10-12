@@ -1,76 +1,70 @@
+import { Link } from "react-router-dom";
 import {
-  UserPlus, ListChecks, CreditCard, Video, MapPin, Send, Clock, ScanSearch, ShieldCheck, Archive,
-  XCircle, Building2, UserCheck, SearchCheck, Camera, Navigation, Copy, FileWarning,
-} from "lucide-react";
-import {
-  SECTION, SOFT_CARD, Chip, SectionHeading, PageHero, CallToAction,
+  CONTAINER, TEXT_LINK, PANEL, SectionTitle, Linhas, PageHeader, Fecho,
 } from "../../components/public/publicUi";
 import { TIPOS_OCORRENCIA } from "./conteudo";
 
+const SECCOES = [
+  { id: "passos", texto: "Passo a passo" },
+  { id: "tipos", texto: "Tipos de ocorrência" },
+  { id: "estados", texto: "Estados da denúncia" },
+  { id: "cuidados", texto: "Para a denúncia ser aceite" },
+];
+
 const PASSOS = [
   {
-    icon: UserPlus,
     titulo: "Crie a sua conta de cidadão",
-    texto: "Registe-se com o nome, email, telemóvel e uma senha. Depois entre no sistema com o email e a senha.",
+    texto: "Regista-se com o nome, o email, o telemóvel e uma senha. Depois entra no sistema com o email e a senha.",
   },
   {
-    icon: ListChecks,
     titulo: "Escolha o tipo de ocorrência",
-    texto: "Contramão, veículo parado, excesso de velocidade ou acidente de viação. Na contramão, indique também o sentido permitido da via.",
+    texto: "Contramão, veículo parado, excesso de velocidade ou acidente de viação. Na contramão indica também o sentido permitido da via.",
   },
   {
-    icon: CreditCard,
     titulo: "Indique a matrícula",
-    texto: "No formato AB-12-CD. É obrigatória em todas as denúncias, excepto no acidente de viação, em que pode não a saber.",
+    texto: "No formato AB-12-CD. É obrigatória em todas as denúncias, excepto no acidente de viação.",
   },
   {
-    icon: Video,
     titulo: "Anexe o vídeo",
-    texto: "Formatos MP4, AVI ou MOV, até 100 MB. Num acidente o ficheiro é opcional e pode ser uma fotografia (JPG ou PNG).",
+    texto: "MP4, AVI ou MOV, até 100 MB. Num acidente o ficheiro é opcional e pode ser uma fotografia (JPG ou PNG).",
   },
   {
-    icon: MapPin,
     titulo: "Marque o local no mapa",
-    texto: "Pesquise a rua ou toque no mapa, e arraste o marcador para o ponto exacto. A sua posição actual só serve para centrar o mapa.",
+    texto: "Pesquisa a rua ou toca no mapa, e arrasta o marcador para o ponto exacto. A sua posição actual só serve para centrar o mapa.",
   },
   {
-    icon: Send,
     titulo: "Descreva e envie",
-    texto: "Acrescente uma breve descrição do que aconteceu e envie. Recebe logo a confirmação de que a denúncia foi registada.",
+    texto: "Acrescenta uma breve descrição do que aconteceu e envia. Recebe logo a confirmação de que a denúncia foi registada.",
   },
 ];
 
 const ESTADOS = [
-  { icon: Clock, titulo: "Pendente", texto: "A denúncia foi recebida e o vídeo está à espera da análise automática." },
-  { icon: ScanSearch, titulo: "Validada", texto: "A análise automática confirmou a infração. A denúncia está em revisão por um agente." },
-  { icon: SearchCheck, titulo: "Em verificação", texto: "A denúncia precisa de uma verificação adicional por um agente antes de avançar." },
-  { icon: ShieldCheck, titulo: "Aprovada", texto: "Um agente de trânsito reviu e aprovou a denúncia, indicando o código legal aplicado." },
-  { icon: Archive, titulo: "Arquivada", texto: "Um agente reviu a denúncia e arquivou-a sem seguimento, com a justificação." },
-  { icon: XCircle, titulo: "Rejeitada", texto: "A análise automática não detectou a infração no vídeo, ou o vídeo não pôde ser analisado." },
-  { icon: Building2, titulo: "Enviada ao posto", texto: "Só para acidentes: o posto policial responsável pela zona foi avisado." },
-  { icon: UserCheck, titulo: "Agente designado", texto: "Só para acidentes: o posto designou um agente para o local." },
+  { titulo: "Pendente", texto: "A denúncia foi recebida e o vídeo está à espera da análise automática." },
+  { titulo: "Validada", texto: "A análise automática confirmou a infração. A denúncia está em revisão por um agente." },
+  { titulo: "Em verificação", texto: "A denúncia precisa de uma verificação adicional por um agente antes de avançar." },
+  { titulo: "Aprovada", texto: "Um agente de trânsito reviu e aprovou a denúncia, e indicou o código legal aplicado." },
+  { titulo: "Arquivada", texto: "Um agente reviu a denúncia e arquivou-a sem seguimento, com a justificação." },
+  { titulo: "Rejeitada", texto: "A análise automática não detectou a infração no vídeo, ou o vídeo não pôde ser analisado." },
+  { titulo: "Enviada ao posto", texto: "Só em acidentes: o posto policial responsável pela zona foi avisado." },
+  { titulo: "Agente designado", texto: "Só em acidentes: o posto designou um agente para o local." },
 ];
 
-const CONSELHOS = [
+const CUIDADOS = [
   {
-    icon: Camera,
     titulo: "Vídeo nítido e estável",
     texto: "Filme com boa luz, com a matrícula legível e o veículo visível durante toda a infração.",
   },
   {
-    icon: Navigation,
     titulo: "O local onde aconteceu",
-    texto: "Marque no mapa o sítio da infração, não o sítio onde está quando envia a denúncia.",
+    texto: "Marque no mapa o sítio da infração, e não o sítio onde está quando envia a denúncia.",
   },
   {
-    icon: Copy,
     titulo: "Uma denúncia por ocorrência",
-    texto: "Enquanto a sua denúncia estiver aberta, não precisa de a repetir. Denúncias da mesma infração são ligadas entre si.",
+    texto: "Enquanto a sua denúncia estiver aberta não precisa de a repetir. Denúncias da mesma infração são ligadas entre si.",
   },
   {
-    icon: FileWarning,
     titulo: "Vídeos verdadeiros",
-    texto: "O mesmo vídeo usado noutra denúncia é reconhecido, e é verificado por um agente se for declarado noutro local.",
+    texto: "Um vídeo já usado noutra denúncia é reconhecido, e é verificado por um agente se for declarado noutro local.",
   },
 ];
 
@@ -79,83 +73,79 @@ const CONSELHOS = [
 export default function GuiaPage() {
   return (
     <>
-      <PageHero
-        etiqueta="Guia"
-        titulo="Como fazer uma denúncia"
-        texto="Tudo o que precisa de saber antes de enviar: os passos, os tipos de ocorrência que o sistema trata e o que acontece depois."
+      <PageHeader
+        titulo="Guia: como fazer uma denúncia"
+        texto="Os passos, os tipos de ocorrência que o sistema trata e o que acontece depois de enviar."
       />
 
-      <section className={SECTION}>
-        <SectionHeading titulo="Passo a passo" texto="Do registo ao envio, em seis passos." />
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {PASSOS.map((p, i) => (
-            <div key={p.titulo} className={SOFT_CARD}>
-              <div className="flex items-center justify-between">
-                <Chip icon={p.icon} />
-                <span className="text-4xl font-bold text-blue-100">0{i + 1}</span>
-              </div>
-              <h3 className="mt-4 text-base font-semibold text-gray-900">{p.titulo}</h3>
-              <p className="mt-1.5 text-sm text-gray-600">{p.texto}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-gray-50/70">
-        <div className={SECTION}>
-          <SectionHeading
-            titulo="Tipos de ocorrência tratados"
-            texto="O sistema trata quatro tipos. Três são confirmados por análise automática do vídeo; o acidente segue directamente para o posto."
-          />
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
-            {TIPOS_OCORRENCIA.map((t) => (
-              <div key={t.titulo} className={`${SOFT_CARD} flex gap-5`}>
-                <Chip icon={t.icon} />
-                <div>
-                  <h3 className="text-base font-semibold text-gray-900">{t.titulo}</h3>
-                  <p className="mt-1 text-sm font-medium text-gray-700">{t.resumo}</p>
-                  <p className="mt-2 text-sm text-gray-600">{t.detalhe}</p>
-                </div>
-              </div>
+      <div className={`${CONTAINER} grid gap-10 py-14 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12`}>
+        <nav className={`${PANEL} h-fit p-5 lg:sticky lg:top-28`}>
+          <p className="text-sm font-bold text-gray-900">Nesta página</p>
+          <ul className="mt-3 space-y-2 text-sm">
+            {SECCOES.map((s) => (
+              <li key={s.id}>
+                <a href={`#${s.id}`} className="text-[#1E40AF] hover:underline">{s.texto}</a>
+              </li>
             ))}
-          </div>
-        </div>
-      </section>
+          </ul>
+        </nav>
 
-      <section className={SECTION}>
-        <SectionHeading
-          titulo="Depois de enviar: os estados da denúncia"
-          texto="Recebe uma notificação sempre que o estado muda. Pode também consultar tudo em «Minhas Denúncias»."
-        />
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {ESTADOS.map((e) => (
-            <div key={e.titulo} className={SOFT_CARD}>
-              <Chip icon={e.icon} />
-              <h3 className="mt-4 text-base font-semibold text-gray-900">{e.titulo}</h3>
-              <p className="mt-1.5 text-sm text-gray-600">{e.texto}</p>
-            </div>
-          ))}
-        </div>
-      </section>
+        <div className="space-y-14">
+          <section>
+            <SectionTitle id="passos" titulo="Passo a passo" texto="Do registo ao envio." />
+            <ol className={`${PANEL} mt-6 divide-y divide-[#1E40AF]/10 px-6`}>
+              {PASSOS.map((p, i) => (
+                <li key={p.titulo} className="flex gap-5 py-4">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1E40AF] text-sm font-bold text-white">{i + 1}</span>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{p.titulo}</h3>
+                    <p className="mt-1 text-gray-600">{p.texto}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
 
-      <section className="bg-gray-50/70">
-        <div className={SECTION}>
-          <SectionHeading titulo="Para a sua denúncia ser aceite" texto="Quatro cuidados que fazem a diferença." />
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {CONSELHOS.map((c) => (
-              <div key={c.titulo} className={SOFT_CARD}>
-                <Chip icon={c.icon} />
-                <h3 className="mt-4 text-base font-semibold text-gray-900">{c.titulo}</h3>
-                <p className="mt-1.5 text-sm text-gray-600">{c.texto}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+          <section>
+            <SectionTitle
+              id="tipos"
+              titulo="Tipos de ocorrência"
+              texto="O sistema trata quatro tipos. Três são confirmados por análise automática do vídeo; o acidente segue directamente para o posto."
+            />
+            <Linhas
+              itens={TIPOS_OCORRENCIA.map((t) => ({
+                titulo: t.titulo,
+                texto: (
+                  <>
+                    <span className="block text-gray-900">{t.resumo}</span>
+                    <span className="mt-1 block">{t.detalhe}</span>
+                  </>
+                ),
+              }))}
+            />
+          </section>
 
-      <div className="pt-16 lg:pt-20">
-        <CallToAction />
+          <section>
+            <SectionTitle
+              id="estados"
+              titulo="Estados da denúncia"
+              texto="Recebe uma notificação sempre que o estado muda. Pode consultar tudo em «Minhas Denúncias»."
+            />
+            <Linhas itens={ESTADOS} />
+          </section>
+
+          <section>
+            <SectionTitle id="cuidados" titulo="Para a denúncia ser aceite" />
+            <Linhas itens={CUIDADOS} />
+            <p className="mt-6 text-gray-600">
+              Tem dúvidas sobre o sistema? Veja a página{" "}
+              <Link to="/sobre" className={TEXT_LINK}>Sobre nós</Link>.
+            </p>
+          </section>
+        </div>
       </div>
+
+      <Fecho />
     </>
   );
 }
