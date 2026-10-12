@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { ShieldCheck } from "lucide-react";
 
 interface AuthLayoutProps {
   titulo: string;
@@ -8,28 +7,29 @@ interface AuthLayoutProps {
   rodape?: ReactNode;
 }
 
-// Estrutura comum de Entrar / Registar / Recuperar / Redefinir senha.
+// Botão e ligação com as cores do ecrã de login.
+export const AUTH_BUTTON =
+  "inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#1E40AF] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#2563EB] disabled:cursor-not-allowed disabled:opacity-60";
+export const AUTH_LINK =
+  "font-medium text-[#1E40AF] transition-colors hover:text-[#2563EB] hover:underline";
+
+// Estrutura comum de Registar / Recuperar / Redefinir senha, com o mesmo
+// visual do ecrã de login (círculo SGDIT, cartão centrado).
 export default function AuthLayout({ titulo, subtitulo, children, rodape }: AuthLayoutProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-blue-700 text-white flex items-center justify-center">
-            <ShieldCheck size={22} />
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4 py-10">
+      <div className="w-full max-w-md space-y-8 rounded-lg bg-white p-8 shadow-xl">
+        <div className="text-center">
+          <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-[#1E40AF] shadow-lg">
+            <span className="text-3xl font-bold text-white">SGDIT</span>
           </div>
-          <div className="leading-tight">
-            <p className="text-lg font-bold text-gray-900 tracking-tight">SGDIT</p>
-            <p className="text-xs text-gray-500">Gestão de Denúncias de Infrações de Trânsito</p>
-          </div>
+          <h1 className="text-3xl font-bold text-[#1E40AF]">{titulo}</h1>
+          <p className="mt-3 text-base text-gray-600">{subtitulo}</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04),0_8px_24px_rgba(16,24,40,0.06)] p-8">
-          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{titulo}</h1>
-          <p className="text-sm text-gray-500 mt-1 mb-6">{subtitulo}</p>
-          {children}
-        </div>
+        <div>{children}</div>
 
-        {rodape && <div className="mt-6 text-center text-sm text-gray-600">{rodape}</div>}
+        {rodape && <div className="text-center text-sm text-gray-600">{rodape}</div>}
       </div>
     </div>
   );

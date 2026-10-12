@@ -6,10 +6,10 @@ import { z } from "zod";
 import { Loader2, MailCheck } from "lucide-react";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
-import AuthLayout from "../../components/auth/AuthLayout";
+import AuthLayout, { AUTH_BUTTON, AUTH_LINK } from "../../components/auth/AuthLayout";
 import { requestPasswordReset } from "../../api/authService";
 import { emailSchema } from "../../utils/validationSchemas";
-import { INPUT, LABEL, BUTTON_PRIMARY, LINK } from "../../utils/uiClasses";
+import { INPUT, LABEL } from "../../utils/uiClasses";
 
 const recuperarSenhaSchema = z.object({ email: emailSchema });
 
@@ -38,7 +38,7 @@ export default function RecuperarSenhaPage() {
     <AuthLayout
       titulo="Recuperar senha"
       subtitulo="Indique o seu email para receber um link de recuperação"
-      rodape={<Link to="/login" className={LINK}>Voltar a entrar</Link>}
+      rodape={<Link to="/login" className={AUTH_LINK}>Voltar a entrar</Link>}
     >
       {enviado ? (
         <div className="text-center py-2">
@@ -65,7 +65,7 @@ export default function RecuperarSenhaPage() {
                 </FormItem>
               )}
             />
-            <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full`}>
+            <button type="submit" disabled={aEnviar} className={AUTH_BUTTON}>
               {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A enviar...</> : "Enviar link de recuperação"}
             </button>
           </form>

@@ -6,10 +6,10 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
-import AuthLayout from "../../components/auth/AuthLayout";
+import AuthLayout, { AUTH_BUTTON, AUTH_LINK } from "../../components/auth/AuthLayout";
 import { confirmPasswordReset } from "../../api/authService";
 import { passwordSchema } from "../../utils/validationSchemas";
-import { INPUT, LABEL, BUTTON_PRIMARY, ALERT_ERROR, FIELD_HINT, LINK } from "../../utils/uiClasses";
+import { INPUT, LABEL, ALERT_ERROR, FIELD_HINT } from "../../utils/uiClasses";
 import { mensagemDeErro } from "../../utils/mensagens";
 
 const redefinirSenhaSchema = z
@@ -56,7 +56,7 @@ export default function RedefinirSenhaPage() {
     <AuthLayout
       titulo="Redefinir senha"
       subtitulo="Escolha uma nova senha para a sua conta"
-      rodape={<Link to="/login" className={LINK}>Voltar a entrar</Link>}
+      rodape={<Link to="/login" className={AUTH_LINK}>Voltar a entrar</Link>}
     >
       {erro && (
         <div className={`${ALERT_ERROR} mb-5`}>
@@ -94,7 +94,7 @@ export default function RedefinirSenhaPage() {
               </FormItem>
             )}
           />
-          <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full mt-2`}>
+          <button type="submit" disabled={aEnviar} className={AUTH_BUTTON}>
             {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A guardar...</> : "Guardar nova senha"}
           </button>
         </form>

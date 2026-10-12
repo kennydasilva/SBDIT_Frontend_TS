@@ -1,5 +1,9 @@
 // routes/AppRoutes.jsx
 import { Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "../pages/Landing/LandingPage";
+import GuiaPage from "../pages/Landing/GuiaPage";
+import SobrePage from "../pages/Landing/SobrePage";
+import PublicLayout from "../components/public/PublicLayout";
 import LoginPage from "../pages/Login/LoginPage";
 import SignupPage from "../pages/Signup/SignupPage";
 import RecuperarSenhaPage from "../pages/RecuperarSenha/RecuperarSenhaPage";
@@ -50,6 +54,13 @@ import CidadaoNovaDenuncia from "../pages/Cidadao/NovaDenuncia";*/
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Páginas públicas: entrada da aplicação */}
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/guia" element={<GuiaPage />} />
+        <Route path="/sobre" element={<SobrePage />} />
+      </Route>
+
       <Route path="/login" element={<LoginPage />} />
       <Route path="/cadastrar" element={<SignupPage />} />
       <Route path="/recuperar-senha" element={<RecuperarSenhaPage />} />
@@ -106,7 +117,7 @@ export default function AppRoutes() {
         </Route>
       </Route>
 
-      <Route path="/" element={<Navigate to="/login" replace />} />
+
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

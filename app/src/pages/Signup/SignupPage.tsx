@@ -7,10 +7,10 @@ import { z } from "zod";
 import { Loader2 } from "lucide-react";
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "../../components/ui/form";
-import AuthLayout from "../../components/auth/AuthLayout";
+import AuthLayout, { AUTH_BUTTON, AUTH_LINK } from "../../components/auth/AuthLayout";
 import { signup } from "../../api/authService";
 import { nomeSchema, emailSchema, passwordSchema, telefoneSchema } from "../../utils/validationSchemas";
-import { INPUT, LABEL, BUTTON_PRIMARY, ALERT_ERROR, FIELD_HINT, LINK } from "../../utils/uiClasses";
+import { INPUT, LABEL, ALERT_ERROR, FIELD_HINT } from "../../utils/uiClasses";
 import { mensagemDeErro } from "../../utils/mensagens";
 
 const signupSchema = z
@@ -74,7 +74,7 @@ export default function SignupPage() {
       rodape={
         <>
           Já tem conta?{" "}
-          <Link to="/login" className={LINK}>Entrar</Link>
+          <Link to="/login" className={AUTH_LINK}>Entrar</Link>
         </>
       }
     >
@@ -104,7 +104,7 @@ export default function SignupPage() {
             />
           ))}
 
-          <button type="submit" disabled={aEnviar} className={`${BUTTON_PRIMARY} w-full mt-2`}>
+          <button type="submit" disabled={aEnviar} className={AUTH_BUTTON}>
             {aEnviar ? <><Loader2 className="w-4 h-4 animate-spin" /> A criar conta...</> : "Criar conta"}
           </button>
         </form>
