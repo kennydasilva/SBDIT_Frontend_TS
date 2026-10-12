@@ -88,16 +88,16 @@ export default function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-[#1E40AF]/10">
-        <div className={`${CONTAINER} flex flex-col gap-4 py-6 text-sm text-gray-600 sm:flex-row sm:items-center sm:justify-between`}>
+      <footer className="bg-[#1E40AF]">
+        <div className={`${CONTAINER} flex flex-col gap-4 py-8 text-sm text-white sm:flex-row sm:items-center sm:justify-between`}>
           <p>SGDIT — Sistema de Gestão de Denúncias de Infrações de Trânsito</p>
           <nav className="flex flex-wrap gap-x-5 gap-y-2">
             {LINKS.map((l) => (
-              <Link key={l.para} to={l.para} className="hover:text-[#1E40AF] hover:underline">
+              <Link key={l.para} to={l.para} className="hover:underline">
                 {l.texto}
               </Link>
             ))}
-            <Link to="/login" className="hover:text-[#1E40AF] hover:underline">Entrar</Link>
+            <Link to="/login" className="hover:underline">Entrar</Link>
           </nav>
         </div>
       </footer>
