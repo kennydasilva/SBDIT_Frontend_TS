@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { GoogleMap, MarkerF, Autocomplete, useJsApiLoader } from "@react-google-maps/api";
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Search } from "./icons";
 import { configService } from "../api/configService";
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA } from "../utils/maps";
 

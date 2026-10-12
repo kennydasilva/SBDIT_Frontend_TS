@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { GoogleMap, MarkerF, Rectangle, Polyline, Polygon, useJsApiLoader } from "@react-google-maps/api";
-import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "lucide-react";
+import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "../../components/icons";
 import { adminService } from "../../api/superAdminService";
 import type { Admin } from "../../api/superAdminService";
 import {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "../../components/icons";
 import { ptService } from "../../api/ptService";
 import type { CreatePTData, UpdatePTData, PT } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";

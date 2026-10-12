@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2, Users } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2, Users, AlertTriangle } from "../../components/icons";
 import { toast } from "sonner";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada, type DenunciaTestemunha } from "../../api/denunciaService";
@@ -355,7 +355,7 @@ export default function DetalhesDenunciaPt() {
           {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
           {denuncia?.localizacao_contraditoria && (
             <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-              <p className="font-semibold mb-1">⚠️ Possível denúncia falsa — declarada noutra jurisdição</p>
+              <p className="font-semibold mb-1 flex items-center gap-2"><AlertTriangle size={16} /> Possível denúncia falsa — declarada noutra jurisdição</p>
               <p>
                 O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:
               </p>
@@ -384,7 +384,7 @@ export default function DetalhesDenunciaPt() {
             <div className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900 space-y-1">
               {denuncia.video_semelhante_a_id && (
                 <p>
-                  ⚠️ O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
+                  O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
                   <Link to={`${base}/denuncias/${denuncia.video_semelhante_a_id}`} className="underline font-medium">
                     denúncia #{denuncia.video_semelhante_a_id}
                   </Link>
@@ -430,7 +430,7 @@ export default function DetalhesDenunciaPt() {
                         )}
                         {t.localizacao_contraditoria && (
                           <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
-                            ⚠️ local contraditório: {t.localizacao}
+                            local contraditório: {t.localizacao}
                           </span>
                         )}
                       </p>

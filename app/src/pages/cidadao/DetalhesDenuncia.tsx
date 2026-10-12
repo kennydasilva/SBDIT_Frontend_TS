@@ -11,7 +11,7 @@ import {
   Shield,
   Siren,
   Loader2,
-} from "lucide-react";
+} from "../../components/icons";
 import { useEffect, useState } from "react";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";

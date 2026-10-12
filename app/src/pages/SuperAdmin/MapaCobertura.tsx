@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { GoogleMap, MarkerF, Polygon, Polyline, Rectangle, useJsApiLoader } from "@react-google-maps/api";
-import { Loader2, MapPinned, AlertTriangle, MapPinOff, Route } from "lucide-react";
+import { Loader2, MapPinned, AlertTriangle, MapPinOff, Route } from "../../components/icons";
 import {
   jurisdicaoService, type PostoJurisdicao, type CoberturaJurisdicoes,
 } from "../../api/jurisdicaoService";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Shield, AlertTriangle, Loader2 } from "lucide-react";
+import { Shield, AlertTriangle, Loader2 } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { ptService } from "../../api/ptService";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";

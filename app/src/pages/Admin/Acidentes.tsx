@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Siren, AlertTriangle, Loader2, MapPin, CheckCircle, Paperclip } from "lucide-react";
+import { Siren, AlertTriangle, Loader2, MapPin, CheckCircle, Paperclip } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { ptService, type PT } from "../../api/ptService";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";

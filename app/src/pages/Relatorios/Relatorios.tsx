@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   FileDown, FileSpreadsheet, BarChart3, PieChart as PieChartIcon, AlertTriangle, Loader2,
   Building2, Users, Siren, ShieldCheck, RotateCcw,
-} from "lucide-react";
+} from "../../components/icons";
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useAuth } from "../../hooks/useAuth";
 import { relatorioService, type FiltrosRelatorio, type RelatorioResumo } from "../../api/relatorioService";

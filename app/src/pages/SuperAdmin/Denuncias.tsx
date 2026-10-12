@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "../../components/icons";
 import { superAdminService } from "../../api/superAdminService";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";

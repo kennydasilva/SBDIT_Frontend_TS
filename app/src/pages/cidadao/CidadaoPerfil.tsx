@@ -1,7 +1,7 @@
 import AlterarSenhaModal from "../../components/AlterarSenhaModal";
 import TelefoneInput from "../../components/TelefoneInput";
 import { useEffect, useState } from "react";
-import { User, Mail, Phone, Save, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Save, Loader2 } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 import { REGEX } from "../../utils/validationSchemas";

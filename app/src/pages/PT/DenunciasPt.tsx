@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Search, Loader2, AlertTriangle, ChevronRight } from "lucide-react";
+import { Search, Loader2, AlertTriangle, ChevronRight } from "../../components/icons";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
 import { labelTipo, TIPO_LABEL } from "../../utils/estadoDenuncia";
@@ -131,7 +131,7 @@ export default function DenunciasPt() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           {d.matricula}
                           {d.localizacao_contraditoria && (
-                            <span className={`${BADGE} bg-rose-50 text-rose-700`}>⚠️ possível falsa</span>
+                            <span className={`${BADGE} bg-rose-50 text-rose-700`}><AlertTriangle size={12} /> possível falsa</span>
                           )}
                           {!!d.total_relacionadas && (
                             <span className={`${BADGE} bg-violet-50 text-violet-700`}>

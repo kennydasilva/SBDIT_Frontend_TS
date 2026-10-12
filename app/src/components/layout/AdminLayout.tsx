@@ -1,4 +1,4 @@
-import { LayoutDashboard, Shield, Siren, Bell, FileText } from "lucide-react";
+import { LayoutDashboard, Shield, Siren, Bell, FileText } from "../icons";
 import AppShell, { type ItemMenu } from "./AppShell";
 
 // Só páginas que existem: os antigos links para Cidadãos/Denúncias/

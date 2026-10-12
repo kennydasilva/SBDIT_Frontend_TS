@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, AlertTriangle, Loader2 } from "../../components/icons";
 import { superAdminService } from "../../api/superAdminService";
 import type { PT } from "../../api/ptService";
 import Paginacao from "../../components/Paginacao";

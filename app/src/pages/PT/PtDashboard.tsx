@@ -1,4 +1,4 @@
-import { CheckCircle2, Archive, AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle2, Archive, AlertTriangle, ArrowRight, Loader2 } from "../../components/icons";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2 } from "./icons";
 import { changePassword } from "../api/authService";
 import { REGEX } from "../utils/validationSchemas";
 import { mostrarSucesso, mensagemDeErro } from "../utils/mensagens";

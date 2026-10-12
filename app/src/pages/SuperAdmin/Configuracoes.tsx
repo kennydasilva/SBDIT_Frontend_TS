@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, AlertTriangle, Loader2, KeyRound } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, Loader2, KeyRound } from "../../components/icons";
 import { configService, type ConfigEntry } from "../../api/configService";
 import {
   CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY,

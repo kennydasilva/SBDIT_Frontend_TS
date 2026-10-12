@@ -1,6 +1,6 @@
 import AlterarSenhaModal from "../../components/AlterarSenhaModal";
 import { useEffect, useState } from "react";
-import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "lucide-react";
+import { User, Mail, Shield, Phone, MapPin, Calendar, Save } from "../../components/icons";
 import { toast } from "sonner";
 import { ptService, type PTUserResponse } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";

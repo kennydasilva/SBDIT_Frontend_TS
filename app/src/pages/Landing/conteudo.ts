@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Ban, Gauge, Siren } from "lucide-react";
+import { ArrowLeftRight, Ban, Gauge, Siren } from "../../components/icons";
 
 // Tipos de ocorrência tratados pelo sistema (usado no Início e no Guia).
 export const TIPOS_OCORRENCIA = [

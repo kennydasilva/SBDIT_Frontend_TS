@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Shield, UserCircle, AlertTriangle, FileText, Settings, MapPinned, Bell } from "lucide-react";
+import { LayoutDashboard, Users, Shield, UserCircle, AlertTriangle, FileText, Settings, MapPinned, Bell } from "../icons";
 import AppShell, { type ItemMenu } from "./AppShell";
 
 const menuItems: ItemMenu[] = [

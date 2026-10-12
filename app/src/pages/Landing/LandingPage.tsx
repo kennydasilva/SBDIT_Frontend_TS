@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Video, MapPin, BellRing, Gavel, Send, ScanSearch } from "lucide-react";
+import { Video, MapPin, BellRing, Gavel, Send, ScanSearch } from "../../components/icons";
 import {
   CONTAINER, SECTION, BTN_ON_BLUE, BTN_ON_BLUE_OUTLINE, TEXT_LINK, PANEL, IconTile, SectionTitle, Fecho,
 } from "../../components/public/publicUi";

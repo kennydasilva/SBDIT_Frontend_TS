@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Loader2, Menu, X, type LucideIcon } from "lucide-react";
+import { LogOut, Loader2, Menu, X, type LucideIcon } from "../icons";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotificacoesNaoLidas } from "../../hooks/useNotificacoesNaoLidas";
 import { logout } from "../../api/authService";

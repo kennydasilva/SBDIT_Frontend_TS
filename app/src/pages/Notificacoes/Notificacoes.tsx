@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList, Link2,
-} from "lucide-react";
+} from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { notificacaoService, type Notificacao } from "../../api/notificacaoService";
 import Paginacao from "../../components/Paginacao";

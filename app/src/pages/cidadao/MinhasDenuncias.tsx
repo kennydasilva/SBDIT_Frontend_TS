@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Eye, Loader2 } from "lucide-react";
+import { Search, Eye, Loader2 } from "../../components/icons";
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
@@ -76,9 +76,9 @@ export default function MinhasDenuncias() {
 
       {/* Filters */}
       <div className={`${CARD} p-6 mb-6`}>
-        <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex flex-col gap-4">
           {/* Search Bar */}
-          <div className="flex-1 relative">
+          <div className="relative">
             <Search
               className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
               size={20}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Users, Shield, UserCircle, AlertTriangle, ArrowRight, Loader2 } from "lucide-react";
+import { Users, Shield, UserCircle, AlertTriangle, ArrowRight, Loader2 } from "../../components/icons";
 import { Link } from "react-router";
 import api from "../../api/axios";
 import type { PaginatedResponse } from "../../api/types";

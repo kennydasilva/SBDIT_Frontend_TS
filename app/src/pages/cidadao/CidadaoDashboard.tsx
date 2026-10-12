@@ -1,4 +1,4 @@
-import { FileText, Clock, CheckCircle2, XCircle, Trophy, ArrowRight, ClipboardList } from "lucide-react";
+import { FileText, Clock, CheckCircle2, XCircle, Trophy, ArrowRight, ClipboardList } from "../../components/icons";
 import { Link } from "react-router";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";

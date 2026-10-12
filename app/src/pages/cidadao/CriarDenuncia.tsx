@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Upload, X, CheckCircle, Loader2, Siren } from "lucide-react";
+import { Upload, X, CheckCircle, Loader2, Siren } from "../../components/icons";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";

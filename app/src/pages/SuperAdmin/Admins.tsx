@@ -1,6 +1,6 @@
 import TelefoneInput from "../../components/TelefoneInput";
 import { useState, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "../../components/icons";
 import { adminService } from "../../api/superAdminService";
 import type {
   CreateAdminData,

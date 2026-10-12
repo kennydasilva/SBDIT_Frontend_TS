@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Loader2, AlertTriangle, ChevronRight, CheckCircle2, XCircle, ClipboardList } from "lucide-react";
+import { Loader2, AlertTriangle, ChevronRight, CheckCircle2, XCircle, ClipboardList } from "../../components/icons";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
 import Paginacao from "../../components/Paginacao";

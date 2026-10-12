@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LayoutDashboard, PlusCircle, FileText, User, Bell } from "lucide-react";
+import { LayoutDashboard, PlusCircle, FileText, User, Bell } from "../icons";
 import AppShell, { type ItemMenu } from "./AppShell";
 import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService } from "../../api/cidadaoService";

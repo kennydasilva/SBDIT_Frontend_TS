@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { LucideIcon } from "../icons";
 import { Link } from "react-router-dom";
 
 // Blocos visuais partilhados pelas páginas públicas (Início, Guia, Sobre

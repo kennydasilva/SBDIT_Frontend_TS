@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "lucide-react";
+import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "../../components/icons";
 import { superAdminService, type cidadao } from "../../api/superAdminService";
 import Paginacao from "../../components/Paginacao";
 import { CARD, INPUT, BUTTON_PRIMARY, BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
