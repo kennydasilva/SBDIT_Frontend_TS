@@ -146,7 +146,7 @@ export default function DashboardPt() {
                   </td>
                 </tr>
               ) : (
-                denuncias.map((denuncia) => (
+                denuncias.slice(0, 3).map((denuncia) => (
                   <tr key={denuncia.id} className={TABLE_ROW_HOVER}>
                     <td className="px-6 py-4 text-sm font-medium text-gray-900">
                       {denuncia.matricula}

@@ -8,12 +8,17 @@ import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../
 
 
 
+// Quantas denúncias mostrar em "Denúncias Recentes" (as restantes estão
+// em "Minhas Denúncias").
+const RECENTES = 3;
+
 export default function CidadaoDashboard() {
 
    const { user, loading: authLoading } = useAuth();
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedEstado, setSelectedEstado] = useState("Todos");
     const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+    const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const[error, setError]= useState<string | null>(null);
     const[pendentes, setPendentes]=useState(0);
@@ -53,8 +58,11 @@ export default function CidadaoDashboard() {
         setLoading(true);
         setError(null);
 
-        const { results: data } = await denunciaService.listarPorCidadao(user.id);
+        // Pede o máximo por página para os totais por estado; o total geral
+        // vem da contagem do servidor. Na lista só aparecem as mais recentes.
+        const { results: data, count } = await denunciaService.listarPorCidadao(user.id, 1, 100);
         setDenuncias(data);
+        setTotal(count);
         calcular(data);
       } catch (err) {
         setError("Erro ao carregar denúncias.");
@@ -91,7 +99,7 @@ export default function CidadaoDashboard() {
   const stats = [
     {
       label: "Total de Denúncias",
-      value: denuncias.length.toString(),
+      value: total.toString(),
       icon: FileText,
       bg: "bg-blue-50",
       fg: "text-blue-600",
@@ -196,7 +204,7 @@ export default function CidadaoDashboard() {
                   </td>
                 </tr>
               ) : (
-                denuncias.map((denuncia) => (
+                denuncias.slice(0, RECENTES).map((denuncia) => (
                   <tr key={denuncia.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-6 py-4 text-sm text-gray-500">
                       #{denuncia.id}
