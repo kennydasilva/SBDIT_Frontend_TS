@@ -11,7 +11,9 @@ export const REGEX = {
   // Matrícula de Moçambique, formato actual: "ABC 123 MC" (três letras,
   // três algarismos, duas letras da província). Espaços e hífenes são
   // opcionais; o backend grava na forma única.
-  matricula: /^[A-Za-z]{3}[ -]?\d{3}[ -]?[A-Za-z]{2}$/,
+  // A sigla tem de ser uma das das províncias (Cabo Delgado: CA ou CD,
+  // as fontes divergem). A mesma lista está no backend (helper/matricula.py).
+  matricula: /^[A-Za-z]{3}[ -]?\d{3}[ -]?(MC|MP|GZ|IB|SF|MN|TT|ZB|NP|NS|CA|CD)$/i,
   codigoLegal: /^[A-Za-zÀ-ÿ0-9ºª.,()\-\s]{3,150}$/,
   numeroAgente: /^[A-Za-z0-9-]{2,20}$/,
   posto: /^[A-Za-zÀ-ÿºª0-9\s.-]{2,100}$/,
@@ -42,8 +44,23 @@ export const telefoneSchema = z
   .min(1, "O número é obrigatório")
   .regex(REGEX.telefone, "Indique um número válido (9 dígitos, começado por 8)");
 
+// Siglas das províncias nas matrículas (província do primeiro registo).
+export const PROVINCIAS_MATRICULA: Record<string, string> = {
+  MC: "Maputo Cidade",
+  MP: "Maputo Província",
+  GZ: "Gaza",
+  IB: "Inhambane",
+  SF: "Sofala",
+  MN: "Manica",
+  TT: "Tete",
+  ZB: "Zambézia",
+  NP: "Nampula",
+  NS: "Niassa",
+  CA: "Cabo Delgado",
+};
+
 export const MATRICULA_EXEMPLO = "Ex: ABC 123 MC";
-export const MATRICULA_INVALIDA = "Indique uma matrícula válida, no formato ABC 123 MC";
+export const MATRICULA_INVALIDA = "Indique uma matrícula válida, no formato ABC 123 MC (três letras, três algarismos e a sigla da província)";
 
 export const matriculaSchema = z
   .string()

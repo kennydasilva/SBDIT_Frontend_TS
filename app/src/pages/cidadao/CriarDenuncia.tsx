@@ -3,7 +3,7 @@ import { Upload, X, CheckCircle, Loader2, Siren } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
-import { REGEX, MATRICULA_EXEMPLO, MATRICULA_INVALIDA } from "../../utils/validationSchemas";
+import { REGEX, MATRICULA_EXEMPLO, MATRICULA_INVALIDA, PROVINCIAS_MATRICULA } from "../../utils/validationSchemas";
 import LocationPicker from "../../components/LocationPicker";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
@@ -198,7 +198,7 @@ export default function CriarDenuncia() {
   };
 
   return (
-    <div className="p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Criar Denúncia</h1>
@@ -240,6 +240,9 @@ export default function CriarDenuncia() {
               className={INPUT}
               required={!ehAcidente}
             />
+            <p className="mt-1 text-xs text-gray-500">
+              Três letras, três algarismos e a sigla da província ({Object.keys(PROVINCIAS_MATRICULA).join(", ")}).
+            </p>
             {fieldErrors.matricula && (
               <p className="mt-1 text-sm text-rose-600">{fieldErrors.matricula}</p>
             )}

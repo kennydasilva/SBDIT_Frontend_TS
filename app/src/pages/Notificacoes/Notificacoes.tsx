@@ -106,15 +106,15 @@ export default function Notificacoes() {
   const haNaoLidas = notificacoes.some((n) => !n.lida);
 
   return (
-    <div className="p-8 bg-gray-50/50 min-h-full">
-      <div className="flex items-start justify-between gap-4 mb-8">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Notificações</h1>
           <p className="text-gray-500 mt-1">Atualizações sobre as denúncias que lhe dizem respeito</p>
         </div>
         <button
           onClick={marcarTodas}
-          className={BUTTON_SECONDARY}
+          className={`${BUTTON_SECONDARY} whitespace-nowrap`}
           disabled={aMarcarTodas || !haNaoLidas}
         >
           {aMarcarTodas ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck size={16} />}

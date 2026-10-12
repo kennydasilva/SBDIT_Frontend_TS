@@ -118,7 +118,7 @@ export default function CidadaoPerfil() {
   ];
 
   return (
-    <div className="p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Meu Perfil</h1>

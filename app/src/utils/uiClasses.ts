@@ -38,7 +38,7 @@ export const TABLE_ROW_HOVER = "hover:bg-gray-50/60 transition-colors";
 
 // Estrutura de página: todas as páginas internas usam o mesmo fundo,
 // margens e hierarquia de títulos.
-export const PAGE = "p-8 bg-gray-50/50 min-h-full";
+export const PAGE = "p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full";
 export const PAGE_TITLE = "text-2xl font-semibold text-gray-900 tracking-tight";
 export const PAGE_SUBTITLE = "text-gray-500 mt-1";
 export const SECTION_TITLE = "text-lg font-semibold text-gray-900";

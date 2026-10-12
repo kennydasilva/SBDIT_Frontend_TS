@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, Loader2, type LucideIcon } from "lucide-react";
+import { LogOut, Loader2, Menu, X, type LucideIcon } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotificacoesNaoLidas } from "../../hooks/useNotificacoesNaoLidas";
 import { logout } from "../../api/authService";
@@ -43,6 +44,13 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const naoLidas = useNotificacoesNaoLidas();
+  // Em ecrãs pequenos a barra lateral fica escondida e abre por cima do
+  // conteúdo (menu); a partir de `lg` está sempre visível.
+  const [menuAberto, setMenuAberto] = useState(false);
+
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [location.pathname]);
 
   if (loading || carregando) {
     return (
@@ -62,10 +70,31 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <aside className="w-64 shrink-0 bg-blue-800 text-white flex flex-col">
-        <div className="px-6 py-5 border-b border-white/10">
-          <h1 className="text-xl font-bold tracking-tight">SGDIT</h1>
-          <p className="text-sm text-blue-200">{subtitulo}</p>
+      {menuAberto && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+          onClick={() => setMenuAberto(false)}
+          aria-hidden
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-blue-800 text-white flex flex-col transition-transform duration-200 lg:static lg:translate-x-0 ${
+          menuAberto ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="px-6 py-5 border-b border-white/10 flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight">SGDIT</h1>
+            <p className="text-sm text-blue-200">{subtitulo}</p>
+          </div>
+          <button
+            onClick={() => setMenuAberto(false)}
+            className="p-1 -mr-2 rounded-lg text-blue-100 hover:bg-white/10 lg:hidden"
+            aria-label="Fechar menu"
+          >
+            <X size={20} />
+          </button>
         </div>
 
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
@@ -113,9 +142,26 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
+      <div className="flex-1 min-w-0 flex flex-col">
+        <header className="lg:hidden shrink-0 flex items-center gap-3 bg-blue-800 text-white px-4 py-3">
+          <button
+            onClick={() => setMenuAberto(true)}
+            className="relative p-1 -ml-1 rounded-lg hover:bg-white/10"
+            aria-label="Abrir menu"
+          >
+            <Menu size={22} />
+            {naoLidas > 0 && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-rose-500" />}
+          </button>
+          <div className="leading-tight">
+            <p className="font-bold tracking-tight">SGDIT</p>
+            <p className="text-xs text-blue-200">{subtitulo}</p>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 }

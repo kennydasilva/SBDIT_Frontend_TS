@@ -22,7 +22,7 @@ const PASSOS = [
   },
   {
     titulo: "Indique a matrícula",
-    texto: "No formato ABC 123 MC: três letras, três algarismos e as duas letras da província. É obrigatória em todas as denúncias, excepto no acidente de viação.",
+    texto: "No formato ABC 123 MC: três letras, três algarismos e a sigla da província (MC, MP, GZ, IB, SF, MN, TT, ZB, NP, NS ou CA). É obrigatória em todas as denúncias, excepto no acidente de viação.",
   },
   {
     titulo: "Anexe o vídeo",
