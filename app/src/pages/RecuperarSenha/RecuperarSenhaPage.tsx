@@ -42,7 +42,7 @@ export default function RecuperarSenhaPage() {
     >
       {enviado ? (
         <div className="text-center py-2">
-          <div className="w-12 h-12 mx-auto rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3">
+          <div className="w-12 h-12 mx-auto rounded-full bg-blue-50 text-blue-800 flex items-center justify-center mb-3">
             <MailCheck size={24} />
           </div>
           <p className="text-sm text-gray-700">

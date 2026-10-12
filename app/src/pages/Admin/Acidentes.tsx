@@ -9,7 +9,7 @@ import {
   CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER,
 } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 const BASE_URL = "http://127.0.0.1:8000";
 
 // Acidentes reportados na jurisdição do posto deste Admin. O Admin é o
@@ -41,7 +41,7 @@ export default function Acidentes() {
       setError(null);
 
       const [dadosAcidentes, dadosAgentes] = await Promise.all([
-        denunciaService.listarAcidentesAdmin(pagina),
+        denunciaService.listarAcidentesAdmin(pagina, TAMANHO_PAGINA),
         ptService.listarPT(user.id, 1, 100),
       ]);
 
@@ -110,7 +110,7 @@ export default function Acidentes() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Acidentes de Viação</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Acidentes de Viação</h1>
         <p className="text-gray-500 mt-1">
           Acidentes reportados na jurisdição do seu posto. Designe o agente que vai ao local.
         </p>
@@ -120,7 +120,7 @@ export default function Acidentes() {
         <div
           className={`mb-6 rounded-2xl border p-4 flex items-center gap-3 ${
             mensagem.tipo === "ok"
-              ? "border-emerald-100 bg-emerald-50 text-emerald-800"
+              ? "border-blue-100 bg-blue-50 text-blue-800"
               : "border-rose-100 bg-rose-50 text-rose-800"
           }`}
         >
@@ -130,7 +130,7 @@ export default function Acidentes() {
       )}
 
       {agentes.length === 0 && (
-        <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
+        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
           O seu posto ainda não tem agentes registados.{" "}
           <Link to="/admin/policiais" className="font-medium underline">Crie um agente</Link> para o poder designar aos acidentes.
         </div>
@@ -210,7 +210,7 @@ export default function Acidentes() {
                       // Sem agentes no posto não há quem designar: em vez de
                       // um combobox vazio e desactivado (parecia avariado),
                       // diz porquê e leva a criar um agente.
-                      <div className="min-w-[220px] text-xs text-amber-700">
+                      <div className="min-w-[220px] text-xs text-blue-800">
                         Sem agentes no posto.{" "}
                         <Link to="/admin/policiais" className="font-medium text-blue-600 hover:underline">
                           Criar agente

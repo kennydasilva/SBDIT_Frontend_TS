@@ -52,9 +52,9 @@ export default function Dashboard() {
 
   const stats = [
     { label: "Administradores", value: contagens.admins, icon: Users, bg: "bg-blue-50", fg: "text-blue-600" },
-    { label: "Agentes", value: contagens.policiais, icon: Shield, bg: "bg-indigo-50", fg: "text-indigo-600" },
-    { label: "Cidadãos", value: contagens.cidadaos, icon: UserCircle, bg: "bg-purple-50", fg: "text-purple-600" },
-    { label: "Denúncias", value: contagens.denuncias, icon: AlertTriangle, bg: "bg-orange-50", fg: "text-orange-600" },
+    { label: "Agentes", value: contagens.policiais, icon: Shield, bg: "bg-blue-50", fg: "text-blue-800" },
+    { label: "Cidadãos", value: contagens.cidadaos, icon: UserCircle, bg: "bg-blue-50", fg: "text-blue-800" },
+    { label: "Denúncias", value: contagens.denuncias, icon: AlertTriangle, bg: "bg-blue-50", fg: "text-blue-800" },
   ];
 
   if (loading) {
@@ -68,7 +68,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1">Visão geral do sistema</p>
       </div>
 

@@ -4,6 +4,22 @@
 @import '../src//styles/tailwind.css';
 @import '../src/styles/theme.css';
 
+/* Paleta única do sistema: o azul #1E40AF e os seus tons (decisão do
+   utilizador: "azul e branco em todo o sistema"). Todas as classes
+   blue-* do Tailwind passam a derivar deste azul. */
+@theme {
+  --color-blue-50: color-mix(in srgb, #1E40AF 5%, white);
+  --color-blue-100: color-mix(in srgb, #1E40AF 11%, white);
+  --color-blue-200: color-mix(in srgb, #1E40AF 22%, white);
+  --color-blue-300: color-mix(in srgb, #1E40AF 40%, white);
+  --color-blue-400: color-mix(in srgb, #1E40AF 60%, white);
+  --color-blue-500: color-mix(in srgb, #1E40AF 80%, white);
+  --color-blue-600: #1E40AF;
+  --color-blue-700: color-mix(in srgb, #1E40AF 88%, black);
+  --color-blue-800: #1E40AF;
+  --color-blue-900: color-mix(in srgb, #1E40AF 75%, black);
+}
+
 @layer base {
   body {
     font-family: 'Inter', sans-serif;

@@ -5,7 +5,7 @@ import type { DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
 import { CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA", "ENCAMINHADA", "EM_ATENDIMENTO", "DUVIDOSA"] as const;
 
@@ -48,7 +48,7 @@ export default function Denuncias() {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarDenuncias(pagina);
+      const data = await superAdminService.listarDenuncias(pagina, TAMANHO_PAGINA);
       setDenuncias(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -102,7 +102,7 @@ export default function Denuncias() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Denúncias</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Denúncias</h1>
       </div>
 
       {/* Status Cards */}

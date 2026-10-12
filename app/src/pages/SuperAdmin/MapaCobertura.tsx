@@ -237,7 +237,7 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
                         <span className="block text-sm font-medium text-gray-900 truncate">{p.posto}</span>
                         <span className="block text-xs text-gray-500">
                           {p.itens.length === 0 ? (
-                            <span className="text-amber-700">Sem jurisdição definida</span>
+                            <span className="text-blue-800">Sem jurisdição definida</span>
                           ) : (
                             <>
                               {p.total_zonas} {p.total_zonas === 1 ? "zona" : "zonas"}
@@ -255,7 +255,7 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
 
           <div className={`${CARD} p-5`}>
             <h2 className={`${SECTION_TITLE} mb-3 flex items-center gap-2`}>
-              <MapPinOff size={18} className="text-rose-600" />
+              <MapPinOff size={18} className="text-blue-800" />
               Fora de jurisdição ({cobertura?.pontos.length ?? 0})
             </h2>
             {!cobertura || cobertura.pontos.length === 0 ? (

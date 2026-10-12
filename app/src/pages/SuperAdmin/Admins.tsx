@@ -17,7 +17,7 @@ import {
 import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
 
 const OUTRO_POSTO = "__OUTRO__";
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 
 
@@ -87,7 +87,7 @@ export default function Admins() {
     try{
       setLoading(true);
       setError(null);
-      const data= await adminService.listarAdmins(pagina);
+      const data= await adminService.listarAdmins(pagina, TAMANHO_PAGINA);
       setAdmins(data.results);
       setTotalItens(data.count);
     }
@@ -248,7 +248,7 @@ export default function Admins() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Gestão de Administradores</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Gestão de Administradores</h1>
         <button
           onClick={() => {
             setSelectedAdmin(null);
@@ -306,11 +306,11 @@ export default function Admins() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.email}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.posto}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {admin.numero || <span className="text-amber-600">Sem número (não recebe SMS)</span>}
+                    {admin.numero || <span className="text-blue-800">Sem número (não recebe SMS)</span>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{admin.dataCriacao || "-"}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                    <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
                       {admin.status || "Ativo"}
                     </span>

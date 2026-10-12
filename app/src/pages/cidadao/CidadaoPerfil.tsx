@@ -121,7 +121,7 @@ export default function CidadaoPerfil() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Meu Perfil</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Meu Perfil</h1>
         <p className="text-gray-500 mt-1">
           Gerencie suas informações pessoais
         </p>
@@ -129,9 +129,9 @@ export default function CidadaoPerfil() {
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-center gap-3">
-          <Save className="text-emerald-600 shrink-0" size={24} />
-          <p className="text-emerald-800 font-medium">
+        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
+          <Save className="text-blue-800 shrink-0" size={24} />
+          <p className="text-blue-800 font-medium">
             Perfil atualizado com sucesso!
           </p>
         </div>

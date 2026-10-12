@@ -13,15 +13,23 @@ export const ESTADO_LABEL: Record<string, string> = {
   DUVIDOSA: "Duvidosa",
 };
 
+// Um só azul, distinguido pelo preenchimento (não pela cor):
+//  - contorno: ainda à espera;      - fundo claro: em curso;
+//  - cheio: concluída com seguimento; - cinzento: fechada sem seguimento.
+const A_ESPERA = "bg-white text-blue-800 border-blue-200";
+const EM_CURSO = "bg-blue-50 text-blue-800 border-blue-100";
+const CONCLUIDA = "bg-blue-600 text-white border-blue-600";
+const FECHADA = "bg-gray-100 text-gray-600 border-gray-200";
+
 export const ESTADO_TONE: Record<string, string> = {
-  PENDENTE: "bg-amber-50 text-amber-700 border-amber-100",
-  VALIDADA: "bg-blue-50 text-blue-700 border-blue-100",
-  APROVADA: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  REJEITADA: "bg-rose-50 text-rose-700 border-rose-100",
-  ARQUIVADA: "bg-gray-100 text-gray-600 border-gray-200",
-  ENCAMINHADA: "bg-violet-50 text-violet-700 border-violet-100",
-  EM_ATENDIMENTO: "bg-emerald-50 text-emerald-700 border-emerald-100",
-  DUVIDOSA: "bg-orange-50 text-orange-700 border-orange-100",
+  PENDENTE: A_ESPERA,
+  VALIDADA: EM_CURSO,
+  APROVADA: CONCLUIDA,
+  REJEITADA: FECHADA,
+  ARQUIVADA: FECHADA,
+  ENCAMINHADA: EM_CURSO,
+  EM_ATENDIMENTO: CONCLUIDA,
+  DUVIDOSA: EM_CURSO,
 };
 
 export const TIPO_LABEL: Record<string, string> = {

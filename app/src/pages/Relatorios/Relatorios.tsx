@@ -13,15 +13,17 @@ import {
   BUTTON_PRIMARY, BUTTON_SECONDARY, TABLE_HEAD_CELL, TABLE_ROW_HOVER,
 } from "../../utils/uiClasses";
 
+// Um só azul em escala (do mais claro, ainda à espera, ao mais escuro,
+// concluída); cinzento para as fechadas sem seguimento.
 const ESTADO_COR: Record<string, string> = {
-  PENDENTE: "#F59E0B",
-  VALIDADA: "#3B82F6",
-  APROVADA: "#10B981",
-  REJEITADA: "#EF4444",
-  ARQUIVADA: "#9CA3AF",
-  ENCAMINHADA: "#8B5CF6",
-  EM_ATENDIMENTO: "#14B8A6",
-  DUVIDOSA: "#F97316",
+  PENDENTE: "#D2D9EF",
+  DUVIDOSA: "#A5B3DF",
+  ENCAMINHADA: "#788CCF",
+  VALIDADA: "#4B66BF",
+  APROVADA: "#1E40AF",
+  EM_ATENDIMENTO: "#172F82",
+  REJEITADA: "#9CA3AF",
+  ARQUIVADA: "#D1D5DB",
 };
 
 const MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -220,7 +222,7 @@ export default function Relatorios() {
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                   <Tooltip />
                   <Legend />
-                  <Bar dataKey="total" fill="#2563EB" name="Denúncias" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="total" fill="#1E40AF" name="Denúncias" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Seccao>
@@ -231,11 +233,19 @@ export default function Relatorios() {
               ) : (
                 <ResponsiveContainer width="100%" height={280}>
                   <PieChart>
-                    <Pie data={porEstado} cx="50%" cy="50%" labelLine={false} outerRadius={95} dataKey="value"
-                      label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`}>
+                    <Pie data={porEstado} cx="50%" cy="50%" outerRadius={90} dataKey="value" stroke="#fff">
                       {porEstado.map((e, i) => <Cell key={i} fill={e.color} />)}
                     </Pie>
                     <Tooltip />
+                    {/* Legenda em vez de rótulos sobre o gráfico: os rótulos
+                        saíam cortados e, nos tons claros, ilegíveis. */}
+                    <Legend
+                      formatter={(nome, entrada) => (
+                        <span className="text-sm text-gray-700">
+                          {nome}: {(entrada.payload as { value?: number } | undefined)?.value ?? 0}
+                        </span>
+                      )}
+                    />
                   </PieChart>
                 </ResponsiveContainer>
               )}
@@ -252,7 +262,7 @@ export default function Relatorios() {
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
                   <YAxis dataKey="tipo" type="category" width={150} tick={{ fontSize: 12 }} />
                   <Tooltip />
-                  <Bar dataKey="total" fill="#2563EB" name="Denúncias" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="total" fill="#1E40AF" name="Denúncias" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -314,9 +324,9 @@ export default function Relatorios() {
 
 function MiniIndicador({ titulo, valor, destaque }: { titulo: string; valor: string | number; destaque?: boolean }) {
   return (
-    <div className={`rounded-xl border p-3 ${destaque ? "border-amber-100 bg-amber-50" : "border-gray-100 bg-gray-50/60"}`}>
+    <div className={`rounded-xl border p-3 ${destaque ? "border-blue-100 bg-blue-50" : "border-gray-100 bg-gray-50/60"}`}>
       <p className="text-xs text-gray-500">{titulo}</p>
-      <p className={`text-lg font-semibold mt-0.5 ${destaque ? "text-amber-700" : "text-gray-900"}`}>{valor}</p>
+      <p className={`text-lg font-semibold mt-0.5 ${destaque ? "text-blue-800" : "text-gray-900"}`}>{valor}</p>
     </div>
   );
 }

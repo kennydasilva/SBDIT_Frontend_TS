@@ -10,11 +10,11 @@ import {
   TABLE_HEAD_CELL, TABLE_ROW_HOVER,
 } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 // Cor da confiança da análise automática (0-1 no backend).
 const toneConfianca = (c: number) =>
-  c >= 0.75 ? "bg-emerald-50 text-emerald-700" : c >= 0.5 ? "bg-amber-50 text-amber-700" : "bg-rose-50 text-rose-700";
+  c >= 0.75 ? "bg-blue-50 text-blue-800" : c >= 0.5 ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500";
 
 // Fila de revisão do agente: só denúncias validadas pela análise automática,
 // da jurisdição do seu posto (ou sem posto). Cada uma aguarda a sua decisão.
@@ -35,7 +35,7 @@ export default function DenunciasPt() {
     try {
       setLoading(true);
       setError(null);
-      const data = await denunciaService.listarValidadas(pagina);
+      const data = await denunciaService.listarValidadas(pagina, TAMANHO_PAGINA);
       setDenuncias(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -131,10 +131,10 @@ export default function DenunciasPt() {
                         <div className="flex flex-wrap items-center gap-1.5">
                           {d.matricula}
                           {d.localizacao_contraditoria && (
-                            <span className={`${BADGE} bg-rose-50 text-rose-700`}><AlertTriangle size={12} /> possível falsa</span>
+                            <span className={`${BADGE} bg-blue-600 text-white`}><AlertTriangle size={12} /> possível falsa</span>
                           )}
                           {!!d.total_relacionadas && (
-                            <span className={`${BADGE} bg-violet-50 text-violet-700`}>
+                            <span className={`${BADGE} bg-blue-50 text-blue-800`}>
                               +{d.total_relacionadas} {d.total_relacionadas === 1 ? "testemunha" : "testemunhas"}
                             </span>
                           )}

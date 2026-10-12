@@ -146,9 +146,9 @@ export const denunciaService = {
     },
 
 
-     async listar(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+     async listar(page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>>{
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/`, { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/`, { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error){
@@ -181,9 +181,9 @@ export const denunciaService = {
     },
 
 
-    async listarPorCidadao(cidadaoId: number, page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+    async listarPorCidadao(cidadaoId: number, page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>>{
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/cidadao/${cidadaoId}`, { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`/denuncias/cidadao/${cidadaoId}`, { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error){
@@ -204,9 +204,9 @@ export const denunciaService = {
         }
     },
 
-    async listarPorPt(ptId: number, page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+    async listarPorPt(ptId: number, page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>>{
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/denuncias/${ptId}`, { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/denuncias/${ptId}`, { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error){
@@ -218,9 +218,9 @@ export const denunciaService = {
 
     // Acidentes na jurisdição do posto do Admin autenticado (o posto é
     // lido do token no backend, nunca enviado daqui).
-    async listarAcidentesAdmin(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+    async listarAcidentesAdmin(page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>>{
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/admin/acidentes/`, { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/admin/acidentes/`, { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error){
@@ -253,9 +253,9 @@ export const denunciaService = {
     },
 
 
-    async listarValidadas(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>>{
+    async listarValidadas(page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>>{
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/validadas/`, { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>(`denuncias/pt/validadas/`, { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error){

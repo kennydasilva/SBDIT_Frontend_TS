@@ -11,7 +11,7 @@ import {
   TABLE_HEAD_CELL, TABLE_ROW_HOVER,
 } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 // Histórico das denúncias que este agente decidiu (aprovou ou rejeitou).
 export default function MinhasDecisoesPt() {
@@ -33,7 +33,7 @@ export default function MinhasDecisoesPt() {
     try {
       setLoading(true);
       setError(null);
-      const data = await denunciaService.listarPorPt(user.id, pagina);
+      const data = await denunciaService.listarPorPt(user.id, pagina, TAMANHO_PAGINA);
       setDenuncias(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -49,8 +49,8 @@ export default function MinhasDecisoesPt() {
 
   const resumo = [
     { label: "Total de decisões", valor: totalItens, icon: ClipboardList, chip: ICON_CHIP("bg-blue-50", "text-blue-600") },
-    { label: "Aprovadas", valor: aprovadas, icon: CheckCircle2, chip: ICON_CHIP("bg-emerald-50", "text-emerald-600") },
-    { label: "Rejeitadas", valor: rejeitadas, icon: XCircle, chip: ICON_CHIP("bg-rose-50", "text-rose-600") },
+    { label: "Aprovadas", valor: aprovadas, icon: CheckCircle2, chip: ICON_CHIP("bg-blue-50", "text-blue-800") },
+    { label: "Rejeitadas", valor: rejeitadas, icon: XCircle, chip: ICON_CHIP("bg-gray-100", "text-gray-500") },
   ];
 
   return (

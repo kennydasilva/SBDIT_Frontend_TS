@@ -68,7 +68,7 @@ export default function PerfilPt() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Perfil</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Perfil</h1>
         <p className="text-gray-500 mt-1">Gerir informações do seu perfil</p>
       </div>
 

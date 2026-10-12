@@ -41,6 +41,8 @@ export default function Jurisdicoes() {
   const [error, setError] = useState<string | null>(null);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [aba, setAba] = useState<"gerir" | "cobertura">("gerir");
+  // Bairro escolhido na pesquisa só para o ver no mapa (não adiciona nada).
+  const [centrarEm, setCentrarEm] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
     carregarAdmins();
@@ -123,7 +125,7 @@ export default function Jurisdicoes() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Jurisdições dos Postos</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Jurisdições dos Postos</h1>
         <p className="text-gray-500 mt-1">
           Define as vias/estradas sob responsabilidade de cada posto (administrador)
         </p>
@@ -179,6 +181,7 @@ export default function Jurisdicoes() {
           <PesquisaJurisdicao
             adminId={adminSelecionado}
             onViasAdicionadas={() => carregarVias(adminSelecionado)}
+            onCentrar={setCentrarEm}
           />
 
           {apiKey ? (
@@ -186,6 +189,7 @@ export default function Jurisdicoes() {
               apiKey={apiKey}
               vias={vias}
               adminId={adminSelecionado}
+              centrarEm={centrarEm}
               onViaAdicionada={() => carregarVias(adminSelecionado)}
               onRemoverVia={handleRemover}
             />
@@ -260,9 +264,11 @@ export default function Jurisdicoes() {
 function PesquisaJurisdicao({
   adminId,
   onViasAdicionadas,
+  onCentrar,
 }: {
   adminId: number;
   onViasAdicionadas: () => void;
+  onCentrar: (ponto: { lat: number; lng: number }) => void;
 }) {
   const [query, setQuery] = useState("");
   const [vias, setViasResultado] = useState<ViaEncontrada[]>([]);
@@ -407,10 +413,10 @@ function PesquisaJurisdicao({
 
   return (
     <div className={`${CARD} p-4 mb-6`}>
-      <label className={LABEL}>Adicionar à jurisdição</label>
+      <label className={LABEL}>Pesquisar via ou bairro</label>
       <p className="text-xs text-gray-500 mb-2">
-        Pesquisa o nome de uma via (ex: "Avenida Vladimir Lenine") para a adicionar directamente, ou o nome de um
-        bairro (ex: "Albazine") para adicionar logo o bairro inteiro como zona.
+        Clique numa via para a adicionar, ou num bairro para o adicionar inteiro como zona. Em cada bairro pode
+        também vê-lo no mapa antes de decidir, ou escolher só algumas das suas vias.
       </p>
 
       <div className="relative">
@@ -419,7 +425,7 @@ function PesquisaJurisdicao({
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Pesquisar via ou bairro..."
+          placeholder="Ex: Avenida Vladimir Lenine, ou Albazine"
           className={`${INPUT} pl-9`}
         />
         {pesquisando && (
@@ -455,12 +461,21 @@ function PesquisaJurisdicao({
                 {/* Secundário: para quem quer escolher vias individuais em
                     vez do bairro inteiro (raro - só quando o Overpass tem
                     ruas com nome que interessa cobrir à parte). */}
+                {b.lat != null && b.lng != null && (
+                  <button
+                    onClick={() => onCentrar({ lat: b.lat as number, lng: b.lng as number })}
+                    className="text-xs text-gray-500 hover:text-blue-700 underline shrink-0"
+                    title="Centrar o mapa neste bairro, sem adicionar nada à jurisdição"
+                  >
+                    ver no mapa
+                  </button>
+                )}
                 <button
                   onClick={() => handleEscolherBairro(b)}
-                  className="text-xs text-gray-400 hover:text-blue-700 underline shrink-0"
+                  className="text-xs text-gray-500 hover:text-blue-700 underline shrink-0"
                   title="Ver e escolher vias individuais deste bairro, em vez do bairro inteiro"
                 >
-                  vias
+                  escolher vias
                 </button>
               </li>
             );
@@ -572,12 +587,14 @@ function MapaVias({
   apiKey,
   vias,
   adminId,
+  centrarEm,
   onViaAdicionada,
   onRemoverVia,
 }: {
   apiKey: string;
   vias: ViaJurisdicao[];
   adminId: number;
+  centrarEm: { lat: number; lng: number } | null;
   onViaAdicionada: () => void;
   onRemoverVia: (viaId: number) => Promise<boolean>;
 }) {
@@ -608,47 +625,15 @@ function MapaVias({
     setTimeout(() => setMensagem((actual) => (actual === texto ? null : actual)), 4000);
   };
 
-  // Pesquisar um bairro só para centrar o mapa (não adiciona nada à
-  // jurisdição) - facilita encontrar a zona certa antes de desenhar uma via.
+  // Centrar o mapa no bairro escolhido na pesquisa ("ver no mapa") -
+  // facilita encontrar a zona certa antes de desenhar uma via.
   const mapRef = useRef<google.maps.Map | null>(null);
-  const [queryCentrar, setQueryCentrar] = useState("");
-  const [bairrosCentrar, setBairrosCentrar] = useState<BairroEncontrado[]>([]);
-  const [pesquisandoCentrar, setPesquisandoCentrar] = useState(false);
-  const queryCentrarDebounced = useDebounced(queryCentrar);
 
   useEffect(() => {
-    if (queryCentrarDebounced.trim().length < 3) {
-      setBairrosCentrar([]);
-      return;
-    }
-
-    let cancelado = false;
-    setPesquisandoCentrar(true);
-
-    jurisdicaoService
-      .pesquisarBairros(queryCentrarDebounced)
-      .then((data) => {
-        if (!cancelado) setBairrosCentrar(data);
-      })
-      .catch(() => {
-        if (!cancelado) setBairrosCentrar([]);
-      })
-      .finally(() => {
-        if (!cancelado) setPesquisandoCentrar(false);
-      });
-
-    return () => {
-      cancelado = true;
-    };
-  }, [queryCentrarDebounced]);
-
-  const handleCentrarBairro = (bairro: BairroEncontrado) => {
-    if (bairro.lat == null || bairro.lng == null || !mapRef.current) return;
-    mapRef.current.panTo({ lat: bairro.lat, lng: bairro.lng });
+    if (!centrarEm || !mapRef.current) return;
+    mapRef.current.panTo(centrarEm);
     mapRef.current.setZoom(15);
-    setQueryCentrar("");
-    setBairrosCentrar([]);
-  };
+  }, [centrarEm]);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: "sgdit-google-maps",
@@ -829,40 +814,11 @@ function MapaVias({
       )}
 
       {mensagem && (
-        <p className="mb-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
+        <p className="mb-2 text-xs text-blue-800 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
           {mensagem}
         </p>
       )}
 
-      <div className="relative mb-2">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-        <input
-          type="text"
-          value={queryCentrar}
-          onChange={(e) => setQueryCentrar(e.target.value)}
-          placeholder="Centrar o mapa num bairro (ex: Albazine)..."
-          className={`${INPUT} pl-9`}
-        />
-        {pesquisandoCentrar && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={16} />
-        )}
-
-        {bairrosCentrar.length > 0 && (
-          <ul className="absolute z-10 w-full mt-1 rounded-xl border border-gray-100 bg-white shadow-lg divide-y divide-gray-50 overflow-hidden">
-            {bairrosCentrar.map((b) => (
-              <li key={`${b.osm_type}-${b.osm_id}`}>
-                <button
-                  onClick={() => handleCentrarBairro(b)}
-                  disabled={b.lat == null}
-                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50/60 disabled:opacity-50"
-                >
-                  {b.display_name}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
 
       <GoogleMap
         mapContainerStyle={containerStyle}
@@ -890,10 +846,10 @@ function MapaVias({
               <Polygon
                 paths={[pontos]}
                 options={{
-                  strokeColor: "#2563EB",
+                  strokeColor: "#1E40AF",
                   strokeOpacity: 0.9,
                   strokeWeight: 3,
-                  fillColor: "#2563EB",
+                  fillColor: "#1E40AF",
                   fillOpacity: 0.2,
                   clickable: false,
                 }}
@@ -901,7 +857,7 @@ function MapaVias({
             )}
             <Polyline
               path={modo === "zona" ? [...pontos, pontos[0]] : pontos}
-              options={{ strokeColor: "#2563EB", strokeWeight: 4, clickable: false }}
+              options={{ strokeColor: "#1E40AF", strokeWeight: 4, clickable: false }}
             />
             {pontos.map((p, i) => (
               <MarkerF
@@ -911,7 +867,7 @@ function MapaVias({
                 icon={{
                   path: google.maps.SymbolPath.CIRCLE,
                   scale: 5,
-                  fillColor: "#2563EB",
+                  fillColor: "#1E40AF",
                   fillOpacity: 1,
                   strokeColor: "#FFFFFF",
                   strokeWeight: 1.5,
@@ -925,7 +881,7 @@ function MapaVias({
           if (!v.geometria) return null;
 
           const seleccionada = v.id === viaSeleccionadaId;
-          const cor = seleccionada ? "#E11D48" : "#2563EB";
+          const cor = seleccionada ? "#E11D48" : "#1E40AF";
 
           return (
             <div key={v.id} style={{ display: "contents" }}>

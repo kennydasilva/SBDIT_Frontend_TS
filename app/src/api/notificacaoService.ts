@@ -19,8 +19,8 @@ const avisarAlteracao = () => window.dispatchEvent(new Event(EVENTO_NOTIFICACOES
 // Sem cache (httpCache): notificações têm de aparecer sempre actualizadas.
 export const notificacaoService = {
 
-    async listar(page: number = 1, soNaoLidas: boolean = false): Promise<PaginatedResponse<Notificacao>> {
-        const params = soNaoLidas ? { page, nao_lidas: 1 } : { page };
+    async listar(page: number = 1, soNaoLidas: boolean = false, pageSize?: number): Promise<PaginatedResponse<Notificacao>> {
+        const params = { page, page_size: pageSize, ...(soNaoLidas ? { nao_lidas: 1 } : {}) };
         const response = await api.get<PaginatedResponse<Notificacao>>("/notificacoes/", { params });
         return response.data;
     },

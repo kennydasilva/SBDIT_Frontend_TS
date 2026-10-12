@@ -183,7 +183,7 @@ function LocationPickerMapa({
       </GoogleMap>
       {endereco && (
         <p className="mt-2 flex items-start gap-1.5 text-sm text-gray-800">
-          <MapPin size={16} className="mt-0.5 shrink-0 text-rose-600" />
+          <MapPin size={16} className="mt-0.5 shrink-0 text-blue-800" />
           {endereco}
         </p>
       )}

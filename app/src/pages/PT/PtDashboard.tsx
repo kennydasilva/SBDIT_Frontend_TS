@@ -50,7 +50,7 @@ export default function DashboardPt() {
 
   const stats = [
     { label: "Denúncias Validadas", value: denuncias.length, icon: AlertTriangle, bg: "bg-blue-50", fg: "text-blue-600" },
-    { label: "Aprovadas por mim", value: denunciasAprovadas.length, icon: CheckCircle2, bg: "bg-emerald-50", fg: "text-emerald-600" },
+    { label: "Aprovadas por mim", value: denunciasAprovadas.length, icon: CheckCircle2, bg: "bg-blue-50", fg: "text-blue-800" },
     { label: "Arquivadas por mim", value: denunciasArquivadas.length, icon: Archive, bg: "bg-gray-100", fg: "text-gray-600" },
   ];
 
@@ -72,7 +72,7 @@ export default function DashboardPt() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1">Bem-vindo ao painel de análise de denúncias</p>
       </div>
 
@@ -107,7 +107,7 @@ export default function DashboardPt() {
             <XAxis dataKey="tipo" tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={{ stroke: "#f1f5f9" }} tickLine={false} />
             <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} allowDecimals={false} />
             <Tooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ borderRadius: 12, border: "1px solid #f1f5f9" }} />
-            <Bar dataKey="quantidade" fill="#2563EB" radius={[6, 6, 0, 0]} />
+            <Bar dataKey="quantidade" fill="#1E40AF" radius={[6, 6, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

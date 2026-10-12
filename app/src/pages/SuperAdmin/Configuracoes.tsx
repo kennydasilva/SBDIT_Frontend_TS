@@ -130,7 +130,7 @@ export default function Configuracoes() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Configurações</h1>
+          <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Configurações</h1>
           <p className="text-gray-500 mt-1">
             Credenciais de integrações externas (Google Maps, MozeSMS, etc.)
           </p>
@@ -147,7 +147,7 @@ export default function Configuracoes() {
         </button>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-amber-100 bg-amber-50 p-4 text-sm text-amber-800">
+      <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
         <strong>Público</strong> = seguro para expor ao browser (ex: chave JS do Google Maps,
         protegida por restrição de domínio na Google Cloud Console). Nunca marques como
         pública uma credencial de servidor (ex: API Secret da MozeSMS).

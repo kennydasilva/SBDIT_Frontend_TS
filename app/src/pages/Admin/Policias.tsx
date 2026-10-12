@@ -12,7 +12,7 @@ import {
   TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
 } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 const FORM_VAZIO = { nome: "", email: "", senha: "", numero_agente: "" };
 
@@ -46,7 +46,7 @@ export default function PTs() {
     try {
       setLoading(true);
       setError(null);
-      const data = await ptService.listarPT(user.id, pagina);
+      const data = await ptService.listarPT(user.id, pagina, TAMANHO_PAGINA);
       setPts(data.results);
       setTotalItens(data.count);
     } catch (err) {

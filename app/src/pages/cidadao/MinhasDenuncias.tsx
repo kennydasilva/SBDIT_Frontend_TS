@@ -7,7 +7,7 @@ import Paginacao from "../../components/Paginacao";
 import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
 import { CARD, INPUT, PAGE, PAGE_SUBTITLE, PAGE_TITLE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 const estados = [
   "Todos",
@@ -45,7 +45,7 @@ export default function MinhasDenuncias() {
       setLoading(true);
       setError(null);
 
-      const data= await denunciaService.listarPorCidadao(user.id, pagina);
+      const data= await denunciaService.listarPorCidadao(user.id, pagina, TAMANHO_PAGINA);
       setDenuncias(data.results);
       setTotalItens(data.count);
     } catch (err) {

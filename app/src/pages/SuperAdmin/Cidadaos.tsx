@@ -5,7 +5,7 @@ import Paginacao from "../../components/Paginacao";
 import { CARD, INPUT, BUTTON_PRIMARY, BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 import { mostrarErro } from "../../utils/mensagens";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 export default function Cidadaos() {
   const [cidadaos, setCidadaos] = useState<cidadao[]>([]);
@@ -24,7 +24,7 @@ export default function Cidadaos() {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarCidadao(pagina);
+      const data = await superAdminService.listarCidadao(pagina, TAMANHO_PAGINA);
       setCidadaos(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -82,7 +82,7 @@ export default function Cidadaos() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Gestão de Cidadãos</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Gestão de Cidadãos</h1>
       </div>
 
       {/* Search Bar */}
@@ -131,7 +131,7 @@ export default function Cidadaos() {
                     {cidadao.data_registo ? new Date(cidadao.data_registo).toLocaleDateString() : "—"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                    <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
                       <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
                       {cidadao.ativo !== false ? "Ativo" : "Banido"}
                     </span>
@@ -143,7 +143,7 @@ export default function Cidadaos() {
                       className={`flex items-center gap-1 disabled:opacity-50 ${
                         cidadao.ativo !== false
                           ? "text-rose-600 hover:text-rose-800"
-                          : "text-emerald-600 hover:text-emerald-800"
+                          : "text-blue-800 hover:text-blue-800"
                       }`}
                     >
                       {atualizandoId === cidadao.id ? (

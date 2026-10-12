@@ -5,7 +5,7 @@ import type { PT } from "../../api/ptService";
 import Paginacao from "../../components/Paginacao";
 import { CARD, INPUT, BUTTON_PRIMARY, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 export default function Policiais() {
   const [policiais, setPoliciais] = useState<PT[]>([]);
@@ -24,7 +24,7 @@ export default function Policiais() {
     try {
       setLoading(true);
       setError(null);
-      const data = await superAdminService.listarPts(pagina);
+      const data = await superAdminService.listarPts(pagina, TAMANHO_PAGINA);
       setPoliciais(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -73,7 +73,7 @@ export default function Policiais() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Agentes de trânsito</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Agentes de trânsito</h1>
       </div>
 
       {/* Filters */}

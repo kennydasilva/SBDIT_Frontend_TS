@@ -66,7 +66,7 @@ export default function Dashboard() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1">Visão geral do teu posto</p>
       </div>
 
@@ -78,7 +78,7 @@ export default function Dashboard() {
               <p className="text-gray-500 text-sm font-medium">Agentes do posto</p>
               <p className="text-3xl font-semibold text-gray-900 mt-1.5">{totalPoliciais}</p>
             </div>
-            <div className="bg-indigo-50 text-indigo-600 p-3 rounded-xl">
+            <div className="bg-blue-50 text-blue-800 p-3 rounded-xl">
               <Shield size={22} strokeWidth={1.75} />
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function Dashboard() {
               <p className="text-gray-500 text-sm font-medium">Denúncias Recentes</p>
               <p className="text-3xl font-semibold text-gray-900 mt-1.5">{recentes.length}</p>
             </div>
-            <div className="bg-orange-50 text-orange-600 p-3 rounded-xl">
+            <div className="bg-blue-50 text-blue-800 p-3 rounded-xl">
               <AlertTriangle size={22} strokeWidth={1.75} />
             </div>
           </div>

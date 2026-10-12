@@ -161,7 +161,7 @@ export default function DetalhesDenuncia() {
 
         <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
-            <AlertTriangle className="text-orange-600" size={20} />
+            <AlertTriangle className="text-blue-800" size={20} />
             <p className="text-sm text-gray-600">Tipo</p>
           </div>
           <p className={SECTION_TITLE}>
@@ -171,7 +171,7 @@ export default function DetalhesDenuncia() {
 
         <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
-            <MapPin className="text-rose-600" size={20} />
+            <MapPin className="text-blue-800" size={20} />
             <p className="text-sm text-gray-600">Localização</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
@@ -181,7 +181,7 @@ export default function DetalhesDenuncia() {
 
         <div className={`${CARD} p-6`}>
           <div className="flex items-center gap-3 mb-2">
-            <Calendar className="text-purple-600" size={20} />
+            <Calendar className="text-blue-800" size={20} />
             <p className="text-sm text-gray-600">Data</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
@@ -204,7 +204,7 @@ export default function DetalhesDenuncia() {
                 <p className="text-gray-900">{denuncia.descricao}</p>
               </div>
               {denuncia.denuncia_principal_id && (
-                <p className="text-sm text-violet-800 bg-violet-50 border border-violet-100 rounded-lg p-3">
+                <p className="text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-lg p-3">
                   {ehAcidente
                     ? "Este acidente já tinha sido reportado por outra pessoa. O seu reporte foi juntado ao existente."
                     : "Outro cidadão já tinha denunciado esta infração. A sua denúncia foi ligada à dele como testemunha e reforça o processo."}
@@ -219,7 +219,7 @@ export default function DetalhesDenuncia() {
                 </div>
               )}
               {ehAcidente && (
-                <p className="text-sm text-violet-800 bg-violet-50 border border-violet-100 rounded-lg p-3">
+                <p className="text-sm text-blue-800 bg-blue-50 border border-blue-100 rounded-lg p-3">
                   {denuncia.estado === "PENDENTE"
                     ? "O local marcado não pertence a nenhuma jurisdição registada, por isso nenhum posto foi avisado automaticamente."
                     : "Esta denúncia foi enviada directamente, por SMS, ao posto policial responsável pela zona, que designa um agente para o local."}
@@ -290,19 +290,19 @@ export default function DetalhesDenuncia() {
                     </div>
                   ) : (
                     denuncia.estado === "PENDENTE" ? (
-                      <div className="flex items-center justify-center bg-amber-50 rounded-lg">
+                      <div className="flex items-center justify-center bg-blue-50 rounded-lg">
                         <div className="text-center p-6">
-                          <Clock className="mx-auto text-amber-600 mb-2" size={32} />
+                          <Clock className="mx-auto text-blue-800 mb-2" size={32} />
                           <p>Processando vídeo...</p>
                         </div>
                       </div>
                     ) : (
                       // Esgotadas as tentativas de análise: rejeitada sem
                       // vídeo processado.
-                      <div className="flex items-center justify-center bg-rose-50 rounded-lg">
+                      <div className="flex items-center justify-center bg-gray-100 rounded-lg">
                         <div className="text-center p-6">
-                          <XCircle className="mx-auto text-rose-600 mb-2" size={32} />
-                          <p className="text-rose-800">Não foi possível analisar o vídeo</p>
+                          <XCircle className="mx-auto text-gray-500 mb-2" size={32} />
+                          <p className="text-gray-500">Não foi possível analisar o vídeo</p>
                         </div>
                       </div>
                     )
@@ -329,7 +329,7 @@ export default function DetalhesDenuncia() {
                 <div className="flex items-center gap-3">
                   {denuncia.infracao_detectada ? (
                     <>
-                      <CheckCircle className="text-emerald-600" size={24} />
+                      <CheckCircle className="text-blue-800" size={24} />
                       <div>
                         <p className="font-medium text-gray-900">
                           Infração Detectada
@@ -341,7 +341,7 @@ export default function DetalhesDenuncia() {
                     </>
                   ) : (
                     <>
-                      <XCircle className="text-rose-600" size={24} />
+                      <XCircle className="text-gray-500" size={24} />
                       <div>
                         <p className="font-medium text-gray-900">
                           Infração Não Detectada
@@ -416,7 +416,7 @@ export default function DetalhesDenuncia() {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           item.concluido
-                            ? "bg-emerald-100 text-emerald-600"
+                            ? "bg-blue-100 text-blue-800"
                             : "bg-gray-100 text-gray-400"
                         }`}
                       >

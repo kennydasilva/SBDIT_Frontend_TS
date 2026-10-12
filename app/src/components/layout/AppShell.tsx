@@ -113,7 +113,7 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
                 <Icon size={19} />
                 <span>{item.label}</span>
                 {item.path.endsWith("/notificacoes") && naoLidas > 0 && (
-                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-rose-500 text-white text-xs font-semibold flex items-center justify-center">
+                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-white text-blue-800 text-xs font-semibold flex items-center justify-center">
                     {naoLidas > 99 ? "99+" : naoLidas}
                   </span>
                 )}
@@ -150,7 +150,7 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
             aria-label="Abrir menu"
           >
             <Menu size={22} />
-            {naoLidas > 0 && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-rose-500" />}
+            {naoLidas > 0 && <span className="absolute top-0.5 right-0.5 w-2.5 h-2.5 rounded-full bg-white" />}
           </button>
           <div className="leading-tight">
             <p className="font-bold tracking-tight">SGDIT</p>

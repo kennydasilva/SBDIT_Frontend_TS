@@ -100,22 +100,22 @@ export default function CidadaoDashboard() {
       label: "Pendentes",
       value: pendentes.toString(),
       icon: Clock,
-      bg: "bg-amber-50",
-      fg: "text-amber-600",
+      bg: "bg-blue-50",
+      fg: "text-blue-800",
     },
     {
       label: "Validadas",
       value: validadas.toString(),
       icon: CheckCircle2,
-      bg: "bg-emerald-50",
-      fg: "text-emerald-600",
+      bg: "bg-blue-50",
+      fg: "text-blue-800",
     },
     {
       label: "Rejeitadas",
       value: rejeitadas.toString(),
       icon: XCircle,
-      bg: "bg-rose-50",
-      fg: "text-rose-600",
+      bg: "bg-gray-100",
+      fg: "text-gray-500",
     },
   ];
 
@@ -124,7 +124,7 @@ export default function CidadaoDashboard() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1">Bem-vindo ao portal do cidadão</p>
       </div>
 
@@ -232,7 +232,7 @@ export default function CidadaoDashboard() {
       {ranking.length > 0 && (
         <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
           <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2.5">
-            <div className="bg-amber-50 text-amber-500 p-2 rounded-lg">
+            <div className="bg-blue-50 text-blue-800 p-2 rounded-lg">
               <Trophy size={18} strokeWidth={1.75} />
             </div>
             <h2 className="text-base font-semibold text-gray-900">

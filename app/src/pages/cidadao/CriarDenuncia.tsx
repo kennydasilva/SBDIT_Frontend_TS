@@ -201,7 +201,7 @@ export default function CriarDenuncia() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Criar Denúncia</h1>
+        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Criar Denúncia</h1>
         <p className="text-gray-500 mt-1">
           Preencha os dados da infração de trânsito
         </p>
@@ -209,13 +209,13 @@ export default function CriarDenuncia() {
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 flex items-center gap-3">
-          <CheckCircle className="text-emerald-600 shrink-0" size={24} />
+        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
+          <CheckCircle className="text-blue-800 shrink-0" size={24} />
           <div>
-            <p className="text-emerald-800 font-medium">
+            <p className="text-blue-800 font-medium">
               Denúncia enviada com sucesso!
             </p>
-            <p className="text-emerald-700 text-sm">
+            <p className="text-blue-800 text-sm">
               {ehAcidente && "O posto responsável pela zona foi avisado por SMS. "}
               Você será redirecionado para suas denúncias...
             </p>
@@ -271,9 +271,9 @@ export default function CriarDenuncia() {
           </div>
 
           {ehAcidente && (
-            <div className="mb-6 p-4 rounded-2xl border border-rose-100 bg-rose-50 flex gap-3">
-              <Siren className="text-rose-600 shrink-0" size={22} />
-              <p className="text-sm text-rose-800">
+            <div className="mb-6 p-4 rounded-2xl border border-blue-200 bg-blue-50 flex gap-3">
+              <Siren className="text-blue-800 shrink-0" size={22} />
+              <p className="text-sm text-blue-800">
                 O acidente é enviado directamente, por SMS, ao posto policial responsável pela zona
                 marcada no mapa, que designa um agente para o local. Não passa por análise de vídeo.
               </p>

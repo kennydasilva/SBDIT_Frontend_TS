@@ -41,9 +41,9 @@ export interface AdminResponse {
 
 export const adminService={
 
-    async listarAdmins(page: number = 1): Promise<PaginatedResponse<Admin>> {
+    async listarAdmins(page: number = 1, pageSize?: number): Promise<PaginatedResponse<Admin>> {
         try{
-            const data = await cachedGet<PaginatedResponse<AdminResponse>>(api, "/admins/", { params: { page } });
+            const data = await cachedGet<PaginatedResponse<AdminResponse>>(api, "/admins/", { params: { page, page_size: pageSize } });
 
             return {
                 ...data,
@@ -121,9 +121,9 @@ export interface cidadao{
 
 export const superAdminService = {
 
-    async listarCidadao(page: number = 1): Promise<PaginatedResponse<cidadao>> {
+    async listarCidadao(page: number = 1, pageSize?: number): Promise<PaginatedResponse<cidadao>> {
         try{
-            return await cachedGet<PaginatedResponse<cidadao>>(api, "/cidadao/lista/", { params: { page } });
+            return await cachedGet<PaginatedResponse<cidadao>>(api, "/cidadao/lista/", { params: { page, page_size: pageSize } });
         }
         catch(error)
         {
@@ -145,9 +145,9 @@ export const superAdminService = {
         }
     },
 
-    async listarPts(page: number = 1): Promise<PaginatedResponse<PT>> {
+    async listarPts(page: number = 1, pageSize?: number): Promise<PaginatedResponse<PT>> {
         try{
-            return await cachedGet<PaginatedResponse<PT>>(api, "/pts/", { params: { page } });
+            return await cachedGet<PaginatedResponse<PT>>(api, "/pts/", { params: { page, page_size: pageSize } });
         }
         catch(error)
         {
@@ -156,9 +156,9 @@ export const superAdminService = {
         }
     },
 
-    async listarDenuncias(page: number = 1): Promise<PaginatedResponse<DenunciaDetalhada>> {
+    async listarDenuncias(page: number = 1, pageSize?: number): Promise<PaginatedResponse<DenunciaDetalhada>> {
         try{
-            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>("/denuncias/", { params: { page } });
+            const response= await api.get<PaginatedResponse<DenunciaDetalhada>>("/denuncias/", { params: { page, page_size: pageSize } });
             return response.data;
         }
         catch(error)

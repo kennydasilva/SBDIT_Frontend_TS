@@ -354,7 +354,7 @@ export default function DetalhesDenunciaPt() {
 
           {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
           {denuncia?.localizacao_contraditoria && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
               <p className="font-semibold mb-1 flex items-center gap-2"><AlertTriangle size={16} /> Possível denúncia falsa — declarada noutra jurisdição</p>
               <p>
                 O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:
@@ -373,7 +373,7 @@ export default function DetalhesDenunciaPt() {
                     : `${denuncia.distancia_video_semelhante_m} m`}
                 </p>
               )}
-              <p className="mt-2 text-rose-800">
+              <p className="mt-2 text-blue-800">
                 Ficou em estado duvidoso, com o posto da denúncia original. Não herda a decisão da original — é decidida à parte.
               </p>
             </div>
@@ -381,7 +381,7 @@ export default function DetalhesDenunciaPt() {
 
           {/* Ligação a outra denúncia (testemunha ou vídeo semelhante) */}
           {(denuncia?.denuncia_principal_id || denuncia?.video_semelhante_a_id) && (
-            <div className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-900 space-y-1">
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 space-y-1">
               {denuncia.video_semelhante_a_id && (
                 <p>
                   O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
@@ -409,7 +409,7 @@ export default function DetalhesDenunciaPt() {
           {testemunhas.length > 0 && (
             <div className={`${CARD} p-6`}>
               <h2 className={`${SECTION_TITLE} mb-1 flex items-center gap-2`}>
-                <Users size={20} className="text-violet-600" />
+                <Users size={20} className="text-blue-800" />
                 Vídeos das testemunhas ({testemunhas.length})
               </h2>
               <p className="text-sm text-gray-500 mb-4">
@@ -424,12 +424,12 @@ export default function DetalhesDenunciaPt() {
                       <p className="text-sm font-medium text-gray-900">
                         Denúncia #{t.id} <span className="text-gray-400 font-normal">· {t.data_registo}</span>
                         {t.video_semelhante_a_id && (
-                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
                             vídeo semelhante ao da #{t.video_semelhante_a_id}
                           </span>
                         )}
                         {t.localizacao_contraditoria && (
-                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700">
+                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
                             local contraditório: {t.localizacao}
                           </span>
                         )}

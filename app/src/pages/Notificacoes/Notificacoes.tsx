@@ -8,16 +8,16 @@ import { notificacaoService, type Notificacao } from "../../api/notificacaoServi
 import Paginacao from "../../components/Paginacao";
 import { CARD, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
-const TAMANHO_PAGINA = 20;
+const TAMANHO_PAGINA = 10;
 
 const ICONE_TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; cor: string }> = {
   DENUNCIA_RECEBIDA: { icon: FileText, cor: "bg-blue-50 text-blue-600" },
-  ESTADO_ALTERADO: { icon: RefreshCw, cor: "bg-violet-50 text-violet-600" },
-  NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "bg-amber-50 text-amber-600" },
-  ACIDENTE_REPORTADO: { icon: Siren, cor: "bg-rose-50 text-rose-600" },
-  AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "bg-emerald-50 text-emerald-600" },
-  ANALISE_FALHOU: { icon: AlertTriangle, cor: "bg-rose-50 text-rose-600" },
-  DENUNCIA_RELACIONADA: { icon: Link2, cor: "bg-violet-50 text-violet-600" },
+  ESTADO_ALTERADO: { icon: RefreshCw, cor: "bg-blue-50 text-blue-800" },
+  NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "bg-blue-50 text-blue-800" },
+  ACIDENTE_REPORTADO: { icon: Siren, cor: "bg-blue-50 text-blue-800" },
+  AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "bg-blue-50 text-blue-800" },
+  ANALISE_FALHOU: { icon: AlertTriangle, cor: "bg-blue-50 text-blue-800" },
+  DENUNCIA_RELACIONADA: { icon: Link2, cor: "bg-blue-50 text-blue-800" },
 };
 
 // Página onde abrir a denúncia a que a notificação se refere, conforme o
@@ -61,7 +61,7 @@ export default function Notificacoes() {
     try {
       setLoading(true);
       setError(null);
-      const data = await notificacaoService.listar(pagina, filtro);
+      const data = await notificacaoService.listar(pagina, filtro, TAMANHO_PAGINA);
       setNotificacoes(data.results);
       setTotalItens(data.count);
     } catch (err) {
@@ -109,7 +109,7 @@ export default function Notificacoes() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">Notificações</h1>
+          <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Notificações</h1>
           <p className="text-gray-500 mt-1">Atualizações sobre as denúncias que lhe dizem respeito</p>
         </div>
         <button
