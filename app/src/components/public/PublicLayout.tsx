@@ -15,9 +15,9 @@ function Logo() {
       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#1E40AF]">
         <span className="text-[10px] font-bold text-white">SGDIT</span>
       </span>
-      <span className="hidden text-sm font-semibold leading-tight text-gray-900 lg:block">
+      <span className="hidden text-sm font-semibold leading-tight text-[#1E40AF] lg:block">
         Sistema de Gestão de Denúncias
-        <span className="block text-xs font-normal text-gray-500">Infrações de trânsito</span>
+        <span className="block text-xs font-normal text-[#1E40AF]/80">Infrações de trânsito</span>
       </span>
     </Link>
   );
@@ -25,7 +25,7 @@ function Logo() {
 
 const classeLink = ({ isActive }: { isActive: boolean }) =>
   `border-b-2 py-1 text-sm font-medium transition-colors ${
-    isActive ? "border-[#1E40AF] text-[#1E40AF]" : "border-transparent text-gray-600 hover:text-gray-900"
+    isActive ? "border-[#1E40AF] text-[#1E40AF]" : "border-transparent text-[#1E40AF]/80 hover:text-[#1E40AF]"
   }`;
 
 // Cabeçalho e rodapé comuns às páginas públicas (Início, Guia, Sobre nós).
@@ -40,7 +40,7 @@ export default function PublicLayout() {
   }, [pathname]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-white text-gray-900">
+    <div className="flex min-h-screen flex-col bg-white text-[#1E40AF]">
       {/* Barra flutuante, sobre o fundo suave do topo de cada página */}
       <header className="fixed inset-x-0 top-0 z-40 px-4 pt-4">
         <div className="mx-auto max-w-6xl rounded-2xl bg-white/95 shadow-lg shadow-[#1E40AF]/15 ring-1 ring-[#1E40AF]/10 backdrop-blur">
@@ -64,7 +64,7 @@ export default function PublicLayout() {
               </Link>
               <button
                 onClick={() => setMenuAberto((a) => !a)}
-                className="p-1 text-gray-700 md:hidden"
+                className="p-1 text-[#1E40AF]/80 md:hidden"
                 aria-label="Menu"
               >
                 {menuAberto ? <X size={22} /> : <Menu size={22} />}
@@ -75,7 +75,7 @@ export default function PublicLayout() {
           {menuAberto && (
             <nav className="flex flex-col border-t border-[#1E40AF]/10 px-5 pb-2 md:hidden">
               {[...LINKS, { para: "/cadastrar", texto: "Criar conta" }].map((l) => (
-                <Link key={l.para} to={l.para} className="border-b border-[#1E40AF]/10 py-3 text-sm font-medium text-gray-800 last:border-0">
+                <Link key={l.para} to={l.para} className="border-b border-[#1E40AF]/10 py-3 text-sm font-medium text-[#1E40AF]/80 last:border-0">
                   {l.texto}
                 </Link>
               ))}

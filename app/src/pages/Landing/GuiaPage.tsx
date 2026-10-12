@@ -80,7 +80,7 @@ export default function GuiaPage() {
 
       <div className={`${CONTAINER} grid gap-10 py-14 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12`}>
         <nav className={`${PANEL} h-fit p-5 lg:sticky lg:top-28`}>
-          <p className="text-sm font-bold text-gray-900">Nesta página</p>
+          <p className="text-sm font-bold text-[#1E40AF]">Nesta página</p>
           <ul className="mt-3 space-y-2 text-sm">
             {SECCOES.map((s) => (
               <li key={s.id}>
@@ -98,8 +98,8 @@ export default function GuiaPage() {
                 <li key={p.titulo} className="flex gap-5 py-4">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1E40AF] text-sm font-bold text-white">{i + 1}</span>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{p.titulo}</h3>
-                    <p className="mt-1 text-gray-600">{p.texto}</p>
+                    <h3 className="font-semibold text-[#1E40AF]">{p.titulo}</h3>
+                    <p className="mt-1 text-[#1E40AF]/80">{p.texto}</p>
                   </div>
                 </li>
               ))}
@@ -117,7 +117,7 @@ export default function GuiaPage() {
                 titulo: t.titulo,
                 texto: (
                   <>
-                    <span className="block text-gray-900">{t.resumo}</span>
+                    <span className="block text-[#1E40AF]">{t.resumo}</span>
                     <span className="mt-1 block">{t.detalhe}</span>
                   </>
                 ),
@@ -137,7 +137,7 @@ export default function GuiaPage() {
           <section>
             <SectionTitle id="cuidados" titulo="Para a denúncia ser aceite" />
             <Linhas itens={CUIDADOS} />
-            <p className="mt-6 text-gray-600">
+            <p className="mt-6 text-[#1E40AF]/80">
               Tem dúvidas sobre o sistema? Veja a página{" "}
               <Link to="/sobre" className={TEXT_LINK}>Sobre nós</Link>.
             </p>

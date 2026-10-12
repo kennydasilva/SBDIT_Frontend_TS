@@ -50,7 +50,7 @@ export default function SobrePage() {
       <div className={`${CONTAINER} space-y-14 py-14`}>
         <section className="max-w-3xl">
           <SectionTitle titulo="O que é" />
-          <div className="mt-4 space-y-4 text-gray-600">
+          <div className="mt-4 space-y-4 text-[#1E40AF]/80">
             <p>
               É uma plataforma onde qualquer cidadão pode denunciar infrações de trânsito com um vídeo
               gravado no telemóvel e a indicação do local onde aconteceram.

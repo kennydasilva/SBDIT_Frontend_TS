@@ -69,16 +69,16 @@ export default function LandingPage() {
           </div>
 
           <div className="rounded-3xl bg-white p-7 shadow-2xl shadow-black/20">
-            <h2 className="text-base font-bold text-gray-900">Para denunciar precisa de</h2>
+            <h2 className="text-base font-bold text-[#1E40AF]">Para denunciar precisa de</h2>
             <ul className="mt-3 divide-y divide-[#1E40AF]/10">
               {PRECISA.map((p) => (
                 <li key={p.titulo} className="py-3">
-                  <p className="font-semibold text-gray-900">{p.titulo}</p>
-                  <p className="text-sm text-gray-600">{p.texto}</p>
+                  <p className="font-semibold text-[#1E40AF]">{p.titulo}</p>
+                  <p className="text-sm text-[#1E40AF]/80">{p.texto}</p>
                 </li>
               ))}
             </ul>
-            <p className="mt-3 border-t border-[#1E40AF]/10 pt-3 text-sm text-gray-600">
+            <p className="mt-3 border-t border-[#1E40AF]/10 pt-3 text-sm text-[#1E40AF]/80">
               Num acidente de viação basta o local. A matrícula e o ficheiro são opcionais.
             </p>
           </div>
@@ -91,8 +91,8 @@ export default function LandingPage() {
             <div key={d.titulo} className="flex items-center gap-4">
               <IconTile icon={d.icon} />
               <div>
-                <p className="font-semibold text-gray-900">{d.titulo}</p>
-                <p className="text-sm text-gray-600">{d.texto}</p>
+                <p className="font-semibold text-[#1E40AF]">{d.titulo}</p>
+                <p className="text-sm text-[#1E40AF]/80">{d.texto}</p>
               </div>
             </div>
           ))}
@@ -130,8 +130,8 @@ export default function LandingPage() {
           {TIPOS_OCORRENCIA.map((t) => (
             <div key={t.titulo} className={`${PANEL} p-6`}>
               <IconTile icon={t.icon} />
-              <h3 className="mt-4 text-lg font-bold text-gray-900">{t.titulo}</h3>
-              <p className="mt-1.5 text-gray-600">{t.resumo}</p>
+              <h3 className="mt-4 text-lg font-bold text-[#1E40AF]">{t.titulo}</h3>
+              <p className="mt-1.5 text-[#1E40AF]/80">{t.resumo}</p>
             </div>
           ))}
         </div>
@@ -162,22 +162,22 @@ export default function LandingPage() {
       <section className={SECTION}>
         <div className="grid gap-6 lg:grid-cols-2">
           <div className={`${PANEL} p-8`}>
-            <h2 className="text-2xl font-bold text-gray-900">Acidentes de viação</h2>
-            <p className="mt-3 text-gray-600">
+            <h2 className="text-2xl font-bold text-[#1E40AF]">Acidentes de viação</h2>
+            <p className="mt-3 text-[#1E40AF]/80">
               Um acidente não espera pela análise do vídeo. É comunicado de imediato ao posto policial
               cuja jurisdição cobre o local, e é esse posto que designa um agente para lá ir.
             </p>
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-[#1E40AF]/80">
               Se várias pessoas reportarem o mesmo acidente, os reportes são juntados num só.
             </p>
           </div>
           <div className={`${PANEL} p-8`}>
-            <h2 className="text-2xl font-bold text-gray-900">Sabe sempre em que ponto está</h2>
-            <p className="mt-3 text-gray-600">
+            <h2 className="text-2xl font-bold text-[#1E40AF]">Sabe sempre em que ponto está</h2>
+            <p className="mt-3 text-[#1E40AF]/80">
               Recebe uma notificação na aplicação sempre que a sua denúncia muda de estado: quando é
               recebida, quando o vídeo é analisado e quando o agente decide.
             </p>
-            <p className="mt-3 text-gray-600">
+            <p className="mt-3 text-[#1E40AF]/80">
               O <Link to="/guia" className={TEXT_LINK}>guia</Link> explica o que significa cada estado.
             </p>
           </div>

@@ -23,8 +23,8 @@ export function IconTile({ icon: Icon }: { icon: LucideIcon }) {
 export function SectionTitle({ titulo, texto, id, centro }: { titulo: string; texto?: string; id?: string; centro?: boolean }) {
   return (
     <div id={id} className={`max-w-2xl scroll-mt-28 ${centro ? "mx-auto text-center" : ""}`}>
-      <h2 className="text-3xl font-bold text-gray-900">{titulo}</h2>
-      {texto && <p className="mt-3 text-gray-600">{texto}</p>}
+      <h2 className="text-3xl font-bold text-[#1E40AF]">{titulo}</h2>
+      {texto && <p className="mt-3 text-[#1E40AF]/80">{texto}</p>}
     </div>
   );
 }
@@ -35,8 +35,8 @@ export function Linhas({ itens }: { itens: { titulo: string; texto: React.ReactN
     <dl className={`${PANEL} mt-6 divide-y divide-[#1E40AF]/10 px-6`}>
       {itens.map((i) => (
         <div key={i.titulo} className="grid gap-1 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
-          <dt className="font-semibold text-gray-900">{i.titulo}</dt>
-          <dd className="text-gray-600">{i.texto}</dd>
+          <dt className="font-semibold text-[#1E40AF]">{i.titulo}</dt>
+          <dd className="text-[#1E40AF]/80">{i.texto}</dd>
         </div>
       ))}
     </dl>

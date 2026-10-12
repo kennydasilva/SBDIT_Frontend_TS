@@ -11,7 +11,7 @@ export default function DeviceMockups() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#1E40AF]/50" />
           <span className="h-2.5 w-2.5 rounded-full bg-[#1E40AF]/25" />
         </span>
-        <span className="flex-1 truncate rounded-full bg-[#1E40AF]/5 px-3 py-1 text-xs text-gray-500">
+        <span className="flex-1 truncate rounded-full bg-[#1E40AF]/5 px-3 py-1 text-xs text-[#1E40AF]/80">
           SGDIT · Criar Denúncia
         </span>
       </div>
