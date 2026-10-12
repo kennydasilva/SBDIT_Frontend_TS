@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Video, MapPin, BellRing, ShieldCheck, Send, ScanSearch } from "lucide-react";
+import { Video, MapPin, BellRing, Gavel, Send, ScanSearch } from "lucide-react";
 import {
   CONTAINER, SECTION, BTN_ON_BLUE, BTN_ON_BLUE_OUTLINE, TEXT_LINK, PANEL, IconTile, SectionTitle, Fecho,
 } from "../../components/public/publicUi";
@@ -16,7 +16,7 @@ const DESTAQUES = [
   { icon: Video, titulo: "Vídeo do telemóvel", texto: "MP4, AVI ou MOV" },
   { icon: MapPin, titulo: "Local no mapa", texto: "Define o posto responsável" },
   { icon: BellRing, titulo: "Notificações", texto: "A cada mudança de estado" },
-  { icon: ShieldCheck, titulo: "Decisão de um agente", texto: "Aprova ou arquiva" },
+  { icon: Gavel, titulo: "Decisão de um agente", texto: "Aprova ou arquiva" },
 ];
 
 const NUMEROS = [
@@ -37,7 +37,7 @@ const PASSOS = [
     texto: "A análise automática confirma se a infração aparece no vídeo. Se não aparecer, a denúncia é rejeitada e é avisado.",
   },
   {
-    icon: ShieldCheck,
+    icon: Gavel,
     titulo: "Um agente decide",
     texto: "A denúncia confirmada segue para o posto policial da zona. Um agente de trânsito aprova-a ou arquiva-a, com justificação.",
   },
@@ -106,7 +106,7 @@ export default function LandingPage() {
           <div>
             <SectionTitle
               titulo="Tudo num só lugar"
-              texto="Cria denúncias, consulta as que já enviou e recebe as notificações na mesma conta, no computador ou no telemóvel."
+              texto="Cria denúncias, consulta as que já enviou e recebe as notificações na mesma conta."
             />
             <div className="mt-8 grid max-w-md grid-cols-3 overflow-hidden rounded-2xl bg-[#1E40AF] text-white">
               {NUMEROS.map((n) => (
