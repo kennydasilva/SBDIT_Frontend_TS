@@ -69,7 +69,7 @@ export default function SignupPage() {
 
   return (
     <AuthLayout
-      titulo="Criar conta"
+      titulo="Criar conta de cidadão"
       subtitulo="Registe-se para denunciar infrações de trânsito"
       rodape={
         <>
@@ -78,6 +78,15 @@ export default function SignupPage() {
         </>
       }
     >
+      {/* O registo público cria sempre uma conta de cidadão. */}
+      <div className="mb-5 rounded-md border border-[#1E40AF]/20 bg-[#1E40AF]/5 px-4 py-3 text-sm text-[#1E40AF]">
+        <p className="font-semibold">Este registo é só para cidadãos.</p>
+        <p className="mt-0.5">
+          Agentes e administradores não se registam aqui: a conta é criada pelo posto. Se já tem conta,{" "}
+          <Link to="/login" className={AUTH_LINK}>entre no sistema</Link>.
+        </p>
+      </div>
+
       {erro && <div className={`${ALERT_ERROR} mb-5`}>{erro}</div>}
 
       <Form {...form}>
