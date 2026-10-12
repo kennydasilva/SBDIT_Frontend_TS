@@ -8,7 +8,7 @@ import { TIPOS_OCORRENCIA } from "./conteudo";
 
 const PRECISA = [
   { titulo: "Um vídeo da infração", texto: "MP4, AVI ou MOV, até 100 MB." },
-  { titulo: "A matrícula do veículo", texto: "No formato AB-12-CD." },
+  { titulo: "A matrícula do veículo", texto: "No formato ABC 123 MC." },
   { titulo: "O local onde aconteceu", texto: "Marca-o no mapa ao criar a denúncia." },
 ];
 

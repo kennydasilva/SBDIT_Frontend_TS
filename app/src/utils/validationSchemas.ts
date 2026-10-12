@@ -8,8 +8,10 @@ export const REGEX = {
   password: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&#.,_-]{8,}$/,
   // formato Moçambique: +258 8XX XXX XXX
   telefone: /^\+258\s?[89]\d{2}\s?\d{3}\s?\d{3}$/,
-  // formato de matrícula: AB-12-CD
-  matricula: /^[A-Za-z]{2}-\d{2}-[A-Za-z]{2}$/,
+  // Matrícula de Moçambique, formato actual: "ABC 123 MC" (três letras,
+  // três algarismos, duas letras da província). Espaços e hífenes são
+  // opcionais; o backend grava na forma única.
+  matricula: /^[A-Za-z]{3}[ -]?\d{3}[ -]?[A-Za-z]{2}$/,
   codigoLegal: /^[A-Za-zÀ-ÿ0-9ºª.,()\-\s]{3,150}$/,
   numeroAgente: /^[A-Za-z0-9-]{2,20}$/,
   posto: /^[A-Za-zÀ-ÿºª0-9\s.-]{2,100}$/,
@@ -40,10 +42,13 @@ export const telefoneSchema = z
   .min(1, "O número é obrigatório")
   .regex(REGEX.telefone, "Indique um número válido (9 dígitos, começado por 8)");
 
+export const MATRICULA_EXEMPLO = "Ex: ABC 123 MC";
+export const MATRICULA_INVALIDA = "Indique uma matrícula válida, no formato ABC 123 MC";
+
 export const matriculaSchema = z
   .string()
   .min(1, "A matrícula é obrigatória")
-  .regex(REGEX.matricula, "Digite uma matrícula válida no formato AB-12-CD");
+  .regex(REGEX.matricula, MATRICULA_INVALIDA);
 
 export const codigoLegalSchema = z
   .string()

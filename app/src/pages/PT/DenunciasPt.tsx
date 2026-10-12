@@ -67,7 +67,7 @@ export default function DenunciasPt() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="text"
-                placeholder="Ex: AB-12-CD"
+                placeholder="Ex: ABC 123 MC"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`${INPUT} pl-10`}

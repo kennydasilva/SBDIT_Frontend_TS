@@ -3,7 +3,7 @@ import { Upload, X, CheckCircle, Loader2, Siren } from "lucide-react";
 import { useNavigate } from "react-router";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
-import { REGEX } from "../../utils/validationSchemas";
+import { REGEX, MATRICULA_EXEMPLO, MATRICULA_INVALIDA } from "../../utils/validationSchemas";
 import LocationPicker from "../../components/LocationPicker";
 import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
@@ -102,7 +102,7 @@ export default function CriarDenuncia() {
     // se for preenchida, tem sempre de ser válida.
     const matricula = formData.matricula.trim();
     if ((matricula || !ehAcidente) && !REGEX.matricula.test(matricula)) {
-      errors.matricula = "Indique uma matrícula válida no formato AB-12-CD";
+      errors.matricula = MATRICULA_INVALIDA;
     }
 
     // Obrigatório em todos os tipos: é a localização da denúncia e é por
@@ -236,7 +236,7 @@ export default function CriarDenuncia() {
               name="matricula"
               value={formData.matricula}
               onChange={handleInputChange}
-              placeholder="Ex: AB-12-CD"
+              placeholder={MATRICULA_EXEMPLO}
               className={INPUT}
               required={!ehAcidente}
             />
