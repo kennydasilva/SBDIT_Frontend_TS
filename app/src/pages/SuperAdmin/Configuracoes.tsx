@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, AlertTriangle, Loader2, KeyRound } from "../../components/icons";
+
+import { Plus, Trash2, Loader2, KeyRound } from "../../components/icons";
 import { configService, type ConfigEntry } from "../../api/configService";
+
 import {
   CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY,
-  BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
-} from "../../utils/uiClasses";
+  BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD, PAGE, MODAL_TITLE, ALERT_INFO, ICON_BUTTON_DANGER, MODAL_FOOTER } from "../../utils/uiClasses";
+
 import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
+
+import PageHeader from "../../components/app/PageHeader";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+import { ErroPagina, LinhaVazia } from "../../components/app/Lista";
+
 
 const CHAVES_CONHECIDAS = [
   { chave: "GOOGLE_MAPS_API_KEY", descricao: "Chave JS do Google Maps (pública)", publica: true },
@@ -101,112 +109,87 @@ export default function Configuracoes() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button
-            onClick={carregarConfigs}
-            className={`${BUTTON_PRIMARY} mt-4`}
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={carregarConfigs} />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Configurações</h1>
-          <p className="text-gray-500 mt-1">
-            Credenciais de integrações externas (Google Maps, MozeSMS, etc.)
-          </p>
-        </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowModal(true);
-          }}
-          className={BUTTON_PRIMARY}
-        >
-          <Plus size={20} />
-          Nova Credencial
-        </button>
-      </div>
+    <div className={PAGE}>
+      <PageHeader
+        titulo="Configurações" texto="Credenciais de integrações externas (Google Maps, MozeSMS, etc.)"
+        acoes={
+          <button
+            onClick={() => {
+              resetForm();
+              setShowModal(true);
+            }}
+            className={BUTTON_PRIMARY}
+          >
+            <Plus size={14} />
+            Nova credencial
+          </button>
+        }
+      />
 
-      <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+      <div className={`${ALERT_INFO} mb-6`}>
         <strong>Público</strong> = seguro para expor ao browser (ex: chave JS do Google Maps,
         protegida por restrição de domínio na Google Cloud Console). Nunca marques como
         pública uma credencial de servidor (ex: API Secret da MozeSMS).
       </div>
 
       <div className={`${CARD} overflow-hidden`}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className={TABLE_HEAD_CELL}>Chave</th>
-              <th className={TABLE_HEAD_CELL}>Valor</th>
-              <th className={TABLE_HEAD_CELL}>Descrição</th>
-              <th className={TABLE_HEAD_CELL}>Visibilidade</th>
-              <th className={TABLE_HEAD_CELL}>Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {configs.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                  Nenhuma credencial configurada
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className={TABLE_HEAD_CELL}>Chave</th>
+                <th className={TABLE_HEAD_CELL}>Valor</th>
+                <th className={TABLE_HEAD_CELL}>Descrição</th>
+                <th className={TABLE_HEAD_CELL}>Visibilidade</th>
+                <th className={TABLE_HEAD_CELL}><span className="sr-only">Ações</span></th>
               </tr>
-            ) : (
-              configs.map((c) => (
-                <tr key={c.chave} className={TABLE_ROW_HOVER}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    <div className="flex items-center gap-2">
-                      <KeyRound size={14} className="text-gray-400" />
-                      {c.chave}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 font-mono">{c.valor_mascarado}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600">{c.descricao || "—"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${BADGE} ${c.publica ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                      {c.publica ? "Pública" : "Privada"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() => handleApagar(c.chave)}
-                      className="text-rose-600 hover:text-rose-800"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {configs.length === 0 ? (
+                <LinhaVazia colunas={5}>
+                    Nenhuma credencial configurada
+                  </LinhaVazia>
+              ) : (
+                configs.map((c) => (
+                  <tr key={c.chave} className={TABLE_ROW_HOVER}>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <div className="flex items-center gap-2">
+                        <KeyRound size={14} className="text-gray-500" />
+                        {c.chave}
+                      </div>
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600 font-mono">{c.valor_mascarado}</td>
+                    <td className="px-6 py-3.5 text-sm text-gray-600">{c.descricao || "—"}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap">
+                      <span className={`${BADGE} ${c.publica ? "bg-blue-50 text-blue-700" : "bg-gray-100 text-gray-600"}`}>
+                        {c.publica ? "Pública" : "Privada"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleApagar(c.chave)}
+                        className={ICON_BUTTON_DANGER} aria-label="Eliminar" title="Eliminar"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showModal && (
         <div className={MODAL_OVERLAY}>
           <div className={`${MODAL_CARD} max-w-lg`}>
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Nova Credencial</h2>
+            <h2 className={MODAL_TITLE}>Nova credencial</h2>
 
             <div className="space-y-4">
               <div>
@@ -277,23 +260,23 @@ export default function Configuracoes() {
               </label>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className={MODAL_FOOTER}>
               <button
                 onClick={() => {
                   setShowModal(false);
                   resetForm();
                 }}
-                className={`${BUTTON_SECONDARY} flex-1`}
+                className={BUTTON_SECONDARY}
                 disabled={submitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSalvar}
-                className={`${BUTTON_PRIMARY} flex-1`}
+                className={BUTTON_PRIMARY}
                 disabled={submitting}
               >
-                {submitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Guardar"}
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
               </button>
             </div>
           </div>

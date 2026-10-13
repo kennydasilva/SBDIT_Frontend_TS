@@ -54,9 +54,9 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
 
   if (loading || carregando) {
     return (
-      <div className="flex items-center justify-center h-screen gap-2 text-gray-500">
-        <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-        A carregar...
+      <div className="flex h-screen items-center justify-center gap-2 text-sm text-gray-600" role="status">
+        <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+        A carregar…
       </div>
     );
   }
@@ -85,19 +85,19 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
       >
         <div className="px-6 py-5 border-b border-white/10 flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">SGDIT</h1>
-            <p className="text-sm text-blue-200">{subtitulo}</p>
+            <p className="text-lg font-bold leading-tight tracking-tight">SGDIT</p>
+            <p className="text-sm text-blue-100">{subtitulo}</p>
           </div>
           <button
             onClick={() => setMenuAberto(false)}
-            className="p-1 -mr-2 rounded-lg text-blue-100 hover:bg-white/10 lg:hidden"
+            className="p-1 -mr-2 rounded-md text-blue-100 hover:bg-white/10 lg:hidden"
             aria-label="Fechar menu"
           >
             <X size={20} />
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav aria-label="Menu principal" className="flex-1 space-y-0.5 overflow-y-auto p-3">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const ativo = location.pathname.startsWith(item.path);
@@ -106,14 +106,15 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm transition-colors ${
-                  ativo ? "bg-white/15 text-white font-medium" : "text-blue-100 hover:bg-white/10"
+                aria-current={ativo ? "page" : undefined}
+                className={`flex h-10 items-center gap-3 rounded-md px-3 text-sm transition-colors focus-visible:outline-white ${
+                  ativo ? "bg-white font-semibold text-blue-800" : "text-blue-100 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <Icon size={19} />
+                <Icon size={16} className="shrink-0" />
                 <span>{item.label}</span>
                 {item.path.endsWith("/notificacoes") && naoLidas > 0 && (
-                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-white text-blue-800 text-xs font-semibold flex items-center justify-center">
+                  <span className={`ml-auto flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums ${ativo ? "bg-blue-600 text-white" : "bg-white text-blue-800"}`}>
                     {naoLidas > 99 ? "99+" : naoLidas}
                   </span>
                 )}
@@ -129,14 +130,14 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium truncate">{nomeVisivel}</p>
-              <p className="text-xs text-blue-200">{PAPEL_LABEL[user?.role ?? ""] ?? user?.role}</p>
+              <p className="text-xs text-blue-100">{PAPEL_LABEL[user?.role ?? ""] ?? user?.role}</p>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className="mt-1 flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm text-blue-100 hover:bg-white/10 transition-colors w-full"
+            className="mt-1 flex h-10 w-full items-center gap-3 rounded-md px-3 text-sm text-blue-100 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-white"
           >
-            <LogOut size={19} />
+            <LogOut size={16} className="shrink-0" />
             <span>Sair</span>
           </button>
         </div>
@@ -146,7 +147,7 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
         <header className="lg:hidden shrink-0 flex items-center gap-3 bg-blue-800 text-white px-4 py-3">
           <button
             onClick={() => setMenuAberto(true)}
-            className="relative p-1 -ml-1 rounded-lg hover:bg-white/10"
+            className="relative p-1 -ml-1 rounded-md hover:bg-white/10"
             aria-label="Abrir menu"
           >
             <Menu size={22} />
@@ -154,12 +155,15 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
           </button>
           <div className="leading-tight">
             <p className="font-bold tracking-tight">SGDIT</p>
-            <p className="text-xs text-blue-200">{subtitulo}</p>
+            <p className="text-xs text-blue-100">{subtitulo}</p>
           </div>
         </header>
 
         <main className="flex-1 overflow-auto">
-          <Outlet />
+          {/* Largura máxima: em ecrãs muito largos as tabelas não se esticam de ponta a ponta. */}
+          <div className="mx-auto min-h-full w-full max-w-[1400px]">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

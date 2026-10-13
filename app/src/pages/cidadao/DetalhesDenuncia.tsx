@@ -1,22 +1,54 @@
-import { useParams, Link } from "react-router";
-import {
-  ArrowLeft,
-  FileText,
-  MapPin,
-  Calendar,
-  CheckCircle,
-  XCircle,
-  Clock,
-  AlertTriangle,
-  Shield,
-  Siren,
-  Loader2,
-} from "../../components/icons";
+import { useParams } from "react-router";
+
+
+
+
+import { FileText, MapPin, Calendar, CheckCircle, XCircle, Clock, AlertTriangle, Shield, Siren } from "../../components/icons";
+
+
+
 import { useEffect, useState } from "react";
+
+
+
+
+
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+
+
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
+
+
 import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
-import { ALERT_ERROR, CARD, PAGE, PAGE_SUBTITLE, PAGE_TITLE, SECTION_TITLE } from "../../utils/uiClasses";
+
+
+
+
+
+import { ALERT_ERROR, CARD, PAGE, SECTION_TITLE } from "../../utils/uiClasses";
+
+
+
+import { formatarDataHora } from "../../utils/datas";
+
+
+
+
+
 
 export default function DetalhesDenuncia() {
   const { user, loading: authLoading } = useAuth();
@@ -50,13 +82,7 @@ export default function DetalhesDenuncia() {
 
   
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
   if (error || !denuncia) {
     return (
       <div className={PAGE}>
@@ -119,33 +145,15 @@ export default function DetalhesDenuncia() {
 
   return (
     <div className={PAGE}>
-      {/* Back Button */}
-      <Link
-        to="/cidadao/minhas-denuncias"
-        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6"
-      >
-        <ArrowLeft size={20} />
-        <span className="font-medium">Voltar para Minhas Denúncias</span>
-      </Link>
-
-      {/* Header */}
-      <div className="mb-8 flex justify-between items-start">
-        <div>
-          <h1 className={PAGE_TITLE}>
+      <PageHeader
+        voltar={{ para: "/cidadao/minhas-denuncias", texto: "Minhas denúncias" }}
+        titulo={
+          <span className="flex flex-wrap items-center gap-3">
             Denúncia #{id}
-          </h1>
-          <p className={PAGE_SUBTITLE}>
-            Detalhes completos da denúncia
-          </p>
-        </div>
-        <span
-          className={`px-4 py-2 rounded text-sm font-medium border ${toneEstado(
-            denuncia.estado
-          )}`}
-        >
-          {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
-        </span>
-      </div>
+            <EstadoBadge estado={denuncia.estado} tipo={denuncia.tipo_infracao} paraCidadao />
+          </span>
+        }
+      />
 
       {/* Info Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -185,7 +193,7 @@ export default function DetalhesDenuncia() {
             <p className="text-sm text-gray-600">Data</p>
           </div>
           <p className="text-sm font-medium text-gray-900">
-            {denuncia.data_captura || denuncia.data_registo}
+            {formatarDataHora(denuncia.data_captura || denuncia.data_registo)}
           </p>
         </div>
       </div>
@@ -417,7 +425,7 @@ export default function DetalhesDenuncia() {
                         className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
                           item.concluido
                             ? "bg-blue-100 text-blue-800"
-                            : "bg-gray-100 text-gray-400"
+                            : "bg-gray-100 text-gray-500"
                         }`}
                       >
                         {item.concluido ? (

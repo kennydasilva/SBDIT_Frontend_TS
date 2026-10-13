@@ -56,16 +56,19 @@ export default function PublicLayout() {
             </nav>
 
             <div className="flex items-center gap-3">
-              <Link to="/login" className="text-sm font-semibold text-[#1E40AF] hover:underline">
+              <Link to="/login" className="whitespace-nowrap text-sm font-semibold text-[#1E40AF] hover:underline">
                 Entrar no sistema
               </Link>
-              <Link to="/cadastrar" className={`${BTN_PRIMARY} hidden !px-5 !py-2 !shadow-none sm:inline-flex`}>
-                Criar conta
-              </Link>
+              <span className="hidden sm:block">
+                <Link to="/cadastrar" className={`${BTN_PRIMARY} whitespace-nowrap !px-5 !py-2`}>
+                  Criar conta
+                </Link>
+              </span>
               <button
                 onClick={() => setMenuAberto((a) => !a)}
                 className="p-1 text-[#1E40AF]/80 md:hidden"
-                aria-label="Menu"
+                aria-label={menuAberto ? "Fechar menu" : "Abrir menu"}
+                aria-expanded={menuAberto}
               >
                 {menuAberto ? <X size={22} /> : <Menu size={22} />}
               </button>

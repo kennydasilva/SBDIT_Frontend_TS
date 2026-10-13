@@ -4,7 +4,7 @@ import AppShell, { type ItemMenu } from "./AppShell";
 // Só páginas que existem: os antigos links para Cidadãos/Denúncias/
 // Relatórios do Admin não tinham rota e mandavam o utilizador para o login.
 const menuItems: ItemMenu[] = [
-  { path: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/admin/dashboard", icon: LayoutDashboard, label: "Painel" },
   { path: "/admin/policiais", icon: Shield, label: "Agentes" },
   { path: "/admin/acidentes", icon: Siren, label: "Acidentes" },
   { path: "/admin/relatorios", icon: FileText, label: "Relatórios" },

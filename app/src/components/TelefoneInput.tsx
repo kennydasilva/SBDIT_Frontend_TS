@@ -16,17 +16,22 @@ interface Props {
   disabled?: boolean;
   name?: string;
   autoComplete?: string;
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
 }
 
 // Telemóvel de Moçambique: o indicativo +258 é fixo, o utilizador só
 // escreve os 9 dígitos do número.
-export default function TelefoneInput({ value, onChange, disabled, name, autoComplete }: Props) {
+export default function TelefoneInput({ value, onChange, disabled, name, autoComplete, id, ...aria }: Props) {
   return (
     <div className="flex">
-      <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-gray-200 bg-gray-50 text-sm text-gray-600 select-none">
+      <span className="inline-flex items-center h-10 px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600 select-none">
         {INDICATIVO}
       </span>
       <input
+        id={id}
+        {...aria}
         type="tel"
         inputMode="numeric"
         name={name}

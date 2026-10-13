@@ -1,16 +1,50 @@
 import { useEffect, useState } from "react";
+
+
+
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, CheckCircle, Archive, Loader2, Users, AlertTriangle } from "../../components/icons";
+
+
+
+import { MapPin, Calendar, CheckCircle, Archive, Loader2, Users, AlertTriangle } from "../../components/icons";
+
+
 import { toast } from "sonner";
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
 import { denunciaService, type DenunciaDetalhada, type DenunciaTestemunha } from "../../api/denunciaService";
+
+
+
 import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+
+
+
 import { mensagemDeErro } from "../../utils/mensagens";
-import {
-  PAGE, PAGE_TITLE, CARD, SECTION_TITLE, INPUT, LABEL, BADGE,
-  BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, ALERT_ERROR,
-} from "../../utils/uiClasses";
+
+
+
+import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BADGE, BUTTON_PRIMARY, BUTTON_SECONDARY, ALERT_ERROR, TEXTAREA, ALERT_INFO } from "../../utils/uiClasses";
+
 import { REGEX } from "../../utils/validationSchemas";
+
+
+
+import { formatarDataHora } from "../../utils/datas";
+
+
+
 
 export default function DetalhesDenunciaPt() {
   const { id } = useParams();
@@ -165,13 +199,7 @@ export default function DetalhesDenunciaPt() {
 
 
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
 
   if (error || !denuncia) {
     return (
@@ -183,25 +211,15 @@ export default function DetalhesDenunciaPt() {
 
   return (
     <div className={PAGE}>
-      {/* Header */}
-      <div className="mb-8">
-        <Link
-          to={voltar.para}
-          className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 mb-4"
-        >
-          <ArrowLeft size={18} className="mr-1.5" />
-          {voltar.texto}
-        </Link>
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className={PAGE_TITLE}>Denúncia #{denuncia?.id}</h1>
-          {denuncia && (
-            <span className={`${BADGE} ${toneEstado(denuncia.estado)}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-              {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
-            </span>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        voltar={voltar}
+        titulo={
+          <span className="flex flex-wrap items-center gap-3">
+            Denúncia #{denuncia.id}
+            <EstadoBadge estado={denuncia.estado} tipo={denuncia.tipo_infracao} />
+          </span>
+        }
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column - Info Cards */}
@@ -227,7 +245,7 @@ export default function DetalhesDenunciaPt() {
                 </span>
               </div>
               <div className="flex items-start gap-2">
-                <MapPin size={16} className="text-gray-400 mt-1" />
+                <MapPin size={16} className="text-gray-500 mt-1" />
                 <div>
                   <p className="text-xs font-medium text-gray-500">Localização</p>
                   <p className="font-medium text-gray-900">
@@ -242,11 +260,11 @@ export default function DetalhesDenunciaPt() {
                 </div>
               )}
               <div className="flex items-start gap-2">
-                <Calendar size={16} className="text-gray-400 mt-1" />
+                <Calendar size={16} className="text-gray-500 mt-1" />
                 <div>
                   <p className="text-xs font-medium text-gray-500">Data</p>
                   <p className="font-medium text-gray-900">
-                    {denuncia?.data_captura}
+                    {formatarDataHora(denuncia?.data_captura)}
                   </p>
                 </div>
               </div>
@@ -283,13 +301,13 @@ export default function DetalhesDenunciaPt() {
               <div>
                 <p className="text-xs font-medium text-gray-500">Código Legal Sugerido</p>
                 <p className="font-medium text-gray-900">
-                  {denuncia?.codigo_legal}
+                  {denuncia?.codigo_legal || "—"}
                 </p>
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500">Data da Análise</p>
                 <p className="font-medium text-gray-900">
-                  {denuncia?.data_analise}
+                  {formatarDataHora(denuncia?.data_analise)}
                 </p>
               </div>
             </div>
@@ -354,7 +372,7 @@ export default function DetalhesDenunciaPt() {
 
           {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
           {denuncia?.localizacao_contraditoria && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+            <div className={ALERT_INFO}>
               <p className="font-semibold mb-1 flex items-center gap-2"><AlertTriangle size={16} /> Possível denúncia falsa — declarada noutra jurisdição</p>
               <p>
                 O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:
@@ -381,7 +399,7 @@ export default function DetalhesDenunciaPt() {
 
           {/* Ligação a outra denúncia (testemunha ou vídeo semelhante) */}
           {(denuncia?.denuncia_principal_id || denuncia?.video_semelhante_a_id) && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 space-y-1">
+            <div className={`${ALERT_INFO} space-y-1`}>
               {denuncia.video_semelhante_a_id && (
                 <p>
                   O vídeo desta denúncia é <strong>visualmente igual</strong> ao da{" "}
@@ -422,7 +440,7 @@ export default function DetalhesDenunciaPt() {
                   <div key={t.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium text-gray-900">
-                        Denúncia #{t.id} <span className="text-gray-400 font-normal">· {t.data_registo}</span>
+                        Denúncia #{t.id} <span className="text-gray-500 font-normal">· {formatarDataHora(t.data_registo)}</span>
                         {t.video_semelhante_a_id && (
                           <span className="ml-2 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800">
                             vídeo semelhante ao da #{t.video_semelhante_a_id}
@@ -497,28 +515,28 @@ export default function DetalhesDenunciaPt() {
                   onChange={(e) => setDescricao(e.target.value)}
                   disabled={!podeDecidir || (!porDecidir && !isEditing) || isSubmitting}
                   rows={4}
-                  className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed`}
+                  className={`${TEXTAREA} disabled:cursor-not-allowed`}
                   placeholder="Motivo da decisão (obrigatório para arquivar)"
                 />
               </div>
 
               {/* Buttons */}
               {porDecidir && podeDecidir && (
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-wrap justify-end gap-2 border-t border-gray-200 pt-4">
                   <button
                     onClick={handleAprovar}
                     disabled={isSubmitting}
-                    className={`${BUTTON_PRIMARY} flex-1 py-3`}
+                    className={BUTTON_PRIMARY}
                   >
-                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <CheckCircle size={18} />}
+                    {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle size={14} />}
                     Aprovar denúncia
                   </button>
                   <button
                     onClick={handleArquivar}
                     disabled={isSubmitting}
-                    className={`${BUTTON_DANGER} flex-1 py-3`}
+                    className={`${BUTTON_SECONDARY} order-first`}
                   >
-                    {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Archive size={18} />}
+                    {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : <Archive size={14} />}
                     Arquivar denúncia
                   </button>
                 </div>
@@ -531,7 +549,7 @@ export default function DetalhesDenunciaPt() {
                       <button
                         onClick={handleAtualizar}
                         disabled={isSubmitting}
-                        className={`${BUTTON_PRIMARY} flex-1`}
+                        className={BUTTON_PRIMARY}
                       >
                         {isSubmitting && <Loader2 className="animate-spin" size={18} />}
                         Guardar alterações
@@ -547,7 +565,7 @@ export default function DetalhesDenunciaPt() {
                   ) : (
                     <button
                       onClick={() => setIsEditing(true)}
-                      className={`${BUTTON_SECONDARY} w-full`}
+                      className={BUTTON_SECONDARY}
                     >
                       Alterar decisão
                     </button>

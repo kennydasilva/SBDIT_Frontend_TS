@@ -1,11 +1,43 @@
 import { useEffect, useState } from "react";
-import { Search, Eye, Loader2 } from "../../components/icons";
+
+
+
+import { Plus } from "../../components/icons";
+
+
+
 import { Link } from "react-router";
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+
+
+
 import Paginacao from "../../components/Paginacao";
-import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
-import { CARD, INPUT, PAGE, PAGE_SUBTITLE, PAGE_TITLE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+import { labelEstadoCidadao as labelEstado, labelTipo } from "../../utils/estadoDenuncia";
+
+
+
+import EstadoBadge from "../../components/app/EstadoBadge";
+import { INPUT, PAGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, TOOLBAR, CARD_ATTACHED, BUTTON_PRIMARY, LINK } from "../../utils/uiClasses";
+import PageHeader from "../../components/app/PageHeader";
+import { formatarDataHora } from "../../utils/datas";
+
+
+
+import { CampoPesquisa, ErroBloco, LinhaVazia } from "../../components/app/Lista";
+
+
+
+import { LinhasEsqueleto } from "../../components/app/Carregando";
+
+
+
 
 const TAMANHO_PAGINA = 10;
 
@@ -66,128 +98,80 @@ export default function MinhasDenuncias() {
 
   return (
     <div className={PAGE}>
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className={PAGE_TITLE}>Minhas Denúncias</h1>
-        <p className={PAGE_SUBTITLE}>
-          Acompanhe o estado de todas as suas denúncias
-        </p>
-      </div>
+      <PageHeader
+        titulo="Minhas denúncias"
+        texto="Todas as denúncias que enviou e o estado de cada uma."
+        acoes={
+          <Link to="/cidadao/criar-denuncia" className={BUTTON_PRIMARY}>
+            <Plus size={14} />
+            Criar denúncia
+          </Link>
+        }
+      />
 
       {/* Filters */}
-      <div className={`${CARD} p-6 mb-6`}>
-        <div className="flex flex-col gap-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-              size={20}
-            />
-            <input
-              type="text"
-              placeholder="Pesquisar por matrícula..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`${INPUT} pl-10`}
-            />
-          </div>
-
-          {/* Estado Filter */}
-          <div className="flex gap-2 flex-wrap">
-            {estados.map((estado) => (
-              <button
-                key={estado}
-                onClick={() => setSelectedEstado(estado)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  selectedEstado === estado
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {estado === "Todos" ? "Todos" : labelEstado(estado)}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className={TOOLBAR}>
+        <CampoPesquisa valor={searchTerm} onMudar={setSearchTerm} rotulo="Pesquisar por matrícula" />
+        <select
+          value={selectedEstado}
+          onChange={(e) => setSelectedEstado(e.target.value)}
+          aria-label="Filtrar por estado"
+          className={`${INPUT} !h-9 sm:!w-56`}
+        >
+          {estados.map((estado) => (
+            <option key={estado} value={estado}>
+              {estado === "Todos" ? "Todos os estados" : labelEstado(estado)}
+            </option>
+          ))}
+        </select>
       </div>
 
+
       {/* Table */}
-      <div className={`${CARD} overflow-hidden`}>
+      <div className={`${CARD_ATTACHED} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="border-b border-gray-200">
               <tr>
-                <th className={TABLE_HEAD_CELL}>
-                  ID
-                </th>
-                <th className={TABLE_HEAD_CELL}>
-                  Matrícula
-                </th>
-                <th className={TABLE_HEAD_CELL}>
-                  Tipo de Infração
-                </th>
-                <th className={TABLE_HEAD_CELL}>
-                  Data
-                </th>
-                <th className={TABLE_HEAD_CELL}>
-                  Estado
-                </th>
-                <th className={TABLE_HEAD_CELL}>
-                  Ações
-                </th>
+                <th className={TABLE_HEAD_CELL}>N.º</th>
+                <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                <th className={TABLE_HEAD_CELL}>Tipo</th>
+                <th className={TABLE_HEAD_CELL}>Data</th>
+                <th className={TABLE_HEAD_CELL}>Estado</th>
+                <th className={TABLE_HEAD_CELL}><span className="sr-only">Abrir</span></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {loading ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center">
-                    <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
-                  </td>
-                </tr>
+                <LinhasEsqueleto colunas={6} />
               ) : error ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-rose-600">{error}</td>
+                  <td colSpan={6}><ErroBloco mensagem={error} onTentar={() => carregarDenuncias(paginaAtual)} /></td>
                 </tr>
               ) : filteredDenuncias.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                    {denuncias.length === 0 ? "Ainda não fez nenhuma denúncia" : "Nenhuma denúncia corresponde aos filtros"}
-                  </td>
-                </tr>
+                <LinhaVazia colunas={6}>
+                    {denuncias.length === 0 ? "Ainda não fez nenhuma denúncia." : "Nenhuma denúncia desta página corresponde aos filtros."}
+                  </LinhaVazia>
               ) : (
                 filteredDenuncias.map((denuncia) => (
                   <tr key={denuncia.id} className={TABLE_ROW_HOVER}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="px-6 py-3.5 text-sm font-medium text-gray-900">
                       #{denuncia.id}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-3.5 text-sm text-gray-900">
                       {denuncia.matricula}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
+                    <td className="px-6 py-3.5 text-sm text-gray-900">
                       {labelTipo(denuncia.tipo_infracao)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.data_captura}
+                    <td className="px-6 py-3.5 text-sm text-gray-600">
+                      {formatarDataHora(denuncia.data_captura)}
                     </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded text-xs font-medium border ${toneEstado(
-                          denuncia.estado
-                        )}`}
-                      >
-                        {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
-                      </span>
+                    <td className="px-6 py-3.5">
+                      <EstadoBadge estado={denuncia.estado} tipo={denuncia.tipo_infracao} paraCidadao />
                     </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        to={`/cidadao/denuncias/${denuncia.id}`}
-                        className="text-blue-600 hover:text-blue-700 flex items-center gap-2"
-                      >
-                        <Eye size={18} />
-                        <span className="text-sm font-medium">
-                          Ver Detalhes
-                        </span>
-                      </Link>
+                    <td className="px-6 py-3.5">
+                      <Link to={`/cidadao/denuncias/${denuncia.id}`} className={`${LINK} text-sm`}>Ver detalhes</Link>
                     </td>
                   </tr>
                 ))

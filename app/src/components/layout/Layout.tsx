@@ -2,7 +2,7 @@ import { LayoutDashboard, Users, Shield, UserCircle, AlertTriangle, FileText, Se
 import AppShell, { type ItemMenu } from "./AppShell";
 
 const menuItems: ItemMenu[] = [
-  { path: "/super-admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/super-admin/dashboard", icon: LayoutDashboard, label: "Painel" },
   { path: "/super-admin/admins", icon: Users, label: "Administradores" },
   { path: "/super-admin/policiais", icon: Shield, label: "Agentes" },
   { path: "/super-admin/cidadaos", icon: UserCircle, label: "Cidadãos" },

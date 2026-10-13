@@ -1,319 +1,192 @@
-import { FileText, Clock, CheckCircle2, XCircle, Trophy, ArrowRight, ClipboardList } from "../../components/icons";
-import { Link } from "react-router";
-import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
+import { Link } from "react-router";
+import { ArrowRight, FileText, Plus } from "../../components/icons";
+import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { cidadaoService, type RankingEntry } from "../../api/cidadaoService";
-import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import PageHeader from "../../components/app/PageHeader";
+import StatStrip from "../../components/app/StatStrip";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import EmptyState from "../../components/app/EmptyState";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+import { ErroPagina } from "../../components/app/Lista";
+import { labelTipo } from "../../utils/estadoDenuncia";
+import { formatarDataHora } from "../../utils/datas";
+import {
+  PAGE, CARD, CARD_HEADER, CARD_TITLE, LINK, BUTTON_PRIMARY,
+  TABLE_HEAD_CELL, TABLE_CELL, TABLE_CELL_STRONG, TABLE_ROW_HOVER,
+} from "../../utils/uiClasses";
 
-
-
-// Quantas denúncias mostrar em "Denúncias Recentes" (as restantes estão
+// Quantas denúncias mostrar em "Últimas denúncias" (as restantes estão
 // em "Minhas Denúncias").
 const RECENTES = 3;
 
+// Estados em que a denúncia ainda está a ser tratada.
+const EM_CURSO = ["PENDENTE", "VALIDADA", "DUVIDOSA", "ENCAMINHADA"];
+
 export default function CidadaoDashboard() {
+  const { user, loading: authLoading } = useAuth();
+  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [ranking, setRanking] = useState<RankingEntry[]>([]);
+  const [meuCodigo, setMeuCodigo] = useState<string | null>(null);
+  const [nome, setNome] = useState<string | null>(null);
 
-   const { user, loading: authLoading } = useAuth();
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedEstado, setSelectedEstado] = useState("Todos");
-    const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
-    const [total, setTotal] = useState(0);
-    const [loading, setLoading] = useState(true);
-    const[error, setError]= useState<string | null>(null);
-    const[pendentes, setPendentes]=useState(0);
-    const[validadas, setValidadas]=useState(0);
-    const[rejeitadas, setRejeitadas]=useState(0);
-    const [ranking, setRanking] = useState<RankingEntry[]>([]);
-    const [meuCodigo, setMeuCodigo] = useState<string | null>(null);
-
-
-
-    useEffect(() => {
-      if (!authLoading && user) {
-        carregarDenuncias();
-        carregarRanking();
-      }
-    }, [authLoading, user]);
-
-    const carregarRanking = async () => {
-      if (!user) return;
-      try {
-        const [rankingData, perfil] = await Promise.all([
-          cidadaoService.ranking(),
-          cidadaoService.getCidadaoId(user.id),
-        ]);
-        setRanking(rankingData);
-        setMeuCodigo(perfil.codigo_ranking ?? null);
-      } catch (err) {
-        // ranking é um extra motivacional, falha silenciosa não deve bloquear o dashboard
-        console.error("Erro ao carregar ranking:", err);
-      }
-    };
-
-
-    const carregarDenuncias = async () => {
-      if (!user) return;
-      try{
-        setLoading(true);
-        setError(null);
-
-        // Pede o máximo por página para os totais por estado; o total geral
-        // vem da contagem do servidor. Na lista só aparecem as mais recentes.
-        const { results: data, count } = await denunciaService.listarPorCidadao(user.id, 1, 100);
-        setDenuncias(data);
-        setTotal(count);
-        calcular(data);
-      } catch (err) {
-        setError("Erro ao carregar denúncias.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-
-    const calcular=(dados:DenunciaDetalhada[])=>{
-      let pendente=0;
-      let validada=0;
-      let rejeitada=0;
-
-      for(const d of dados){
-        if(d.estado === "PENDENTE"){
-          pendente++;
-        }
-        else if(d.estado === "VALIDADA"){
-          validada++;
-        }
-        else if(d.estado === "REJEITADA"){
-          rejeitada++;
-        }
-      }
-
-      setPendentes(pendente);
-      setValidadas(validada);
-      setRejeitadas(rejeitada);
-
+  useEffect(() => {
+    if (!authLoading && user) {
+      carregarDenuncias();
+      carregarRanking();
     }
+  }, [authLoading, user]);
 
+  const carregarRanking = async () => {
+    if (!user) return;
+    try {
+      const [rankingData, perfil] = await Promise.all([
+        cidadaoService.ranking(),
+        cidadaoService.getCidadaoId(user.id),
+      ]);
+      setRanking(rankingData);
+      setMeuCodigo(perfil.codigo_ranking ?? null);
+      setNome(perfil.nome ?? null);
+    } catch (err) {
+      // ranking é um extra motivacional, falha silenciosa não deve bloquear o dashboard
+      console.error("Erro ao carregar ranking:", err);
+    }
+  };
 
-  const stats = [
-    {
-      label: "Total de Denúncias",
-      value: total.toString(),
-      icon: FileText,
-      bg: "bg-blue-50",
-      fg: "text-blue-600",
-    },
-    {
-      label: "Pendentes",
-      value: pendentes.toString(),
-      icon: Clock,
-      bg: "bg-blue-50",
-      fg: "text-blue-800",
-    },
-    {
-      label: "Validadas",
-      value: validadas.toString(),
-      icon: CheckCircle2,
-      bg: "bg-blue-50",
-      fg: "text-blue-800",
-    },
-    {
-      label: "Rejeitadas",
-      value: rejeitadas.toString(),
-      icon: XCircle,
-      bg: "bg-gray-100",
-      fg: "text-gray-500",
-    },
-  ];
+  const carregarDenuncias = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      setError(null);
 
+      // Pede o máximo por página para os totais por estado; o total geral
+      // vem da contagem do servidor. Na lista só aparecem as mais recentes.
+      const { results: data, count } = await denunciaService.listarPorCidadao(user.id, 1, 100);
+      setDenuncias(data);
+      setTotal(count);
+    } catch (err) {
+      setError("Erro ao carregar as suas denúncias.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <PaginaEsqueleto />;
+
+  if (error) return <ErroPagina mensagem={error} onTentar={carregarDenuncias} />;
+
+  const contar = (estados: string[]) => denuncias.filter((d) => estados.includes(d.estado)).length;
+  const primeiroNome = nome?.trim().split(/\s+/)[0];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Bem-vindo ao portal do cidadão</p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className="bg-white rounded-lg p-6 border border-gray-200 "
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-                  <p className="text-3xl font-semibold text-gray-900 mt-1.5">
-                    {stat.value}
-                  </p>
-                </div>
-                <div className={`${stat.bg} ${stat.fg} p-3 rounded-md`}>
-                  <Icon size={22} strokeWidth={1.75} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Recent Denuncias */}
-      <div className="bg-white rounded-lg border border-gray-200 ">
-        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-base font-semibold text-gray-900">
-            Denúncias Recentes
-          </h2>
-          <Link
-            to="/cidadao/minhas-denuncias"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            Ver todas
-            <ArrowRight size={14} />
+    <div className={PAGE}>
+      <PageHeader
+        titulo={primeiroNome ? `Olá, ${primeiroNome}` : "Painel do cidadão"}
+        texto="Denuncie uma infração de trânsito ou um acidente e acompanhe o que acontece a seguir."
+        acoes={
+          <Link to="/cidadao/criar-denuncia" className={BUTTON_PRIMARY}>
+            <Plus size={14} />
+            Criar denúncia
           </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-                  Matrícula
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-                  Tipo
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-                  Data
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
-                  Estado
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {denuncias.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-400">
-                    Ainda não tens denúncias registadas.
-                  </td>
-                </tr>
-              ) : (
-                denuncias.slice(0, RECENTES).map((denuncia) => (
-                  <tr key={denuncia.id} className="hover:bg-gray-50/60 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      #{denuncia.id}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {denuncia.matricula}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {labelTipo(denuncia.tipo_infracao)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {denuncia.data_captura}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${toneEstado(
-                          denuncia.estado
-                        )}`}
-                      >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        {labelEstado(denuncia.estado, denuncia.tipo_infracao)}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Ranking de Cidadãos */}
-      {ranking.length > 0 && (
-        <div className="mt-6 bg-white rounded-lg border border-gray-200 ">
-          <div className="px-6 py-5 border-b border-gray-200 flex items-center gap-2.5">
-            <div className="bg-blue-50 text-blue-800 p-2 rounded-lg">
-              <Trophy size={18} strokeWidth={1.75} />
-            </div>
-            <h2 className="text-base font-semibold text-gray-900">
-              Top 10 Cidadãos Mais Ativos
-            </h2>
-          </div>
-          <p className="px-6 pt-4 text-sm text-gray-400">
-            Ranking anónimo — cada cidadão só reconhece o seu próprio código.
-          </p>
-          <div className="divide-y divide-gray-200">
-            {ranking.map((entrada) => {
-              const souEu = meuCodigo !== null && entrada.codigo === meuCodigo;
-              return (
-                <div
-                  key={entrada.codigo}
-                  className={`flex items-center justify-between px-6 py-3 ${
-                    souEu ? "bg-blue-50/60" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="w-6 text-sm font-semibold text-gray-400">
-                      {entrada.posicao}º
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      {entrada.codigo}
-                      {souEu && (
-                        <span className="ml-2 text-xs font-semibold text-blue-600">
-                          (és tu!)
-                        </span>
-                      )}
-                    </span>
-                  </div>
-                  <span className="text-sm text-gray-500">
-                    {entrada.numero_denuncias} denúncias
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {total > 0 && (
+        <StatStrip
+          className="mb-6"
+          itens={[
+            { rotulo: "Denúncias enviadas", valor: total, para: "/cidadao/minhas-denuncias" },
+            { rotulo: "Em curso", valor: contar(EM_CURSO), nota: "À espera da análise ou da decisão" },
+            { rotulo: "Aprovadas", valor: contar(["APROVADA", "EM_ATENDIMENTO"]), nota: "Com seguimento pelo posto" },
+            { rotulo: "Sem seguimento", valor: contar(["REJEITADA", "ARQUIVADA"]), nota: "Rejeitadas ou arquivadas" },
+          ]}
+        />
       )}
 
-      {/* Quick Actions */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-        <Link
-          to="/cidadao/criar-denuncia"
-          className="group bg-white rounded-lg border border-gray-200  p-6 flex items-center gap-4 hover:border-blue-600 transition-colors"
-        >
-          <div className="p-3 rounded-md bg-blue-600 text-white group-hover:bg-blue-700 transition-colors">
-            <FileText size={22} strokeWidth={1.75} />
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className={`${CARD} overflow-hidden`}>
+          <div className={CARD_HEADER}>
+            <h2 className={CARD_TITLE}>Últimas denúncias</h2>
+            {total > 0 && (
+              <Link to="/cidadao/minhas-denuncias" className={`${LINK} inline-flex items-center gap-1.5 text-sm`}>
+                Ver todas
+                <ArrowRight size={12} />
+              </Link>
+            )}
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Criar Nova Denúncia</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Registe uma nova infração de trânsito
-            </p>
-          </div>
-        </Link>
+          {denuncias.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              titulo="Ainda não fez nenhuma denúncia"
+              texto="Precisa de um vídeo da infração, da matrícula do veículo e do local. Num acidente basta o local."
+              acao={<Link to="/cidadao/criar-denuncia" className={BUTTON_PRIMARY}>Criar a primeira denúncia</Link>}
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className={TABLE_HEAD_CELL}>N.º</th>
+                    <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                    <th className={TABLE_HEAD_CELL}>Tipo</th>
+                    <th className={TABLE_HEAD_CELL}>Data</th>
+                    <th className={TABLE_HEAD_CELL}>Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {denuncias.slice(0, RECENTES).map((d) => (
+                    <tr key={d.id} className={TABLE_ROW_HOVER}>
+                      <td className={`${TABLE_CELL} text-gray-600`}>
+                        <Link to={`/cidadao/denuncias/${d.id}`} className={LINK}>#{d.id}</Link>
+                      </td>
+                      <td className={`${TABLE_CELL_STRONG} whitespace-nowrap`}>{d.matricula || "Sem matrícula"}</td>
+                      <td className={`${TABLE_CELL} whitespace-nowrap`}>{labelTipo(d.tipo_infracao)}</td>
+                      <td className={`${TABLE_CELL} whitespace-nowrap`}>{formatarDataHora(d.data_captura || d.data_registo)}</td>
+                      <td className={TABLE_CELL}><EstadoBadge estado={d.estado} tipo={d.tipo_infracao} paraCidadao /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
 
-        <Link
-          to="/cidadao/minhas-denuncias"
-          className="group bg-white rounded-lg border border-gray-200  p-6 flex items-center gap-4 hover:border-blue-600 transition-colors"
-        >
-          <div className="p-3 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
-            <ClipboardList size={22} strokeWidth={1.75} />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">Ver Minhas Denúncias</h3>
-            <p className="text-sm text-gray-500 mt-0.5">
-              Acompanhe o estado das suas denúncias
-            </p>
-          </div>
-        </Link>
+        {ranking.length > 0 && (
+          <section className={CARD}>
+            <div className="border-b border-gray-200 px-6 py-4">
+              <h2 className={CARD_TITLE}>Cidadãos mais activos</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                A lista é anónima: cada cidadão só reconhece o seu próprio código.
+              </p>
+            </div>
+            <ol className="divide-y divide-gray-200">
+              {ranking.map((entrada) => {
+                const souEu = meuCodigo !== null && entrada.codigo === meuCodigo;
+                return (
+                  <li
+                    key={entrada.codigo}
+                    className={`flex items-center justify-between gap-3 px-6 py-2.5 text-sm ${souEu ? "bg-blue-50" : ""}`}
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span className="w-6 shrink-0 text-gray-500 tabular-nums">{entrada.posicao}.º</span>
+                      <span className={`truncate ${souEu ? "font-semibold text-blue-800" : "font-medium text-gray-900"}`}>
+                        {entrada.codigo}
+                        {souEu && " (o seu código)"}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-gray-600 tabular-nums">
+                      {entrada.numero_denuncias} {entrada.numero_denuncias === 1 ? "denúncia" : "denúncias"}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
       </div>
     </div>
   );

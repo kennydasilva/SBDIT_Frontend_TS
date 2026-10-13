@@ -1,35 +1,22 @@
 import { useEffect, useState } from "react";
-import { Search, MapPin, Calendar, AlertTriangle, Loader2 } from "../../components/icons";
+import { Link } from "react-router";
 import { superAdminService } from "../../api/superAdminService";
+import { relatorioService } from "../../api/relatorioService";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
 import Paginacao from "../../components/Paginacao";
-import { CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES } from "../../utils/uiClasses";
+import PageHeader from "../../components/app/PageHeader";
+import StatStrip from "../../components/app/StatStrip";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+import { CampoPesquisa, ErroPagina, LinhaVazia } from "../../components/app/Lista";
+import { ESTADO_LABEL, labelTipo } from "../../utils/estadoDenuncia";
+import { formatarDataHora } from "../../utils/datas";
+import {
+  PAGE, TOOLBAR, CARD_ATTACHED, INPUT, LINK,
+  TABLE_HEAD_CELL, TABLE_CELL, TABLE_CELL_STRONG, TABLE_ROW_HOVER,
+} from "../../utils/uiClasses";
 
 const TAMANHO_PAGINA = 10;
-
-const ESTADOS = ["Todos", "PENDENTE", "VALIDADA", "APROVADA", "REJEITADA", "ARQUIVADA", "ENCAMINHADA", "EM_ATENDIMENTO", "DUVIDOSA"] as const;
-
-const ESTADO_LABEL: Record<string, string> = {
-  PENDENTE: "Pendente",
-  VALIDADA: "Validada",
-  APROVADA: "Aprovada",
-  REJEITADA: "Rejeitada",
-  ARQUIVADA: "Arquivada",
-  ENCAMINHADA: "Enviada ao posto",
-  EM_ATENDIMENTO: "Agente designado",
-  DUVIDOSA: "Duvidosa",
-};
-
-const ESTADO_TONE: Record<string, string> = {
-  PENDENTE: STATUS_TONES.amber,
-  VALIDADA: STATUS_TONES.blue,
-  APROVADA: STATUS_TONES.emerald,
-  REJEITADA: STATUS_TONES.rose,
-  ARQUIVADA: STATUS_TONES.gray,
-  ENCAMINHADA: STATUS_TONES.blue,
-  EM_ATENDIMENTO: STATUS_TONES.emerald,
-  DUVIDOSA: STATUS_TONES.amber,
-};
 
 export default function Denuncias() {
   const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
@@ -39,10 +26,20 @@ export default function Denuncias() {
   const [error, setError] = useState<string | null>(null);
   const [paginaAtual, setPaginaAtual] = useState(1);
   const [totalItens, setTotalItens] = useState(0);
+  // Totais por estado de todas as denúncias (a lista vem paginada, por
+  // isso não se podem contar a partir da página carregada).
+  const [porEstado, setPorEstado] = useState<Record<string, number> | null>(null);
 
   useEffect(() => {
     carregarDenuncias(paginaAtual);
   }, [paginaAtual]);
+
+  useEffect(() => {
+    relatorioService
+      .obterResumo({})
+      .then((r) => setPorEstado(r.por_estado))
+      .catch(() => {});
+  }, []);
 
   const carregarDenuncias = async (pagina: number) => {
     try {
@@ -52,7 +49,7 @@ export default function Denuncias() {
       setDenuncias(data.results);
       setTotalItens(data.count);
     } catch (err) {
-      setError("Erro ao carregar denúncias.");
+      setError("Erro ao carregar as denúncias.");
     } finally {
       setLoading(false);
     }
@@ -66,132 +63,87 @@ export default function Denuncias() {
     return matchesSearch && matchesFilter;
   });
 
-  const statusCount = {
-    Pendente: denuncias.filter(d => d.estado === "PENDENTE").length,
-    Validada: denuncias.filter(d => d.estado === "VALIDADA").length,
-    Aprovada: denuncias.filter(d => d.estado === "APROVADA").length,
-    Rejeitada: denuncias.filter(d => d.estado === "REJEITADA").length,
-  };
+  if (loading && denuncias.length === 0) return <PaginaEsqueleto />;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={() => carregarDenuncias(paginaAtual)} />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button
-            onClick={() => carregarDenuncias(paginaAtual)}
-            className={`${BUTTON_PRIMARY} mt-4`}
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const n = (estado: string) => porEstado?.[estado] ?? 0;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Denúncias</h1>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Denúncias" texto="Todas as denúncias do sistema, da mais recente para a mais antiga." />
 
-      {/* Status Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        {Object.entries(statusCount).map(([status, count]) => (
-          <div key={status} className={`${CARD} p-4`}>
-            <p className="text-sm text-gray-500 mb-1">{status}</p>
-            <p className="text-2xl font-semibold text-gray-900">{count}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div className={`${CARD} p-4 mb-6`}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Pesquisar por matrícula ou localização..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`${INPUT} pl-10`}
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className={INPUT}
-          >
-            {ESTADOS.map(estado => (
-              <option key={estado} value={estado}>
-                {estado === "Todos" ? "Todos os Status" : ESTADO_LABEL[estado]}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Denuncias List */}
-      <div className="space-y-4">
-        {filteredDenuncias.length === 0 ? (
-          <div className={`${CARD} p-8 text-center text-gray-500`}>
-            Nenhuma denúncia encontrada
-          </div>
-        ) : (
-          filteredDenuncias.map((denuncia) => (
-            <div key={denuncia.id} className={`${CARD} p-6 hover:border-blue-600 transition-colors`}>
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="text-base font-semibold text-gray-900 mb-1">
-                    {denuncia.matricula} — {denuncia.tipo_infracao}
-                  </h3>
-                  <p className="text-gray-600 mb-3">{denuncia.descricao}</p>
-                </div>
-                <span className={`${BADGE} ${ESTADO_TONE[denuncia.estado] ?? STATUS_TONES.gray}`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                  {ESTADO_LABEL[denuncia.estado] || denuncia.estado}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                <div className="flex items-center gap-1">
-                  <MapPin size={16} />
-                  <span>{denuncia.localizacao}</span>
-                </div>
-                {denuncia.data_captura && (
-                  <div className="flex items-center gap-1">
-                    <Calendar size={16} />
-                    <span>{denuncia.data_captura}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {totalItens > TAMANHO_PAGINA && (
-        <div className={`${CARD} mt-4`}>
-          <Paginacao
-            paginaAtual={paginaAtual}
-            totalItens={totalItens}
-            tamanhoPagina={TAMANHO_PAGINA}
-            onMudarPagina={setPaginaAtual}
-            disabled={loading}
-          />
-        </div>
+      {porEstado && (
+        <StatStrip
+          className="mb-6"
+          itens={[
+            { rotulo: "Total", valor: totalItens },
+            { rotulo: "À espera da análise", valor: n("PENDENTE") },
+            { rotulo: "À espera do agente", valor: n("VALIDADA") + n("DUVIDOSA") },
+            { rotulo: "Aprovadas", valor: n("APROVADA") },
+            { rotulo: "Rejeitadas ou arquivadas", valor: n("REJEITADA") + n("ARQUIVADA") },
+          ]}
+        />
       )}
+
+      <div className={TOOLBAR}>
+        <CampoPesquisa valor={searchTerm} onMudar={setSearchTerm} rotulo="Pesquisar por matrícula ou local" />
+        <select
+          value={filterStatus}
+          onChange={(e) => setFilterStatus(e.target.value)}
+          aria-label="Filtrar por estado"
+          className={`${INPUT} !h-9 sm:!w-56`}
+        >
+          <option value="Todos">Todos os estados</option>
+          {Object.entries(ESTADO_LABEL).map(([estado, rotulo]) => (
+            <option key={estado} value={estado}>{rotulo}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className={`${CARD_ATTACHED} overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className={TABLE_HEAD_CELL}>N.º</th>
+                <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                <th className={TABLE_HEAD_CELL}>Tipo</th>
+                <th className={TABLE_HEAD_CELL}>Local</th>
+                <th className={TABLE_HEAD_CELL}>Data</th>
+                <th className={TABLE_HEAD_CELL}>Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredDenuncias.length === 0 ? (
+                <LinhaVazia colunas={6}>
+                  {denuncias.length === 0 ? "Ainda não há denúncias." : "Nenhuma denúncia desta página corresponde aos filtros."}
+                </LinhaVazia>
+              ) : (
+                filteredDenuncias.map((d) => (
+                  <tr key={d.id} className={TABLE_ROW_HOVER}>
+                    <td className={`${TABLE_CELL} whitespace-nowrap`}>
+                      <Link to={`/super-admin/denuncias/${d.id}`} className={LINK}>#{d.id}</Link>
+                    </td>
+                    <td className={`${TABLE_CELL_STRONG} whitespace-nowrap`}>{d.matricula || "Sem matrícula"}</td>
+                    <td className={`${TABLE_CELL} whitespace-nowrap`}>{labelTipo(d.tipo_infracao)}</td>
+                    <td className={`${TABLE_CELL} max-w-xs truncate`} title={d.localizacao}>{d.localizacao || "—"}</td>
+                    <td className={`${TABLE_CELL} whitespace-nowrap`}>{formatarDataHora(d.data_captura || d.data_registo)}</td>
+                    <td className={TABLE_CELL}><EstadoBadge estado={d.estado} tipo={d.tipo_infracao} /></td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+        <Paginacao
+          paginaAtual={paginaAtual}
+          totalItens={totalItens}
+          tamanhoPagina={TAMANHO_PAGINA}
+          onMudarPagina={setPaginaAtual}
+          disabled={loading}
+        />
+      </div>
     </div>
   );
 }

@@ -1,25 +1,31 @@
-import { CheckCircle2, Archive, AlertTriangle, ArrowRight, Loader2 } from "../../components/icons";
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ArrowRight, AlertTriangle, CheckCircle2 } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
-import { CARD, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+import PageHeader from "../../components/app/PageHeader";
+import StatStrip from "../../components/app/StatStrip";
+import Destaque, { BOTAO_SOBRE_AZUL } from "../../components/app/Destaque";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import EmptyState from "../../components/app/EmptyState";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+import { labelTipo } from "../../utils/estadoDenuncia";
+import { formatarDataHora } from "../../utils/datas";
+import {
+  PAGE, CARD, CARD_HEADER, CARD_TITLE, BADGE, LINK,
+  TABLE_HEAD_CELL, TABLE_CELL, TABLE_CELL_STRONG, TABLE_ROW_HOVER,
+} from "../../utils/uiClasses";
 
-const getStatusTone = (estado: string) => {
-  switch (estado) {
-    case "VALIDADA": return STATUS_TONES.blue;
-    case "DUVIDOSA": return STATUS_TONES.amber;
-    case "APROVADA": return STATUS_TONES.emerald;
-    case "ARQUIVADA": return STATUS_TONES.gray;
-    default: return STATUS_TONES.gray;
-  }
-};
+// Quantas denúncias da fila mostrar aqui (as restantes estão em "Denúncias").
+const NA_FILA = 3;
 
 export default function DashboardPt() {
   const { user, loading: authLoading } = useAuth();
-  const [denuncias, setDenuncias] = useState<DenunciaDetalhada[]>([]);
-  const [denunciasTemp, setDenunciasTemp] = useState<DenunciaDetalhada[]>([]);
+  const [fila, setFila] = useState<DenunciaDetalhada[]>([]);
+  const [totalFila, setTotalFila] = useState(0);
+  const [decididas, setDecididas] = useState<DenunciaDetalhada[]>([]);
+  const [totalDecididas, setTotalDecididas] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,11 +39,13 @@ export default function DashboardPt() {
 
     try {
       setLoading(true);
-      const { results: validadas } = await denunciaService.listarValidadas();
-      setDenuncias(validadas);
+      const validadas = await denunciaService.listarValidadas();
+      setFila(validadas.results);
+      setTotalFila(validadas.count);
 
-      const { results: minhas } = await denunciaService.listarPorPt(user.id);
-      setDenunciasTemp(minhas);
+      const minhas = await denunciaService.listarPorPt(user.id, 1, 100);
+      setDecididas(minhas.results);
+      setTotalDecididas(minhas.count);
     } catch (err) {
       console.error("Erro ao carregar denúncias:", err);
     } finally {
@@ -45,142 +53,119 @@ export default function DashboardPt() {
     }
   };
 
-  const denunciasAprovadas = denunciasTemp.filter((d) => d.estado === "APROVADA");
-  const denunciasArquivadas = denunciasTemp.filter((d) => d.estado === "ARQUIVADA");
+  if (loading) return <PaginaEsqueleto />;
 
-  const stats = [
-    { label: "Denúncias Validadas", value: denuncias.length, icon: AlertTriangle, bg: "bg-blue-50", fg: "text-blue-600" },
-    { label: "Aprovadas por mim", value: denunciasAprovadas.length, icon: CheckCircle2, bg: "bg-blue-50", fg: "text-blue-800" },
-    { label: "Arquivadas por mim", value: denunciasArquivadas.length, icon: Archive, bg: "bg-gray-100", fg: "text-gray-600" },
-  ];
+  const aprovadas = decididas.filter((d) => d.estado === "APROVADA").length;
+  const arquivadas = decididas.filter((d) => d.estado === "ARQUIVADA").length;
 
-  const chartData = [
-    { tipo: "Contramão", quantidade: denunciasTemp.filter((d) => d.tipo_infracao === "CONTRAMAO").length },
-    { tipo: "Veículo Parado", quantidade: denunciasTemp.filter((d) => d.tipo_infracao === "PARADO").length },
-    { tipo: "Excesso Velocidade", quantidade: denunciasTemp.filter((d) => d.tipo_infracao === "VELOCIDADE").length },
-  ];
+  const porTipo = ["CONTRAMAO", "PARADO", "VELOCIDADE"].map((tipo) => ({
+    tipo: labelTipo(tipo),
+    quantidade: decididas.filter((d) => d.tipo_infracao === tipo).length,
+  }));
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  const proxima = fila[0];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Bem-vindo ao painel de análise de denúncias</p>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Painel do agente" texto="As denúncias da jurisdição do seu posto que aguardam a sua decisão." />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className={`${CARD} p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-                  <p className="text-3xl font-semibold text-gray-900 mt-1.5">{stat.value}</p>
-                </div>
-                <div className={`${stat.bg} ${stat.fg} p-3 rounded-md`}>
-                  <Icon size={22} strokeWidth={1.75} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Chart */}
-      <div className={`${CARD} p-6 mb-6`}>
-        <h2 className="text-base font-semibold text-gray-900 mb-6">
-          Infrações Analisadas por Tipo
-        </h2>
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-            <XAxis dataKey="tipo" tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={{ stroke: "#f1f5f9" }} tickLine={false} />
-            <YAxis tick={{ fontSize: 12, fill: "#6b7280" }} axisLine={false} tickLine={false} allowDecimals={false} />
-            <Tooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ borderRadius: 12, border: "1px solid #f1f5f9" }} />
-            <Bar dataKey="quantidade" fill="#1E40AF" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      {/* Recent Denuncias */}
-      <div className={CARD}>
-        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-base font-semibold text-gray-900">
-            Últimas Denúncias Validadas
-          </h2>
-          <Link
-            to="/pt/denuncias"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            Ver todas
-            <ArrowRight size={14} />
-          </Link>
+      {proxima ? (
+        <Destaque
+          titulo={totalFila === 1 ? "1 denúncia à espera da sua decisão" : `${totalFila} denúncias à espera da sua decisão`}
+          texto="Foram confirmadas pela análise automática do vídeo. Veja o vídeo e aprove ou arquive, com justificação."
+          acao={
+            <Link to={`/pt/denuncias/${proxima.id}`} className={BOTAO_SOBRE_AZUL}>
+              Analisar a próxima
+              <ArrowRight size={14} />
+            </Link>
+          }
+        />
+      ) : (
+        <div className={`${CARD} mb-6`}>
+          <EmptyState
+            icon={CheckCircle2}
+            titulo="Não há denúncias à espera"
+            texto="Quando uma denúncia da sua jurisdição for confirmada pela análise do vídeo, aparece aqui e recebe uma notificação."
+          />
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className={TABLE_HEAD_CELL}>Matrícula</th>
-                <th className={TABLE_HEAD_CELL}>Tipo</th>
-                <th className={TABLE_HEAD_CELL}>Data</th>
-                <th className={TABLE_HEAD_CELL}>Confiança</th>
-                <th className={TABLE_HEAD_CELL}>Estado</th>
-                <th className={TABLE_HEAD_CELL}>Ações</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {denuncias.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-6 py-10 text-center text-sm text-gray-400">
-                    Não há denúncias validadas para analisar.
-                  </td>
+      )}
+
+      <StatStrip
+        className="mb-6"
+        itens={[
+          { rotulo: "À espera de decisão", valor: totalFila, para: "/pt/denuncias" },
+          { rotulo: "Decididas por mim", valor: totalDecididas, para: "/pt/minhas-decisoes" },
+          { rotulo: "Aprovadas", valor: aprovadas },
+          { rotulo: "Arquivadas", valor: arquivadas },
+        ]}
+      />
+
+      {proxima && (
+        <section className={`${CARD} mb-6 overflow-hidden`}>
+          <div className={CARD_HEADER}>
+            <h2 className={CARD_TITLE}>Próximas na fila</h2>
+            <Link to="/pt/denuncias" className={`${LINK} inline-flex items-center gap-1.5 text-sm`}>
+              Ver toda a fila
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                  <th className={TABLE_HEAD_CELL}>Tipo</th>
+                  <th className={TABLE_HEAD_CELL}>Data</th>
+                  <th className={TABLE_HEAD_CELL}>Confiança</th>
+                  <th className={TABLE_HEAD_CELL}>Estado</th>
+                  <th className={TABLE_HEAD_CELL}><span className="sr-only">Abrir</span></th>
                 </tr>
-              ) : (
-                denuncias.slice(0, 3).map((denuncia) => (
-                  <tr key={denuncia.id} className={TABLE_ROW_HOVER}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {denuncia.matricula}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {denuncia.tipo_infracao}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {denuncia.data_captura}
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {denuncia.confianca != null ? `${Math.round(denuncia.confianca * 100)}%` : "—"}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`${BADGE} ${getStatusTone(denuncia.estado)}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        {denuncia.estado}
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {fila.slice(0, NA_FILA).map((d) => (
+                  <tr key={d.id} className={TABLE_ROW_HOVER}>
+                    <td className={TABLE_CELL_STRONG}>
+                      <span className="flex flex-wrap items-center gap-2">
+                        {d.matricula || "—"}
+                        {d.localizacao_contraditoria && (
+                          <span className={`${BADGE} bg-blue-600 text-white`}>
+                            <AlertTriangle size={10} /> possível falsa
+                          </span>
+                        )}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        to={`/pt/denuncias/${denuncia.id}`}
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                      >
-                        Analisar
-                      </Link>
+                    <td className={TABLE_CELL}>{labelTipo(d.tipo_infracao)}</td>
+                    <td className={`${TABLE_CELL} whitespace-nowrap`}>{formatarDataHora(d.data_captura || d.data_registo)}</td>
+                    <td className={TABLE_CELL}>{d.confianca != null ? `${Math.round(d.confianca * 100)}%` : "—"}</td>
+                    <td className={TABLE_CELL}><EstadoBadge estado={d.estado} tipo={d.tipo_infracao} /></td>
+                    <td className={`${TABLE_CELL} text-right`}>
+                      <Link to={`/pt/denuncias/${d.id}`} className={LINK}>Analisar</Link>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* O gráfico só aparece quando há decisões para mostrar. */}
+      {decididas.length > 0 && (
+        <section className={`${CARD} p-6`}>
+          <h2 className={CARD_TITLE}>As minhas decisões por tipo de infração</h2>
+          <div className="mt-5">
+            <ResponsiveContainer width="100%" height={240}>
+              <BarChart data={porTipo}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                <XAxis dataKey="tipo" tick={{ fontSize: 12, fill: "#4b5563" }} axisLine={{ stroke: "#e5e7eb" }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} axisLine={false} tickLine={false} allowDecimals={false} width={28} />
+                <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={{ borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 13 }} />
+                <Bar dataKey="quantidade" name="Decisões" fill="#1E40AF" radius={[3, 3, 0, 0]} maxBarSize={72} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

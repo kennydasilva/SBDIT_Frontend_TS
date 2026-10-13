@@ -1,13 +1,25 @@
 import { useEffect, useState } from "react";
+
 import { Link } from "react-router";
-import { Siren, AlertTriangle, Loader2, MapPin, CheckCircle, Paperclip } from "../../components/icons";
+
+import { AlertTriangle, Loader2, MapPin, CheckCircle, Paperclip } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
+
 import { ptService, type PT } from "../../api/ptService";
+
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+
 import Paginacao from "../../components/Paginacao";
 import {
-  CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER,
-} from "../../utils/uiClasses";
+  CARD, INPUT, BUTTON_PRIMARY, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER, PAGE, ALERT_INFO, ALERT_SUCCESS, ALERT_ERROR } from "../../utils/uiClasses";
+
+import PageHeader from "../../components/app/PageHeader";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+import { ErroPagina, LinhaVazia } from "../../components/app/Lista";
+
+import { formatarDataHora } from "../../utils/datas";
+
 
 const TAMANHO_PAGINA = 10;
 const BASE_URL = "http://127.0.0.1:8000";
@@ -85,167 +97,138 @@ export default function Acidentes() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button onClick={() => carregar(paginaAtual)} className={`${BUTTON_PRIMARY} mt-4`}>
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={() => carregar(paginaAtual)} />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Acidentes de Viação</h1>
-        <p className="text-gray-500 mt-1">
-          Acidentes reportados na jurisdição do seu posto. Designe o agente que vai ao local.
-        </p>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Acidentes de viação" texto="Acidentes reportados na jurisdição do seu posto. Designe o agente que vai ao local." />
 
       {mensagem && (
         <div
-          className={`mb-6 rounded-lg border p-4 flex items-center gap-3 ${
-            mensagem.tipo === "ok"
-              ? "border-blue-100 bg-blue-50 text-blue-800"
-              : "border-rose-100 bg-rose-50 text-rose-800"
-          }`}
+          role="status"
+          className={`mb-6 flex items-center gap-3 ${mensagem.tipo === "ok" ? ALERT_SUCCESS : ALERT_ERROR}`}
         >
-          {mensagem.tipo === "ok" ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
+          {mensagem.tipo === "ok" ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
           <span className="text-sm">{mensagem.texto}</span>
         </div>
       )}
 
       {agentes.length === 0 && (
-        <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+        <div className={`${ALERT_INFO} mb-6`}>
           O seu posto ainda não tem agentes registados.{" "}
           <Link to="/admin/policiais" className="font-medium underline">Crie um agente</Link> para o poder designar aos acidentes.
         </div>
       )}
 
       <div className={`${CARD} overflow-hidden`}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className={TABLE_HEAD_CELL}>#</th>
-              <th className={TABLE_HEAD_CELL}>Data</th>
-              <th className={TABLE_HEAD_CELL}>Local</th>
-              <th className={TABLE_HEAD_CELL}>Descrição</th>
-              <th className={TABLE_HEAD_CELL}>Agente</th>
-              <th className={TABLE_HEAD_CELL}>Designar</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {acidentes.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-10 text-center text-gray-500">
-                  <Siren className="mx-auto mb-2 text-gray-300" size={32} />
-                  Nenhum acidente reportado na sua jurisdição
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className={TABLE_HEAD_CELL}>#</th>
+                <th className={TABLE_HEAD_CELL}>Data</th>
+                <th className={TABLE_HEAD_CELL}>Local</th>
+                <th className={TABLE_HEAD_CELL}>Descrição</th>
+                <th className={TABLE_HEAD_CELL}>Agente</th>
+                <th className={TABLE_HEAD_CELL}>Designar</th>
               </tr>
-            ) : (
-              acidentes.map((a) => (
-                <tr key={a.id} className={`${TABLE_ROW_HOVER} align-top`}>
-                  <td className="px-6 py-4 text-sm text-gray-500">{a.id}</td>
-                  <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{a.data_registo || "-"}</td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    <p>{a.localizacao}</p>
-                    {!!a.total_relacionadas && (
-                      <span className={`${BADGE} ${STATUS_TONES.rose} mt-1`}>
-                        {a.total_relacionadas + 1} reportes deste acidente
-                      </span>
-                    )}
-                    <div className="flex gap-3 mt-1">
-                      {a.latitude != null && a.longitude != null && (
-                        <a
-                          href={`https://www.google.com/maps?q=${a.latitude},${a.longitude}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                        >
-                          <MapPin size={12} /> Ver no mapa
-                        </a>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {acidentes.length === 0 ? (
+                <LinhaVazia colunas={6}>
+                  Nenhum acidente reportado na jurisdição do seu posto. Quando houver, recebe um SMS e uma notificação.
+                </LinhaVazia>
+              ) : (
+                acidentes.map((a) => (
+                  <tr key={a.id} className={`${TABLE_ROW_HOVER} align-top`}>
+                    <td className="px-6 py-3.5 text-sm text-gray-500">{a.id}</td>
+                    <td className="px-6 py-3.5 text-sm text-gray-600 whitespace-nowrap">{formatarDataHora(a.data_registo)}</td>
+                    <td className="px-6 py-3.5 text-sm text-gray-900">
+                      <p>{a.localizacao}</p>
+                      {!!a.total_relacionadas && (
+                        <span className={`${BADGE} ${STATUS_TONES.rose} mt-1`}>
+                          {a.total_relacionadas + 1} reportes deste acidente
+                        </span>
                       )}
-                      {a.ficheiro_original && (
-                        <a
-                          href={`${BASE_URL}${a.ficheiro_original}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
-                        >
-                          <Paperclip size={12} /> Foto/vídeo
-                        </a>
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600 max-w-xs">{a.descricao || "-"}</td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap">
-                    {a.pt_id ? (
-                      <span className={`${BADGE} ${STATUS_TONES.emerald}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        {nomeAgente(a.pt_id)}
-                      </span>
-                    ) : (
-                      <span className={`${BADGE} ${STATUS_TONES.amber}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        Por designar
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-sm">
-                    {agentes.length === 0 ? (
-                      // Sem agentes no posto não há quem designar: em vez de
-                      // um combobox vazio e desactivado (parecia avariado),
-                      // diz porquê e leva a criar um agente.
-                      <div className="min-w-[220px] text-xs text-blue-800">
-                        Sem agentes no posto.{" "}
-                        <Link to="/admin/policiais" className="font-medium text-blue-600 hover:underline">
-                          Criar agente
-                        </Link>
+                      <div className="flex gap-3 mt-1">
+                        {a.latitude != null && a.longitude != null && (
+                          <a
+                            href={`https://www.google.com/maps?q=${a.latitude},${a.longitude}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                          >
+                            <MapPin size={12} /> Ver no mapa
+                          </a>
+                        )}
+                        {a.ficheiro_original && (
+                          <a
+                            href={`${BASE_URL}${a.ficheiro_original}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                          >
+                            <Paperclip size={12} /> Foto/vídeo
+                          </a>
+                        )}
                       </div>
-                    ) : (
-                    <div className="flex gap-2 min-w-[260px]">
-                      <select
-                        value={escolhas[a.id] ?? ""}
-                        onChange={(e) => setEscolhas((s) => ({ ...s, [a.id]: e.target.value }))}
-                        className={INPUT}
-                        disabled={aDesignar === a.id}
-                      >
-                        <option value="">{a.pt_id ? "Trocar agente..." : "Escolher agente..."}</option>
-                        {agentes.map((pt) => (
-                          <option key={pt.id} value={pt.id}>
-                            {pt.nome} ({pt.numero_agente})
-                          </option>
-                        ))}
-                      </select>
-                      <button
-                        onClick={() => handleDesignar(a)}
-                        className={BUTTON_PRIMARY}
-                        disabled={!escolhas[a.id] || aDesignar === a.id}
-                      >
-                        {aDesignar === a.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Designar"}
-                      </button>
-                    </div>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="px-6 py-3.5 text-sm text-gray-600 max-w-xs">{a.descricao || "-"}</td>
+                    <td className="px-6 py-3.5 text-sm whitespace-nowrap">
+                      {a.pt_id ? (
+                        <span className={`${BADGE} ${STATUS_TONES.emerald}`}>
+                          {nomeAgente(a.pt_id)}
+                        </span>
+                      ) : (
+                        <span className={`${BADGE} ${STATUS_TONES.amber}`}>
+                          Por designar
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-3.5 text-sm">
+                      {agentes.length === 0 ? (
+                        // Sem agentes no posto não há quem designar: em vez de
+                        // um combobox vazio e desactivado (parecia avariado),
+                        // diz porquê e leva a criar um agente.
+                        <div className="min-w-[220px] text-xs text-blue-800">
+                          Sem agentes no posto.{" "}
+                          <Link to="/admin/policiais" className="font-medium text-blue-600 hover:underline">
+                            Criar agente
+                          </Link>
+                        </div>
+                      ) : (
+                      <div className="flex gap-2 min-w-[260px]">
+                        <select
+                          value={escolhas[a.id] ?? ""}
+                          onChange={(e) => setEscolhas((s) => ({ ...s, [a.id]: e.target.value }))}
+                          className={INPUT}
+                          disabled={aDesignar === a.id}
+                        >
+                          <option value="">{a.pt_id ? "Trocar agente..." : "Escolher agente..."}</option>
+                          {agentes.map((pt) => (
+                            <option key={pt.id} value={pt.id}>
+                              {pt.nome} ({pt.numero_agente})
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => handleDesignar(a)}
+                          className={BUTTON_PRIMARY}
+                          disabled={!escolhas[a.id] || aDesignar === a.id}
+                        >
+                          {aDesignar === a.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Designar"}
+                        </button>
+                      </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         <Paginacao
           paginaAtual={paginaAtual}
           totalItens={totalItens}

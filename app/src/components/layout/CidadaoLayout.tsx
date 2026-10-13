@@ -5,9 +5,9 @@ import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService } from "../../api/cidadaoService";
 
 const menuItems: ItemMenu[] = [
-  { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { path: "/cidadao/criar-denuncia", icon: PlusCircle, label: "Criar Denúncia" },
-  { path: "/cidadao/minhas-denuncias", icon: FileText, label: "Minhas Denúncias" },
+  { path: "/cidadao/dashboard", icon: LayoutDashboard, label: "Painel" },
+  { path: "/cidadao/criar-denuncia", icon: PlusCircle, label: "Criar denúncia" },
+  { path: "/cidadao/minhas-denuncias", icon: FileText, label: "Minhas denúncias" },
   { path: "/cidadao/notificacoes", icon: Bell, label: "Notificações" },
   { path: "/cidadao/perfil", icon: User, label: "Perfil" },
 ];

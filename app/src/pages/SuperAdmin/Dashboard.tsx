@@ -1,25 +1,30 @@
 import { useEffect, useState } from "react";
-import { Users, Shield, UserCircle, AlertTriangle, ArrowRight, Loader2 } from "../../components/icons";
 import { Link } from "react-router";
+import { ArrowRight } from "../../components/icons";
 import api from "../../api/axios";
 import type { PaginatedResponse } from "../../api/types";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
-import { CARD, BADGE, STATUS_TONES, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+import { relatorioService } from "../../api/relatorioService";
+import PageHeader from "../../components/app/PageHeader";
+import StatStrip from "../../components/app/StatStrip";
+import EstadoBadge from "../../components/app/EstadoBadge";
+import EmptyState from "../../components/app/EmptyState";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+import { ESTADO_LABEL, labelTipo } from "../../utils/estadoDenuncia";
+import { formatarDataHora } from "../../utils/datas";
+import {
+  PAGE, CARD, CARD_HEADER, CARD_TITLE, LINK,
+  TABLE_HEAD_CELL, TABLE_CELL, TABLE_CELL_STRONG, TABLE_ROW_HOVER,
+} from "../../utils/uiClasses";
 
-const getStatusTone = (estado: string) => {
-  switch (estado) {
-    case "PENDENTE": return STATUS_TONES.amber;
-    case "VALIDADA": return STATUS_TONES.blue;
-    case "APROVADA": return STATUS_TONES.emerald;
-    case "REJEITADA": return STATUS_TONES.rose;
-    default: return STATUS_TONES.gray;
-  }
-};
+// Quantas denúncias mostrar em "Últimas denúncias" (as restantes estão em "Denúncias").
+const RECENTES = 3;
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [contagens, setContagens] = useState({ admins: 0, policiais: 0, cidadaos: 0, denuncias: 0 });
   const [recentes, setRecentes] = useState<DenunciaDetalhada[]>([]);
+  const [porEstado, setPorEstado] = useState<Record<string, number>>({});
 
   useEffect(() => {
     carregar();
@@ -33,7 +38,7 @@ export default function Dashboard() {
         api.get<PaginatedResponse<unknown>>("/admins/?page_size=1"),
         api.get<PaginatedResponse<unknown>>("/pts/?page_size=1"),
         api.get<PaginatedResponse<unknown>>("/cidadao/lista/?page_size=1"),
-        api.get<PaginatedResponse<unknown>>("/denuncias/?page_size=5&ordering=-data_registo"),
+        api.get<PaginatedResponse<unknown>>(`/denuncias/?page_size=${RECENTES}&ordering=-data_registo`),
       ]);
 
       setContagens({
@@ -43,6 +48,12 @@ export default function Dashboard() {
         denuncias: denuncias.data.count,
       });
       setRecentes(denuncias.data.results as DenunciaDetalhada[]);
+
+      // Totais por estado de todas as denúncias (não só as da página).
+      relatorioService
+        .obterResumo({})
+        .then((r) => setPorEstado(r.por_estado))
+        .catch(() => {});
     } catch (err) {
       console.error("Erro ao carregar dashboard:", err);
     } finally {
@@ -50,95 +61,95 @@ export default function Dashboard() {
     }
   };
 
-  const stats = [
-    { label: "Administradores", value: contagens.admins, icon: Users, bg: "bg-blue-50", fg: "text-blue-600" },
-    { label: "Agentes", value: contagens.policiais, icon: Shield, bg: "bg-blue-50", fg: "text-blue-800" },
-    { label: "Cidadãos", value: contagens.cidadaos, icon: UserCircle, bg: "bg-blue-50", fg: "text-blue-800" },
-    { label: "Denúncias", value: contagens.denuncias, icon: AlertTriangle, bg: "bg-blue-50", fg: "text-blue-800" },
-  ];
+  if (loading) return <PaginaEsqueleto />;
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  // O resumo devolve os estados já com o nome por extenso ou com a chave
+  // do backend; mostra-se sempre o nome em português, do maior para o menor.
+  const estados = Object.entries(porEstado)
+    .map(([chave, total]) => ({ rotulo: ESTADO_LABEL[chave] ?? chave, total }))
+    .filter((e) => e.total > 0)
+    .sort((a, b) => b.total - a.total);
+  const maior = Math.max(1, ...estados.map((e) => e.total));
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 mt-1">Visão geral do sistema</p>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Visão geral" texto="O estado do sistema em todos os postos." />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.label} className={`${CARD} p-6`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
-                  <p className="text-3xl font-semibold text-gray-900 mt-1.5">{stat.value.toLocaleString()}</p>
-                </div>
-                <div className={`${stat.bg} ${stat.fg} p-3 rounded-md`}>
-                  <Icon size={22} strokeWidth={1.75} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <StatStrip
+        className="mb-6"
+        itens={[
+          { rotulo: "Denúncias", valor: contagens.denuncias.toLocaleString("pt"), para: "/super-admin/denuncias" },
+          { rotulo: "Postos (administradores)", valor: contagens.admins.toLocaleString("pt"), para: "/super-admin/admins" },
+          { rotulo: "Agentes", valor: contagens.policiais.toLocaleString("pt"), para: "/super-admin/policiais" },
+          { rotulo: "Cidadãos", valor: contagens.cidadaos.toLocaleString("pt"), para: "/super-admin/cidadaos" },
+        ]}
+      />
 
-      {/* Denuncias Recentes */}
-      <div className={CARD}>
-        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-          <h2 className="text-base font-semibold text-gray-900">Denúncias Recentes</h2>
-          <Link
-            to="/super-admin/denuncias"
-            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
-          >
-            Ver todas
-            <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
-                <th className={TABLE_HEAD_CELL}>Matrícula</th>
-                <th className={TABLE_HEAD_CELL}>Tipo</th>
-                <th className={TABLE_HEAD_CELL}>Localização</th>
-                <th className={TABLE_HEAD_CELL}>Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {recentes.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-400">
-                    Ainda não há denúncias registadas.
-                  </td>
-                </tr>
-              ) : (
-                recentes.map((d) => (
-                  <tr key={d.id} className={TABLE_ROW_HOVER}>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{d.matricula}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{d.tipo_infracao}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{d.localizacao}</td>
-                    <td className="px-6 py-4">
-                      <span className={`${BADGE} ${getStatusTone(d.estado)}`}>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                        {d.estado}
-                      </span>
-                    </td>
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <section className={`${CARD} overflow-hidden`}>
+          <div className={CARD_HEADER}>
+            <h2 className={CARD_TITLE}>Últimas denúncias</h2>
+            <Link to="/super-admin/denuncias" className={`${LINK} inline-flex items-center gap-1.5 text-sm`}>
+              Ver todas
+              <ArrowRight size={12} />
+            </Link>
+          </div>
+          {recentes.length === 0 ? (
+            <EmptyState
+              titulo="Ainda não há denúncias"
+              texto="As denúncias aparecem aqui assim que os cidadãos as enviarem."
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className={TABLE_HEAD_CELL}>Matrícula</th>
+                    <th className={TABLE_HEAD_CELL}>Tipo</th>
+                    <th className={TABLE_HEAD_CELL}>Data</th>
+                    <th className={TABLE_HEAD_CELL}>Estado</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {recentes.map((d) => (
+                    <tr key={d.id} className={TABLE_ROW_HOVER}>
+                      <td className={`${TABLE_CELL_STRONG} whitespace-nowrap`}>
+                        <Link to={`/super-admin/denuncias/${d.id}`} className="hover:text-blue-700 hover:underline">
+                          {d.matricula || "Sem matrícula"}
+                        </Link>
+                      </td>
+                      <td className={`${TABLE_CELL} whitespace-nowrap`}>{labelTipo(d.tipo_infracao)}</td>
+                      <td className={`${TABLE_CELL} whitespace-nowrap`}>{formatarDataHora(d.data_captura || d.data_registo)}</td>
+                      <td className={TABLE_CELL}><EstadoBadge estado={d.estado} tipo={d.tipo_infracao} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+
+        {estados.length > 0 && (
+          <section className={CARD}>
+            <div className={CARD_HEADER}>
+              <h2 className={CARD_TITLE}>Denúncias por estado</h2>
+              <Link to="/super-admin/relatorios" className={`${LINK} text-sm`}>Relatórios</Link>
+            </div>
+            <ul className="space-y-3 px-6 py-5">
+              {estados.map((e) => (
+                <li key={e.rotulo}>
+                  <div className="flex items-baseline justify-between gap-3 text-sm">
+                    <span className="text-gray-700">{e.rotulo}</span>
+                    <span className="font-semibold text-gray-900 tabular-nums">{e.total}</span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-gray-100" aria-hidden>
+                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${(e.total / maior) * 100}%` }} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </div>
     </div>
   );

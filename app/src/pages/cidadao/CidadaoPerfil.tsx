@@ -1,74 +1,49 @@
+import { useEffect, useState } from "react";
 import AlterarSenhaModal from "../../components/AlterarSenhaModal";
 import TelefoneInput from "../../components/TelefoneInput";
-import { useEffect, useState } from "react";
-import { User, Mail, Phone, Save, Loader2 } from "../../components/icons";
+import { Loader2 } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { cidadaoService, type cidadaoResponse } from "../../api/cidadaoService";
 import { REGEX } from "../../utils/validationSchemas";
-import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import PageHeader from "../../components/app/PageHeader";
+import Campo, { Dados, SeccaoFormulario } from "../../components/app/Campo";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+import { ErroPagina } from "../../components/app/Lista";
+import { formatarData } from "../../utils/datas";
+import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
+import { PAGE, CARD, INPUT, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 
 export default function CidadaoPerfil() {
-  const [isEditing, setIsEditing] = useState(false);
   const [aAlterarSenha, setAAlterarSenha] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [formData, setFormData] = useState({
-    nome: "João da Silva",
-    email: "joao@email.com",
-    telefone: "+258 84 123 4567",
-    endereco: "Luanda, Angola",
-    dataNascimento: "1990-05-15",
-  });
-
-
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const[error, setError]= useState<string | null>(null);
-  const[cidadao, setCidadao]= useState<cidadaoResponse | null>(null);
+  const [aGuardar, setAGuardar] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cidadao, setCidadao] = useState<cidadaoResponse | null>(null);
+  // O que está guardado no servidor, para saber se há alterações por guardar.
+  const [guardado, setGuardado] = useState<{ nome: string; numero: string } | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ nome?: string; telefone?: string }>({});
-  const getInitials = (name?: string | null) => {
-    if (!name) return "JD";
-    const parts = name.trim().split(/\s+/).filter(Boolean);
-    if (parts.length === 0) return "JD";
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    const first = parts[0][0] ?? "";
-    const last = parts[parts.length - 1][0] ?? "";
-    return (first + last).toUpperCase();
-  };
-      
-  
-     
-    
-    
-      useEffect(() => {
-        if (!authLoading && user) {
-          carregarDenuncias();
-        }
-      }, [authLoading, user]);
-    
-    
-      const carregarDenuncias = async () => {
-        if (!user) return;
-        try{
-          setLoading(true);
-          setError(null);
-    
-          const data= await cidadaoService.getCidadaoId(user.id);
-          setCidadao(data);
-         
-        } catch (err) {
-          setError("Erro ao carregar cidadao.");
-        } finally {
-          setLoading(false);
-        }
-      };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setCidadao((prev) => {
-      if (!prev) return prev;
-      const field = name === "telefone" ? "numero" : name;
-      return { ...prev, [field]: value } as cidadaoResponse;
-    });
+  useEffect(() => {
+    if (!authLoading && user) {
+      carregar();
+    }
+  }, [authLoading, user]);
+
+  const carregar = async () => {
+    if (!user) return;
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await cidadaoService.getCidadaoId(user.id);
+      setCidadao(data);
+      setGuardado({ nome: data.nome ?? "", numero: data.numero ?? "" });
+    } catch (err) {
+      setError("Erro ao carregar o perfil.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const validate = () => {
@@ -88,201 +63,105 @@ export default function CidadaoPerfil() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cidadao) return;
-    if(!user) return;
+    if (!cidadao || !user) return;
     if (!validate()) return;
 
     try {
-      setLoading(true);
-      setError(null);
+      setAGuardar(true);
       await cidadaoService.updateCidadao({
         id: cidadao.id,
         nome: cidadao.nome,
         email: cidadao.email,
         data_registo: cidadao.data_registo,
         numero: cidadao.numero,
-      },user.id);
-      setIsEditing(false);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
+      }, user.id);
+      setGuardado({ nome: cidadao.nome ?? "", numero: cidadao.numero ?? "" });
+      mostrarSucesso("Perfil actualizado.");
     } catch (err) {
-      setError("Erro ao atualizar cidadão.");
+      mostrarErro(err, "Erro ao actualizar o perfil");
     } finally {
-      setLoading(false);
+      setAGuardar(false);
     }
   };
 
-  const stats = [
-    { label: "Total de Denúncias", value: String(cidadao?.numero_denuncias ?? 0) },
-    { label: "O teu código no ranking", value: cidadao?.codigo_ranking ?? "—" },
-  ];
+  const repor = () => {
+    if (!guardado) return;
+    setCidadao((prev) => (prev ? { ...prev, ...guardado } : prev));
+    setFieldErrors({});
+  };
+
+  if (loading) return <PaginaEsqueleto />;
+
+  if (error) return <ErroPagina mensagem={error} onTentar={carregar} />;
+
+  const alterado = !!guardado && (guardado.nome !== (cidadao?.nome ?? "") || guardado.numero !== (cidadao?.numero ?? ""));
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Meu Perfil</h1>
-        <p className="text-gray-500 mt-1">
-          Gerencie suas informações pessoais
-        </p>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Perfil" texto="Os seus dados de cidadão e a senha de acesso." />
 
-      {/* Success Message */}
-      {showSuccess && (
-        <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
-          <Save className="text-blue-800 shrink-0" size={24} />
-          <p className="text-blue-800 font-medium">
-            Perfil atualizado com sucesso!
-          </p>
-        </div>
-      )}
+      <div className={`${CARD} max-w-4xl p-6`}>
+        <SeccaoFormulario
+          titulo="Dados pessoais"
+          texto="O telemóvel é usado para o posto policial o contactar sobre uma denúncia, se for preciso."
+        >
+          <form onSubmit={handleSave} className="space-y-5" noValidate>
+            <Campo rotulo="Nome completo" erro={fieldErrors.nome}>
+              <input
+                type="text"
+                name="nome"
+                autoComplete="name"
+                value={cidadao?.nome ?? ""}
+                onChange={(e) => setCidadao((prev) => (prev ? { ...prev, nome: e.target.value } : prev))}
+                disabled={aGuardar}
+                className={INPUT}
+              />
+            </Campo>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column - Profile Card */}
-        <div className="lg:col-span-1">
-          <div className={`${CARD} p-6`}>
-            {/* Avatar */}
-            <div className="flex flex-col items-center mb-6">
-              <div className="w-32 h-32 rounded-full bg-blue-600 flex items-center justify-center mb-4">
-                <span className="text-4xl font-bold text-white">{getInitials(cidadao?.nome)}</span>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-900">
-                {cidadao?.nome}
-              </h2>
-              <p className="text-gray-500 text-sm">{cidadao?.email}</p>
-            </div>
+            <Campo rotulo="Telemóvel" erro={fieldErrors.telefone}>
+              <TelefoneInput
+                name="telefone"
+                value={cidadao?.numero}
+                onChange={(numero) => setCidadao((prev) => (prev ? { ...prev, numero } : prev))}
+                disabled={aGuardar}
+              />
+            </Campo>
 
-            {/* Stats */}
-            <div className="space-y-3">
-              {stats.map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
-                >
-                  <span className="text-sm text-gray-600">{stat.label}</span>
-                  <span className="text-lg font-semibold text-gray-900">
-                    {stat.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column - Profile Form */}
-        <div className="lg:col-span-2">
-          <div className={`${CARD} p-6`}>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Informações Pessoais
-              </h2>
-              {!isEditing && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className={BUTTON_PRIMARY}
-                >
-                  Editar Perfil
+            <div className="flex flex-wrap gap-2">
+              <button type="submit" disabled={!alterado || aGuardar} className={BUTTON_PRIMARY}>
+                {aGuardar && <Loader2 size={14} className="animate-spin" />}
+                Guardar alterações
+              </button>
+              {alterado && (
+                <button type="button" onClick={repor} disabled={aGuardar} className={BUTTON_SECONDARY}>
+                  Desfazer
                 </button>
               )}
             </div>
+          </form>
+        </SeccaoFormulario>
 
-            <form onSubmit={handleSave}>
-              <div className="space-y-6">
-                {/* Nome */}
-                <div>
-                  <label className={LABEL}>
-                    <div className="flex items-center gap-2">
-                      <User size={16} />
-                      Nome Completo
-                    </div>
-                  </label>
-                  <input
-                    type="text"
-                    name="nome"
-                    value={cidadao?.nome}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
-                  />
-                  {fieldErrors.nome && (
-                    <p className="mt-1 text-sm text-rose-600">{fieldErrors.nome}</p>
-                  )}
-                </div>
+        <SeccaoFormulario titulo="Conta" texto="O email identifica a sua conta e não pode ser alterado.">
+          <Dados
+            itens={[
+              { rotulo: "Email", valor: cidadao?.email },
+              { rotulo: "Registado em", valor: formatarData(cidadao?.data_registo) },
+              { rotulo: "Denúncias enviadas", valor: String(cidadao?.numero_denuncias ?? 0) },
+              { rotulo: "Código no ranking", valor: cidadao?.codigo_ranking },
+            ]}
+          />
+        </SeccaoFormulario>
 
-                {/* Email */}
-                <div>
-                  <label className={LABEL}>
-                    <div className="flex items-center gap-2">
-                      <Mail size={16} />
-                      Email
-                    </div>
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={cidadao?.email}
-                    onChange={handleInputChange}
-                    disabled
-                    className={`${INPUT} disabled:bg-gray-50 disabled:text-gray-500`}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">O email não pode ser alterado</p>
-                </div>
-
-                {/* Telefone */}
-                <div>
-                  <label className={LABEL}>
-                    <div className="flex items-center gap-2">
-                      <Phone size={16} />
-                      Telefone
-                    </div>
-                  </label>
-                  <TelefoneInput
-                    name="telefone"
-                    value={cidadao?.numero}
-                    onChange={(numero) => setCidadao((prev) => (prev ? { ...prev, numero } : prev))}
-                    disabled={!isEditing}
-                  />
-                  {fieldErrors.telefone && (
-                    <p className="mt-1 text-sm text-rose-600">{fieldErrors.telefone}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Botões */}
-              {isEditing && (
-                <div className="flex gap-4 justify-end mt-6 pt-6 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className={BUTTON_SECONDARY}
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className={BUTTON_PRIMARY}
-                  >
-                    {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                    Guardar alterações
-                  </button>
-                </div>
-              )}
-            </form>
-          </div>
-
-          {/* Alterar Senha */}
-          <div className={`${CARD} p-6 mt-8`}>
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
-              Segurança
-            </h2>
-            <button className={BUTTON_SECONDARY} onClick={() => setAAlterarSenha(true)}>
-              Alterar Senha
+        <SeccaoFormulario titulo="Segurança" texto="Altere a senha com que entra no sistema.">
+          <div>
+            <button type="button" className={BUTTON_SECONDARY} onClick={() => setAAlterarSenha(true)}>
+              Alterar senha
             </button>
           </div>
-          {aAlterarSenha && <AlterarSenhaModal onFechar={() => setAAlterarSenha(false)} />}
-        </div>
+        </SeccaoFormulario>
       </div>
+
+      {aAlterarSenha && <AlterarSenhaModal onFechar={() => setAAlterarSenha(false)} />}
     </div>
   );
 }

@@ -1,15 +1,138 @@
 import { useEffect, useState } from "react";
+
+
+
+
+
+
+
+
+
+
+
+
 import { Link } from "react-router";
-import { Loader2, AlertTriangle, ChevronRight, CheckCircle2, XCircle, ClipboardList } from "../../components/icons";
+
+
+
+
+
+
+
+
+
+
+
+
+import { ChevronRight } from "../../components/icons";
+
+
+
+
+
+
+
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
+
+
+
+
+
+
+
+
+
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
+
+
+
+
+
+
+
+
+
+import StatStrip from "../../components/app/StatStrip";
+import EstadoBadge from "../../components/app/EstadoBadge";
 import Paginacao from "../../components/Paginacao";
-import { labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { labelTipo } from "../../utils/estadoDenuncia";
+
+
+
+
+
+
+
+
+
+
 import { mensagemDeErro } from "../../utils/mensagens";
-import {
-  PAGE, PAGE_TITLE, PAGE_SUBTITLE, CARD, BADGE, BUTTON_PRIMARY, ICON_CHIP,
-  TABLE_HEAD_CELL, TABLE_ROW_HOVER,
-} from "../../utils/uiClasses";
+
+
+
+
+
+
+
+
+
+
+
+
+import { PAGE, CARD, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+
+
+
+
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import { formatarDataHora } from "../../utils/datas";
+
+
+
+
+
+
+
+
+
+
+
+
+import { ErroBloco, LinhaVazia } from "../../components/app/Lista";
+
+
+
+
+
+
+
+
+
+
+
+
+import { LinhasEsqueleto } from "../../components/app/Carregando";
+
+
+
+
+
+
+
+
+
+
+
+
 
 const TAMANHO_PAGINA = 10;
 
@@ -45,44 +168,25 @@ export default function MinhasDecisoesPt() {
 
   // Contagens da página actual (o backend ainda não devolve totais por estado).
   const aprovadas = denuncias.filter((d) => d.estado === "APROVADA").length;
-  const rejeitadas = denuncias.filter((d) => d.estado === "REJEITADA").length;
+  const arquivadas = denuncias.filter((d) => d.estado === "ARQUIVADA").length;
 
-  const resumo = [
-    { label: "Total de decisões", valor: totalItens, icon: ClipboardList, chip: ICON_CHIP("bg-blue-50", "text-blue-600") },
-    { label: "Aprovadas", valor: aprovadas, icon: CheckCircle2, chip: ICON_CHIP("bg-blue-50", "text-blue-800") },
-    { label: "Rejeitadas", valor: rejeitadas, icon: XCircle, chip: ICON_CHIP("bg-gray-100", "text-gray-500") },
-  ];
-
+  
   return (
     <div className={PAGE}>
-      <div className="mb-8">
-        <h1 className={PAGE_TITLE}>Minhas decisões</h1>
-        <p className={PAGE_SUBTITLE}>Histórico das denúncias que analisou e das decisões tomadas</p>
-      </div>
+      <PageHeader titulo="Minhas decisões" texto="Histórico das denúncias que analisou e das decisões tomadas" />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {resumo.map((r) => (
-          <div key={r.label} className={`${CARD} p-5 flex items-center gap-4`}>
-            <div className={r.chip}>
-              <r.icon size={20} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">{r.label}</p>
-              <p className="text-2xl font-semibold text-gray-900">{r.valor}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      <StatStrip
+        className="mb-6"
+        itens={[
+          { rotulo: "Decisões tomadas", valor: totalItens },
+          { rotulo: "Aprovadas nesta página", valor: aprovadas },
+          { rotulo: "Arquivadas nesta página", valor: arquivadas },
+        ]}
+      />
 
       <div className={`${CARD} overflow-hidden`}>
         {error ? (
-          <div className="text-center py-14">
-            <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-            <p className="text-rose-600">{error}</p>
-            <button onClick={() => carregarDenuncias(paginaAtual)} className={`${BUTTON_PRIMARY} mt-4`}>
-              Tentar novamente
-            </button>
-          </div>
+          <ErroBloco mensagem={error} onTentar={() => carregarDenuncias(paginaAtual)} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -94,37 +198,28 @@ export default function MinhasDecisoesPt() {
                   <th className={TABLE_HEAD_CELL}>Decisão</th>
                   <th className={TABLE_HEAD_CELL}>Código legal</th>
                   <th className={TABLE_HEAD_CELL}>Data</th>
-                  <th className={TABLE_HEAD_CELL}></th>
+                  <th className={TABLE_HEAD_CELL}><span className="sr-only">Abrir</span></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {loading ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center">
-                      <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
-                    </td>
-                  </tr>
+                  <LinhasEsqueleto colunas={7} />
                 ) : denuncias.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-10 text-center text-gray-500">
-                      Ainda não tomou nenhuma decisão
-                    </td>
-                  </tr>
+                  <LinhaVazia colunas={7}>
+                      Ainda não tomou nenhuma decisão. As denúncias que aprovar ou arquivar ficam aqui.
+                    </LinhaVazia>
                 ) : (
                   denuncias.map((d) => (
                     <tr key={d.id} className={TABLE_ROW_HOVER}>
-                      <td className="px-6 py-4 text-sm text-gray-500">{d.id}</td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{d.matricula || "—"}</td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{labelTipo(d.tipo_infracao)}</td>
-                      <td className="px-6 py-4">
-                        <span className={`${BADGE} ${toneEstado(d.estado)}`}>
-                          <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                          {labelEstado(d.estado, d.tipo_infracao)}
-                        </span>
+                      <td className="px-6 py-3.5 text-sm text-gray-500">{d.id}</td>
+                      <td className="px-6 py-3.5 text-sm font-medium text-gray-900">{d.matricula || "—"}</td>
+                      <td className="px-6 py-3.5 text-sm text-gray-700">{labelTipo(d.tipo_infracao)}</td>
+                      <td className="px-6 py-3.5">
+                        <EstadoBadge estado={d.estado} tipo={d.tipo_infracao} />
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-700">{d.codigo_legal || "—"}</td>
-                      <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">{d.data_captura || d.data_registo}</td>
-                      <td className="px-6 py-4 text-right">
+                      <td className="px-6 py-3.5 text-sm text-gray-700">{d.codigo_legal || "—"}</td>
+                      <td className="px-6 py-3.5 text-sm text-gray-500 whitespace-nowrap">{formatarDataHora(d.data_captura || d.data_registo)}</td>
+                      <td className="px-6 py-3.5 text-right">
                         <Link
                           to={`/pt/denuncias/${d.id}`}
                           className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"

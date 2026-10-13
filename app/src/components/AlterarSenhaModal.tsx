@@ -5,8 +5,7 @@ import { REGEX } from "../utils/validationSchemas";
 import { mostrarSucesso, mensagemDeErro } from "../utils/mensagens";
 import {
   INPUT, LABEL, FIELD_ERROR, FIELD_HINT, BUTTON_PRIMARY, BUTTON_SECONDARY,
-  ALERT_ERROR, MODAL_OVERLAY, MODAL_CARD,
-} from "../utils/uiClasses";
+  ALERT_ERROR, MODAL_OVERLAY, MODAL_CARD, MODAL_TITLE, MODAL_FOOTER } from "../utils/uiClasses";
 
 const VAZIO = { atual: "", nova: "", confirmar: "" };
 
@@ -66,7 +65,7 @@ export default function AlterarSenhaModal({ onFechar }: { onFechar: () => void }
   return (
     <div className={MODAL_OVERLAY}>
       <form onSubmit={guardar} className={MODAL_CARD}>
-        <h2 className="text-lg font-semibold text-gray-900 mb-5">Alterar senha</h2>
+        <h2 className={MODAL_TITLE}>Alterar senha</h2>
 
         {erro && <div className={`${ALERT_ERROR} mb-4`}>{erro}</div>}
 
@@ -76,11 +75,11 @@ export default function AlterarSenhaModal({ onFechar }: { onFechar: () => void }
           {campo("confirmar", "Confirmar nova senha", "new-password")}
         </div>
 
-        <div className="flex gap-3 mt-6">
-          <button type="button" onClick={onFechar} className={`${BUTTON_SECONDARY} flex-1`} disabled={aEnviar}>
+        <div className={MODAL_FOOTER}>
+          <button type="button" onClick={onFechar} className={BUTTON_SECONDARY} disabled={aEnviar}>
             Cancelar
           </button>
-          <button type="submit" className={`${BUTTON_PRIMARY} flex-1`} disabled={aEnviar}>
+          <button type="submit" className={BUTTON_PRIMARY} disabled={aEnviar}>
             {aEnviar ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
           </button>
         </div>

@@ -1,23 +1,34 @@
 import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router";
+
 import {
   Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList, Link2,
 } from "../../components/icons";
+
 import { useAuth } from "../../hooks/useAuth";
+
 import { notificacaoService, type Notificacao } from "../../api/notificacaoService";
+
+import EmptyState from "../../components/app/EmptyState";
+import { ErroBloco, Segmentos } from "../../components/app/Lista";
+
 import Paginacao from "../../components/Paginacao";
-import { CARD, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import { CARD, BUTTON_SECONDARY, PAGE } from "../../utils/uiClasses";
+import PageHeader from "../../components/app/PageHeader";
+import { formatarDataHora } from "../../utils/datas";
+
 
 const TAMANHO_PAGINA = 10;
 
 const ICONE_TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; cor: string }> = {
-  DENUNCIA_RECEBIDA: { icon: FileText, cor: "bg-blue-50 text-blue-600" },
-  ESTADO_ALTERADO: { icon: RefreshCw, cor: "bg-blue-50 text-blue-800" },
-  NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "bg-blue-50 text-blue-800" },
-  ACIDENTE_REPORTADO: { icon: Siren, cor: "bg-blue-50 text-blue-800" },
-  AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "bg-blue-50 text-blue-800" },
-  ANALISE_FALHOU: { icon: AlertTriangle, cor: "bg-blue-50 text-blue-800" },
-  DENUNCIA_RELACIONADA: { icon: Link2, cor: "bg-blue-50 text-blue-800" },
+  DENUNCIA_RECEBIDA: { icon: FileText, cor: "text-blue-600" },
+  ESTADO_ALTERADO: { icon: RefreshCw, cor: "text-blue-600" },
+  NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "text-blue-600" },
+  ACIDENTE_REPORTADO: { icon: Siren, cor: "text-blue-600" },
+  AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "text-blue-600" },
+  ANALISE_FALHOU: { icon: AlertTriangle, cor: "text-blue-600" },
+  DENUNCIA_RELACIONADA: { icon: Link2, cor: "text-blue-600" },
 };
 
 // Página onde abrir a denúncia a que a notificação se refere, conforme o
@@ -106,76 +117,61 @@ export default function Notificacoes() {
   const haNaoLidas = notificacoes.some((n) => !n.lida);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Notificações</h1>
-          <p className="text-gray-500 mt-1">Atualizações sobre as denúncias que lhe dizem respeito</p>
-        </div>
-        <button
-          onClick={marcarTodas}
-          className={`${BUTTON_SECONDARY} whitespace-nowrap`}
-          disabled={aMarcarTodas || !haNaoLidas}
-        >
-          {aMarcarTodas ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck size={16} />}
-          Marcar todas como lidas
-        </button>
-      </div>
-
-      <div className="flex gap-2 mb-4">
-        {[
-          { valor: false, label: "Todas" },
-          { valor: true, label: "Por ler" },
-        ].map((f) => (
+    <div className={PAGE}>
+      <PageHeader
+        titulo="Notificações" texto="Avisos sobre as denúncias que lhe dizem respeito. Abra um aviso para ver a denúncia."
+        acoes={
           <button
-            key={f.label}
-            onClick={() => mudarFiltro(f.valor)}
-            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
-              soNaoLidas === f.valor
-                ? "bg-blue-600 text-white"
-                : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
-            }`}
+            onClick={marcarTodas}
+            className={`${BUTTON_SECONDARY} whitespace-nowrap`}
+            disabled={aMarcarTodas || !haNaoLidas}
           >
-            {f.label}
+            {aMarcarTodas ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck size={16} />}
+            Marcar todas como lidas
           </button>
-        ))}
+        }
+      />
+
+      <div className="mb-4">
+        <Segmentos
+          rotulo="Filtrar notificações"
+          valor={soNaoLidas ? "por-ler" : "todas"}
+          onMudar={(v) => mudarFiltro(v === "por-ler")}
+          opcoes={[
+            { valor: "todas", rotulo: "Todas" },
+            { valor: "por-ler", rotulo: "Por ler" },
+          ]}
+        />
       </div>
 
       <div className={`${CARD} overflow-hidden`}>
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <div className="space-y-4 p-6" role="status" aria-label="A carregar">
+            {[0, 1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded bg-gray-200" />)}
           </div>
         ) : error ? (
-          <div className="text-center py-16">
-            <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto mb-3" />
-            <p className="text-rose-600">{error}</p>
-            <button onClick={() => carregar(paginaAtual, soNaoLidas)} className={`${BUTTON_PRIMARY} mt-4`}>
-              Tentar Novamente
-            </button>
-          </div>
+          <ErroBloco mensagem={error} onTentar={() => carregar(paginaAtual, soNaoLidas)} />
         ) : notificacoes.length === 0 ? (
-          <div className="text-center py-16 text-gray-500">
-            <BellOff className="mx-auto mb-3 text-gray-300" size={36} />
-            {soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
-          </div>
+          <EmptyState
+            icon={BellOff}
+            titulo={soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
+            texto="É avisado aqui sempre que uma denúncia que lhe diz respeito muda de estado."
+          />
         ) : (
           <ul className="divide-y divide-gray-200">
             {notificacoes.map((n) => {
-              const { icon: Icon, cor } = ICONE_TIPO[n.tipo] ?? { icon: Bell, cor: "bg-gray-100 text-gray-600" };
+              const { icon: Icon, cor } = ICONE_TIPO[n.tipo] ?? { icon: Bell, cor: "text-gray-600" };
               const temDestino = !!destino(user?.role, n);
 
               return (
                 <li key={n.id}>
                   <button
                     onClick={() => abrir(n)}
-                    className={`w-full text-left flex gap-4 px-6 py-4 transition-colors hover:bg-gray-50/60 ${
-                      n.lida ? "" : "bg-blue-50/40"
+                    className={`w-full text-left flex gap-4 px-6 py-3.5 transition-colors hover:bg-gray-50 ${
+                      n.lida ? "" : "bg-blue-50"
                     } ${temDestino || !n.lida ? "cursor-pointer" : "cursor-default"}`}
                   >
-                    <div className={`${cor} p-2.5 rounded-md h-fit shrink-0`}>
-                      <Icon size={18} />
-                    </div>
+                    <Icon size={16} className={`mt-0.5 shrink-0 ${cor}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className={`text-sm ${n.lida ? "text-gray-700" : "font-semibold text-gray-900"}`}>
@@ -184,7 +180,7 @@ export default function Notificacoes() {
                         {!n.lida && <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />}
                       </div>
                       <p className="text-sm text-gray-600 mt-0.5">{n.mensagem}</p>
-                      <p className="text-xs text-gray-400 mt-1">{n.criada_em}</p>
+                      <p className="text-xs text-gray-500 mt-1">{formatarDataHora(n.criada_em)}</p>
                     </div>
                   </button>
                 </li>

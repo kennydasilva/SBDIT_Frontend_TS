@@ -8,6 +8,7 @@ import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA, geoJsonParaAneis } from "../
 import { labelEstado, labelTipo } from "../../utils/estadoDenuncia";
 import { CARD, SECTION_TITLE, ALERT_WARNING, BUTTON_PRIMARY, BUTTON_SECONDARY } from "../../utils/uiClasses";
 import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
+import { formatarDataHora } from "../../utils/datas";
 
 // Uma cor por posto (repete se houver mais postos do que cores).
 const CORES = ["#2563EB", "#059669", "#D97706", "#7C3AED", "#DB2777", "#0891B2", "#65A30D", "#DC2626", "#4F46E5", "#0D9488"];
@@ -271,16 +272,16 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
                     >
                       <p className="text-sm text-gray-900">
                         #{p.id} · {labelTipo(p.tipo_infracao)}
-                        <span className="text-gray-400"> · {labelEstado(p.estado, p.tipo_infracao)}</span>
+                        <span className="text-gray-500"> · {labelEstado(p.estado, p.tipo_infracao)}</span>
                       </p>
                       <p className="text-xs text-gray-500 truncate">{p.localizacao || "Sem descrição do local"}</p>
-                      <p className="text-xs text-gray-400">{p.data_registo}</p>
+                      <p className="text-xs text-gray-500">{formatarDataHora(p.data_registo)}</p>
                     </button>
                   </li>
                 ))}
               </ul>
             )}
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-500 mt-3">
               Para cobrir estes locais, vá a "Gerir posto", escolha o posto responsável e adicione a zona ou as vias —
               as denúncias abertas que caírem nela passam logo para esse posto.
             </p>

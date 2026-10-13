@@ -1,9 +1,48 @@
 import { useEffect, useState } from "react";
-import { Search, Ban, CheckCircle, AlertTriangle, Loader2 } from "../../components/icons";
+
+
+
+
+
+import { Ban, CheckCircle, Loader2 } from "../../components/icons";
+
+
+
 import { superAdminService, type cidadao } from "../../api/superAdminService";
+
+
+
+
+
 import Paginacao from "../../components/Paginacao";
-import { CARD, INPUT, BUTTON_PRIMARY, BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+import { BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, PAGE, TOOLBAR, CARD_ATTACHED } from "../../utils/uiClasses";
+
+
 import { mostrarErro } from "../../utils/mensagens";
+
+
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+
+
+
+
+import { ErroPagina, CampoPesquisa, LinhaVazia } from "../../components/app/Lista";
+
+
+
+
+
+import { formatarData } from "../../utils/datas";
+
+
+
+
+
 
 const TAMANHO_PAGINA = 10;
 
@@ -53,119 +92,81 @@ export default function Cidadaos() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button
-            onClick={() => carregarCidadaos(paginaAtual)}
-            className={`${BUTTON_PRIMARY} mt-4`}
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={() => carregarCidadaos(paginaAtual)} />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Gestão de Cidadãos</h1>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Cidadãos" texto="As contas de cidadão registadas. Uma conta banida deixa de poder entrar e denunciar." />
 
       {/* Search Bar */}
-      <div className={`${CARD} p-4 mb-6`}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Pesquisar por nome ou email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`${INPUT} pl-10`}
-          />
-        </div>
+      <div className={TOOLBAR}>
+        <CampoPesquisa valor={searchTerm} onMudar={setSearchTerm} rotulo="Pesquisar por nome ou email" />
       </div>
 
       {/* Table */}
-      <div className={`${CARD} overflow-hidden`}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className={TABLE_HEAD_CELL}>ID</th>
-              <th className={TABLE_HEAD_CELL}>Nome</th>
-              <th className={TABLE_HEAD_CELL}>Email</th>
-              <th className={TABLE_HEAD_CELL}>Número</th>
-              <th className={TABLE_HEAD_CELL}>Data de Registo</th>
-              <th className={TABLE_HEAD_CELL}>Estado</th>
-              <th className={TABLE_HEAD_CELL}>Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredCidadaos.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                  Nenhum cidadão encontrado
-                </td>
+      <div className={`${CARD_ATTACHED} overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className={TABLE_HEAD_CELL}>Nome</th>
+                <th className={TABLE_HEAD_CELL}>Email</th>
+                <th className={TABLE_HEAD_CELL}>Telemóvel</th>
+                <th className={TABLE_HEAD_CELL}>Registado em</th>
+                <th className={TABLE_HEAD_CELL}>Estado</th>
+                <th className={TABLE_HEAD_CELL}><span className="sr-only">Ações</span></th>
               </tr>
-            ) : (
-              filteredCidadaos.map((cidadao) => (
-                <tr key={cidadao.id} className={TABLE_ROW_HOVER}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{cidadao.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{cidadao.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{cidadao.numero || "—"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {cidadao.data_registo ? new Date(cidadao.data_registo).toLocaleDateString() : "—"}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                      {cidadao.ativo !== false ? "Ativo" : "Banido"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() => toggleStatus(cidadao)}
-                      disabled={atualizandoId === cidadao.id}
-                      className={`flex items-center gap-1 disabled:opacity-50 ${
-                        cidadao.ativo !== false
-                          ? "text-rose-600 hover:text-rose-800"
-                          : "text-blue-800 hover:text-blue-800"
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredCidadaos.length === 0 ? (
+                <LinhaVazia colunas={6}>
+                    Nenhum cidadão encontrado
+                  </LinhaVazia>
+              ) : (
+                filteredCidadaos.map((cidadao) => (
+                  <tr key={cidadao.id} className={TABLE_ROW_HOVER}>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">{cidadao.nome}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">{cidadao.email}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">{cidadao.numero || "—"}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-500">
+                      {formatarData(cidadao.data_registo)}
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap">
+                      <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
+                        {cidadao.ativo !== false ? "Ativo" : "Banido"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => toggleStatus(cidadao)}
+                        disabled={atualizandoId === cidadao.id}
+                        className={`inline-flex items-center gap-1.5 font-medium disabled:opacity-50 ${
+                        cidadao.ativo !== false ? "text-rose-600 hover:text-rose-700" : "text-blue-600 hover:text-blue-700"
                       }`}
-                    >
-                      {atualizandoId === cidadao.id ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : cidadao.ativo !== false ? (
-                        <>
-                          <Ban size={18} />
-                          Banir
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle size={18} />
-                          Ativar
-                        </>
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+                      >
+                        {atualizandoId === cidadao.id ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : cidadao.ativo !== false ? (
+                          <>
+                            <Ban size={12} />
+                            Banir
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={12} />
+                            Ativar
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         <Paginacao
           paginaAtual={paginaAtual}
           totalItens={totalItens}

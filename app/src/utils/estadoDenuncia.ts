@@ -34,9 +34,9 @@ export const ESTADO_TONE: Record<string, string> = {
 
 export const TIPO_LABEL: Record<string, string> = {
   CONTRAMAO: "Contramão",
-  PARADO: "Veículo Parado",
-  VELOCIDADE: "Excesso de Velocidade",
-  ACIDENTE: "Acidente de Viação",
+  PARADO: "Veículo parado",
+  VELOCIDADE: "Excesso de velocidade",
+  ACIDENTE: "Acidente de viação",
 };
 
 export const labelEstado = (estado: string, tipo?: string) => {

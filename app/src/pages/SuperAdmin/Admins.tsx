@@ -1,20 +1,48 @@
 import TelefoneInput from "../../components/TelefoneInput";
 import { useState, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "../../components/icons";
+
+
+
+import { Plus, Pencil, Trash2, Loader2 } from "../../components/icons";
+
 import { adminService } from "../../api/superAdminService";
+
+
+
 import type {
   CreateAdminData,
   UpdateAdminData,
   Admin
 } from "../../api/superAdminService";
 import { REGEX } from "../../utils/validationSchemas";
+
+
+
 import { POSTOS_MAPUTO } from "../../utils/postosMaputo";
+
+
+
 import Paginacao from "../../components/Paginacao";
-import {
-  CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER,
-  BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
-} from "../../utils/uiClasses";
+import { INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, BADGE, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD, PAGE, TOOLBAR, CARD_ATTACHED, MODAL_TITLE, MODAL_TEXT, ICON_BUTTON, ICON_BUTTON_DANGER, MODAL_FOOTER } from "../../utils/uiClasses";
+
+
 import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+
+
+import { ErroPagina, CampoPesquisa, LinhaVazia } from "../../components/app/Lista";
+
+
+
+import { formatarDataHora } from "../../utils/datas";
+
+
+
 
 const OUTRO_POSTO = "__OUTRO__";
 const TAMANHO_PAGINA = 10;
@@ -219,126 +247,95 @@ export default function Admins() {
     setFieldErrors({});
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loading) return <PaginaEsqueleto />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button
-            onClick={() => carregarAdmins(paginaAtual)}
-            className={`${BUTTON_PRIMARY} mt-4`}
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={() => carregarAdmins(paginaAtual)} />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Gestão de Administradores</h1>
-        <button
-          onClick={() => {
-            setSelectedAdmin(null);
-            resetForm();
-            setShowCreateModal(true);
-          }}
-          className={BUTTON_PRIMARY}
-        >
-          <Plus size={20} />
-          Novo Administrador
-        </button>
-      </div>
+    <div className={PAGE}>
+      <PageHeader
+        titulo="Administradores"
+        texto="Cada administrador gere um posto policial: os seus agentes e os acidentes da sua jurisdição."
+        acoes={
+          <button
+            onClick={() => {
+              setSelectedAdmin(null);
+              resetForm();
+              setShowCreateModal(true);
+            }}
+            className={BUTTON_PRIMARY}
+          >
+            <Plus size={14} />
+            Novo administrador
+          </button>
+        }
+      />
 
       {/* Search Bar */}
-      <div className={`${CARD} p-4 mb-6`}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-          <input
-            type="text"
-            placeholder="Pesquisar por nome ou email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`${INPUT} pl-10`}
-          />
-        </div>
+      <div className={TOOLBAR}>
+        <CampoPesquisa valor={searchTerm} onMudar={setSearchTerm} rotulo="Pesquisar por nome ou email" />
       </div>
 
       {/* Table */}
-      <div className={`${CARD} overflow-hidden`}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className={TABLE_HEAD_CELL}>ID</th>
-              <th className={TABLE_HEAD_CELL}>Nome</th>
-              <th className={TABLE_HEAD_CELL}>Email</th>
-              <th className={TABLE_HEAD_CELL}>Posto</th>
-              <th className={TABLE_HEAD_CELL}>Telemóvel</th>
-              <th className={TABLE_HEAD_CELL}>Data de Criação</th>
-              <th className={TABLE_HEAD_CELL}>Estado</th>
-              <th className={TABLE_HEAD_CELL}>Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {filteredAdmins.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="px-6 py-8 text-center text-gray-500">
-                  Nenhum administrador encontrado
-                </td>
+      <div className={`${CARD_ATTACHED} overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className={TABLE_HEAD_CELL}>Nome</th>
+                <th className={TABLE_HEAD_CELL}>Email</th>
+                <th className={TABLE_HEAD_CELL}>Posto</th>
+                <th className={TABLE_HEAD_CELL}>Telemóvel</th>
+                <th className={TABLE_HEAD_CELL}>Criado em</th>
+                <th className={TABLE_HEAD_CELL}>Estado</th>
+                <th className={TABLE_HEAD_CELL}><span className="sr-only">Ações</span></th>
               </tr>
-            ) : (
-              filteredAdmins.map((admin) => (
-                <tr key={admin.id} className={TABLE_ROW_HOVER}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{admin.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{admin.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{admin.posto}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {admin.numero || <span className="text-blue-800">Sem número (não recebe SMS)</span>}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{admin.dataCriacao || "-"}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-60" />
-                      {admin.status || "Ativo"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <button
-                      onClick={() => handleEdit(admin)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                      disabled={submitting}
-                    >
-                      <Pencil size={18} />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSelectedAdmin(admin);
-                        setShowDeleteModal(true);
-                      }}
-                      className="text-rose-600 hover:text-rose-800"
-                      disabled={submitting}
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredAdmins.length === 0 ? (
+                <LinhaVazia colunas={7}>
+                    Nenhum administrador encontrado
+                  </LinhaVazia>
+              ) : (
+                filteredAdmins.map((admin) => (
+                  <tr key={admin.id} className={TABLE_ROW_HOVER}>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">{admin.nome}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">{admin.email}</td>
+                    <td className="px-6 py-3.5 text-sm text-gray-600">{admin.posto}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">
+                      {admin.numero || <span className="text-gray-500" title="Este posto não recebe os acidentes por SMS">Sem número</span>}
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-500">{formatarDataHora(admin.dataCriacao)}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap">
+                      <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
+                        {admin.status || "Ativo"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm">
+                      <button
+                        onClick={() => handleEdit(admin)}
+                        className={`${ICON_BUTTON} mr-1`} aria-label="Editar" title="Editar"
+                        disabled={submitting}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setSelectedAdmin(admin);
+                          setShowDeleteModal(true);
+                        }}
+                        className={ICON_BUTTON_DANGER} aria-label="Eliminar" title="Eliminar"
+                        disabled={submitting}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
         <Paginacao
           paginaAtual={paginaAtual}
           totalItens={totalItens}
@@ -352,8 +349,8 @@ export default function Admins() {
       {showCreateModal && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CARD}>
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
-              {selectedAdmin ? "Editar Administrador" : "Criar Novo Administrador"}
+            <h2 className={MODAL_TITLE}>
+              {selectedAdmin ? "Editar administrador" : "Novo administrador"}
             </h2>
 
             <div className="space-y-4">
@@ -494,25 +491,25 @@ export default function Admins() {
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className={MODAL_FOOTER}>
               <button
                 onClick={() => {
                   setShowCreateModal(false);
                   setSelectedAdmin(null);
                   resetForm();
                 }}
-                className={`${BUTTON_SECONDARY} flex-1`}
+                className={BUTTON_SECONDARY}
                 disabled={submitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={selectedAdmin ? handleUpdate : handleCreate}
-                className={`${BUTTON_PRIMARY} flex-1`}
+                className={BUTTON_PRIMARY}
                 disabled={submitting}
               >
                 {submitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   "Guardar"
                 )}
@@ -526,33 +523,30 @@ export default function Admins() {
       {showDeleteModal && selectedAdmin && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CARD}>
-            <div className="flex items-center justify-center w-12 h-12 bg-rose-50 rounded-full mx-auto mb-4">
-              <AlertTriangle className="text-rose-600" size={24} />
-            </div>
 
-            <h2 className="text-lg font-semibold text-gray-900 text-center mb-2">Confirmar Exclusão</h2>
-            <p className="text-gray-600 text-center mb-6">
+            <h2 className={MODAL_TITLE}>Eliminar administrador</h2>
+            <p className={MODAL_TEXT}>
               Tem a certeza de que quer eliminar o administrador <strong>{selectedAdmin.nome}</strong>?
             </p>
 
-            <div className="flex gap-3">
+            <div className={MODAL_FOOTER}>
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
                   setSelectedAdmin(null);
                 }}
-                className={`${BUTTON_SECONDARY} flex-1`}
+                className={BUTTON_SECONDARY}
                 disabled={submitting}
               >
                 Cancelar
               </button>
               <button
                 onClick={handleDelete}
-                className={`${BUTTON_DANGER} flex-1`}
+                className={BUTTON_DANGER}
                 disabled={submitting}
               >
                 {submitting ? (
-                  <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   "Eliminar"
                 )}

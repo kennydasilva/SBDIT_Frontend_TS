@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+
 import { GoogleMap, MarkerF, Rectangle, Polyline, Polygon, useJsApiLoader } from "@react-google-maps/api";
-import { AlertTriangle, Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "../../components/icons";
+
+import { Loader2, MapPinned, Search, Trash2, Plus, LandPlot, Route, PenLine, Undo2 } from "../../components/icons";
 import { adminService } from "../../api/superAdminService";
+
 import type { Admin } from "../../api/superAdminService";
 import {
   jurisdicaoService,
@@ -11,11 +14,24 @@ import {
   type PontoVia,
   type LimitesVia,
 } from "../../api/jurisdicaoService";
+
 import { configService } from "../../api/configService";
+
 import { GOOGLE_MAPS_LIBRARIES, CENTRO_PADRAO_MAPA, geoJsonParaAneis } from "../../utils/maps";
+
 import MapaCobertura from "./MapaCobertura";
-import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER } from "../../utils/uiClasses";
+import { CARD, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, PAGE, ICON_BUTTON_DANGER, MODAL_FOOTER, LINK, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+
 import { mostrarErro } from "../../utils/mensagens";
+
+import PageHeader from "../../components/app/PageHeader";
+import Campo from "../../components/app/Campo";
+import EmptyState from "../../components/app/EmptyState";
+import { Link } from "react-router-dom";
+import { PaginaEsqueleto } from "../../components/app/Carregando";
+
+import { ErroPagina } from "../../components/app/Lista";
+
 
 const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
 const BADGE_TAG = "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium shrink-0";
@@ -97,39 +113,13 @@ export default function Jurisdicoes() {
     }
   };
 
-  if (loadingAdmins) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  if (loadingAdmins) return <PaginaEsqueleto />;
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button
-            onClick={carregarAdmins}
-            className={`${BUTTON_PRIMARY} mt-4`}
-          >
-            Tentar Novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={carregarAdmins} />;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Jurisdições dos Postos</h1>
-        <p className="text-gray-500 mt-1">
-          Define as vias/estradas sob responsabilidade de cada posto (administrador)
-        </p>
-      </div>
+    <div className={PAGE}>
+      <PageHeader titulo="Jurisdições dos Postos" texto="Define as vias/estradas sob responsabilidade de cada posto (administrador)" />
 
       <div className="flex gap-1 mb-6 border-b border-gray-200">
         {[
@@ -140,7 +130,7 @@ export default function Jurisdicoes() {
             key={t.id}
             onClick={() => setAba(t.id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              aba === t.id ? "border-blue-600 text-blue-700" : "border-transparent text-gray-500 hover:text-gray-800"
+              aba === t.id ? "border-blue-600 text-blue-800" : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
             {t.label}
@@ -152,7 +142,7 @@ export default function Jurisdicoes() {
         apiKey ? (
           <MapaCobertura apiKey={apiKey} />
         ) : (
-          <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+          <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
             <MapPinned size={16} />
             A carregar mapa...
           </div>
@@ -160,21 +150,61 @@ export default function Jurisdicoes() {
       ) : (
       <>
 
-      <div className={`${CARD} p-4 mb-6`}>
-        <label className={LABEL}>Posto (Administrador)</label>
-        <select
-          value={adminSelecionado}
-          onChange={(e) => setAdminSelecionado(e.target.value ? Number(e.target.value) : "")}
-          className={INPUT}
-        >
-          <option value="">Selecione um posto...</option>
-          {admins.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.nome} — {a.posto}
-            </option>
-          ))}
-        </select>
+      <div className={`${CARD} mb-6 p-4`}>
+        <Campo rotulo="Posto" className="max-w-md">
+          <select
+            value={adminSelecionado}
+            onChange={(e) => setAdminSelecionado(e.target.value ? Number(e.target.value) : "")}
+            className={INPUT}
+          >
+            <option value="">Escolha um posto…</option>
+            {admins.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.posto} ({a.nome})
+              </option>
+            ))}
+          </select>
+        </Campo>
       </div>
+
+      {/* Sem posto escolhido: a lista de postos, em vez de uma página vazia. */}
+      {adminSelecionado === "" && (
+        <div className={`${CARD} overflow-hidden`}>
+          {admins.length === 0 ? (
+            <EmptyState
+              icon={MapPinned}
+              titulo="Ainda não há postos"
+              texto="Cada posto é criado com o seu administrador. Depois de criado, atribua-lhe aqui as vias da sua jurisdição."
+              acao={<Link to="/super-admin/admins" className={BUTTON_PRIMARY}>Criar administrador</Link>}
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200 bg-gray-50">
+                    <th className={TABLE_HEAD_CELL}>Posto</th>
+                    <th className={TABLE_HEAD_CELL}>Administrador</th>
+                    <th className={TABLE_HEAD_CELL}><span className="sr-only">Abrir</span></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {admins.map((a) => (
+                    <tr key={a.id} className={TABLE_ROW_HOVER}>
+                      <td className="px-6 py-3.5 text-sm font-medium text-gray-900">{a.posto}</td>
+                      <td className="px-6 py-3.5 text-sm text-gray-700">{a.nome}</td>
+                      <td className="px-6 py-3.5 text-right text-sm">
+                        <button type="button" onClick={() => setAdminSelecionado(a.id)} className={LINK}>
+                          Gerir jurisdição
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {adminSelecionado !== "" && (
         <>
@@ -194,14 +224,14 @@ export default function Jurisdicoes() {
               onRemoverVia={handleRemover}
             />
           ) : (
-            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
+            <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 mb-6">
               <MapPinned size={16} />
               A carregar mapa...
             </div>
           )}
 
           <div className={`${CARD} overflow-hidden`}>
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
+            <div className="px-6 py-3.5 border-b border-gray-200 flex items-center gap-2">
               <MapPinned size={18} className="text-gray-500" />
               <h2 className="font-semibold text-gray-900">Vias atribuídas ({vias.length})</h2>
               {vias.some((v) => v.area_km2 != null) && (
@@ -232,7 +262,7 @@ export default function Jurisdicoes() {
                     </span>
                     <button
                       onClick={() => handleRemover(v.id)}
-                      className="text-rose-600 hover:text-rose-800"
+                      className={ICON_BUTTON_DANGER} aria-label="Eliminar" title="Eliminar"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -420,7 +450,7 @@ function PesquisaJurisdicao({
       </p>
 
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
         <input
           type="text"
           value={query}
@@ -429,7 +459,7 @@ function PesquisaJurisdicao({
           className={`${INPUT} pl-9`}
         />
         {pesquisando && (
-          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={16} />
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 animate-spin" size={16} />
         )}
       </div>
 
@@ -544,7 +574,7 @@ function PesquisaJurisdicao({
                   </li>
                 ))}
               </ul>
-              <div className="flex gap-3">
+              <div className={MODAL_FOOTER}>
                 <button
                   onClick={() => setBairroSelecionado(null)}
                   className={BUTTON_SECONDARY}
@@ -643,7 +673,7 @@ function MapaVias({
 
   if (loadError || !isLoaded) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500 mb-6">
+      <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600 mb-6">
         <MapPinned size={16} />
         {loadError ? "Erro ao carregar o mapa." : "A carregar mapa..."}
       </div>

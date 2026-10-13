@@ -1,16 +1,55 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Pencil, Trash2, AlertTriangle, Loader2 } from "../../components/icons";
+
+
+
+
+
+import { Plus, Pencil, Trash2, Loader2 } from "../../components/icons";
+
+
+
 import { ptService } from "../../api/ptService";
+
+
+
+
+
 import type { CreatePTData, UpdatePTData, PT } from "../../api/ptService";
 import { useAuth } from "../../hooks/useAuth";
+
+
+
+
+
 import { REGEX } from "../../utils/validationSchemas";
+
+
+
+
+
 import Paginacao from "../../components/Paginacao";
 import { mostrarSucesso, mensagemDeErro } from "../../utils/mensagens";
-import {
-  PAGE, PAGE_TITLE, PAGE_SUBTITLE, CARD, INPUT, LABEL, FIELD_ERROR, FIELD_HINT,
-  BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, ALERT_ERROR,
-  TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD,
-} from "../../utils/uiClasses";
+
+
+
+
+
+import { PAGE, INPUT, LABEL, FIELD_ERROR, FIELD_HINT, BUTTON_PRIMARY, BUTTON_SECONDARY, BUTTON_DANGER, ALERT_ERROR, TABLE_HEAD_CELL, TABLE_ROW_HOVER, MODAL_OVERLAY, MODAL_CARD, TOOLBAR, CARD_ATTACHED, MODAL_TITLE, MODAL_TEXT, MODAL_FOOTER, ICON_BUTTON, ICON_BUTTON_DANGER } from "../../utils/uiClasses";
+
+
+import PageHeader from "../../components/app/PageHeader";
+import { ErroPagina, CampoPesquisa, LinhaVazia } from "../../components/app/Lista";
+
+
+
+
+
+import { LinhasEsqueleto } from "../../components/app/Carregando";
+
+
+
+
+
 
 const TAMANHO_PAGINA = 10;
 
@@ -167,98 +206,70 @@ export default function PTs() {
     </div>
   );
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-full min-h-[60vh]">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button onClick={() => carregarPts(paginaAtual)} className={`${BUTTON_PRIMARY} mt-4`}>
-            Tentar novamente
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (error) return <ErroPagina mensagem={error} onTentar={() => carregarPts(paginaAtual)} />;
 
   return (
     <div className={PAGE}>
-      <div className="flex items-start justify-between gap-4 mb-8">
-        <div>
-          <h1 className={PAGE_TITLE}>Agentes do posto</h1>
-          <p className={PAGE_SUBTITLE}>Agentes de trânsito que respondem pela jurisdição do seu posto</p>
-        </div>
-        <button onClick={abrirCriar} className={BUTTON_PRIMARY}>
-          <Plus size={18} />
-          Novo agente
-        </button>
+      <PageHeader
+        titulo="Agentes do posto" texto="Agentes de trânsito que respondem pela jurisdição do seu posto"
+        acoes={
+          <button onClick={abrirCriar} className={BUTTON_PRIMARY}>
+            <Plus size={14} />
+            Novo agente
+          </button>
+        }
+      />
+
+      <div className={TOOLBAR}>
+        <CampoPesquisa valor={searchTerm} onMudar={setSearchTerm} rotulo="Pesquisar por nome ou email" />
       </div>
 
-      <div className={`${CARD} p-4 mb-6`}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-          <input
-            type="text"
-            placeholder="Pesquisar por nome ou email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className={`${INPUT} pl-10`}
-          />
+      <div className={`${CARD_ATTACHED} overflow-hidden`}>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className={TABLE_HEAD_CELL}>Nome</th>
+                <th className={TABLE_HEAD_CELL}>Email</th>
+                <th className={TABLE_HEAD_CELL}>N.º de agente</th>
+                <th className={TABLE_HEAD_CELL}><span className="sr-only">Ações</span></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {loading ? (
+                <LinhasEsqueleto colunas={4} />
+              ) : filtrados.length === 0 ? (
+                <LinhaVazia colunas={4}>
+                    {searchTerm ? "Nenhum agente corresponde à pesquisa" : "Ainda não há agentes neste posto"}
+                  </LinhaVazia>
+              ) : (
+                filtrados.map((pt) => (
+                  <tr key={pt.id} className={TABLE_ROW_HOVER}>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm font-medium text-gray-900">{pt.nome}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">{pt.email}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-600">{pt.numero_agente}</td>
+                    <td className="px-6 py-3.5 whitespace-nowrap text-sm text-right">
+                      <button
+                        onClick={() => abrirEditar(pt)}
+                        className={ICON_BUTTON} aria-label="Editar" title="Editar"
+                        disabled={submitting}
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={() => { setSelectedPt(pt); setErroModal(null); setShowDeleteModal(true); }}
+                        className={ICON_BUTTON_DANGER} aria-label="Eliminar" title="Eliminar"
+                        disabled={submitting}
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      <div className={`${CARD} overflow-hidden`}>
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200 bg-gray-50">
-              <th className={TABLE_HEAD_CELL}>Nome</th>
-              <th className={TABLE_HEAD_CELL}>Email</th>
-              <th className={TABLE_HEAD_CELL}>N.º de agente</th>
-              <th className={`${TABLE_HEAD_CELL} text-right`}>Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-200">
-            {loading ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-10 text-center">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
-                </td>
-              </tr>
-            ) : filtrados.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-gray-500">
-                  {searchTerm ? "Nenhum agente corresponde à pesquisa" : "Ainda não há agentes neste posto"}
-                </td>
-              </tr>
-            ) : (
-              filtrados.map((pt) => (
-                <tr key={pt.id} className={TABLE_ROW_HOVER}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{pt.nome}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{pt.numero_agente}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button
-                      onClick={() => abrirEditar(pt)}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 mr-1"
-                      title="Editar"
-                      disabled={submitting}
-                    >
-                      <Pencil size={17} />
-                    </button>
-                    <button
-                      onClick={() => { setSelectedPt(pt); setErroModal(null); setShowDeleteModal(true); }}
-                      className="p-1.5 rounded-lg text-gray-500 hover:text-rose-600 hover:bg-rose-50"
-                      title="Eliminar"
-                      disabled={submitting}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
         <Paginacao
           paginaAtual={paginaAtual}
           totalItens={totalItens}
@@ -271,7 +282,7 @@ export default function PTs() {
       {showFormModal && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CARD}>
-            <h2 className="text-lg font-semibold text-gray-900 mb-5">
+            <h2 className={MODAL_TITLE}>
               {selectedPt ? "Editar agente" : "Novo agente"}
             </h2>
 
@@ -292,11 +303,11 @@ export default function PTs() {
               {campo("numero_agente", "N.º de agente", { placeholder: "Ex: PT-0452" })}
             </div>
 
-            <div className="flex gap-3 mt-6">
-              <button onClick={fecharModal} className={`${BUTTON_SECONDARY} flex-1`} disabled={submitting}>
+            <div className={MODAL_FOOTER}>
+              <button onClick={fecharModal} className={BUTTON_SECONDARY} disabled={submitting}>
                 Cancelar
               </button>
-              <button onClick={handleGuardar} className={`${BUTTON_PRIMARY} flex-1`} disabled={submitting}>
+              <button onClick={handleGuardar} className={BUTTON_PRIMARY} disabled={submitting}>
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar"}
               </button>
             </div>
@@ -307,23 +318,20 @@ export default function PTs() {
       {showDeleteModal && selectedPt && (
         <div className={MODAL_OVERLAY}>
           <div className={MODAL_CARD}>
-            <div className="flex items-center justify-center w-12 h-12 bg-rose-50 rounded-full mx-auto mb-4">
-              <AlertTriangle className="text-rose-600" size={24} />
-            </div>
-            <h2 className="text-lg font-semibold text-gray-900 text-center mb-2">Eliminar agente</h2>
-            <p className="text-sm text-gray-600 text-center mb-6">
+            <h2 className={MODAL_TITLE}>Eliminar agente</h2>
+            <p className={MODAL_TEXT}>
               Tem a certeza de que quer eliminar <strong>{selectedPt.nome}</strong>? Esta ação não pode ser desfeita.
             </p>
             {erroModal && <div className={`${ALERT_ERROR} mb-4`}>{erroModal}</div>}
-            <div className="flex gap-3">
+            <div className={MODAL_FOOTER}>
               <button
                 onClick={() => { setShowDeleteModal(false); setSelectedPt(null); }}
-                className={`${BUTTON_SECONDARY} flex-1`}
+                className={BUTTON_SECONDARY}
                 disabled={submitting}
               >
                 Cancelar
               </button>
-              <button onClick={handleDelete} className={`${BUTTON_DANGER} flex-1`} disabled={submitting}>
+              <button onClick={handleDelete} className={BUTTON_DANGER} disabled={submitting}>
                 {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Eliminar"}
               </button>
             </div>

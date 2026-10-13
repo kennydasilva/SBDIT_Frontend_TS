@@ -13,7 +13,7 @@ interface LocationPickerProps {
   initialLng?: number | null;
 }
 
-const containerStyle = { width: "100%", height: "280px", borderRadius: "0.5rem" };
+const containerStyle = { width: "100%", height: "280px", borderRadius: "0.375rem" };
 
 /**
  * Componente "portão": só monta <LocationPickerMapa> depois de já ter uma
@@ -41,7 +41,7 @@ export default function LocationPicker(props: LocationPickerProps) {
 
   if (erroConfig) {
     return (
-      <div className="rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
         {erroConfig}
       </div>
     );
@@ -49,7 +49,7 @@ export default function LocationPicker(props: LocationPickerProps) {
 
   if (!apiKey) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
         <MapPin size={16} />
         A carregar mapa...
       </div>
@@ -150,7 +150,7 @@ function LocationPickerMapa({
 
   if (loadError || !isLoaded) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-500">
+      <div className="flex items-center gap-2 rounded-md border border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
         <MapPin size={16} />
         {loadError ? "Erro ao carregar o mapa." : "A carregar mapa..."}
       </div>
@@ -164,11 +164,11 @@ function LocationPickerMapa({
         onPlaceChanged={handlePlaceChanged}
       >
         <div className="relative mb-2">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
           <input
             type="text"
             placeholder="Pesquisar rua, avenida ou local..."
-            className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="h-10 w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
           />
         </div>
       </Autocomplete>

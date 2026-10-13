@@ -8,11 +8,14 @@ interface PaginacaoProps {
   disabled?: boolean;
 }
 
+const BOTAO =
+  "inline-flex h-8 items-center gap-1.5 rounded-md border border-gray-300 bg-white px-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white";
+
 // Navegação Anterior/Seguinte partilhada pelas páginas de listagem que
-// consomem endpoints paginados do backend (DRF PageNumberPagination,
-// page_size=20). Não usa `next`/`previous` do backend para decidir se pode
-// avançar - dá para calcular localmente a partir de `count` e evita ficar
-// preso caso a API mude o formato da URL.
+// consomem endpoints paginados do backend (DRF PageNumberPagination).
+// Não usa `next`/`previous` do backend para decidir se pode avançar - dá
+// para calcular localmente a partir de `count` e evita ficar preso caso a
+// API mude o formato da URL.
 export default function Paginacao({
   paginaAtual,
   totalItens,
@@ -30,35 +33,36 @@ export default function Paginacao({
   const ultimoItem = Math.min(paginaAtual * tamanhoPagina, totalItens);
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200 bg-white">
-      <p className="text-sm text-gray-600">
-        Mostrando <span className="font-medium">{primeiroItem}</span> a{" "}
-        <span className="font-medium">{ultimoItem}</span> de{" "}
-        <span className="font-medium">{totalItens}</span>
+    <nav
+      aria-label="Paginação"
+      className="flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 px-6 py-3"
+    >
+      <p className="text-sm text-gray-600 tabular-nums">
+        {primeiroItem}–{ultimoItem} de {totalItens}
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => onMudarPagina(paginaAtual - 1)}
           disabled={disabled || paginaAtual <= 1}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+          className={BOTAO}
         >
-          <ChevronLeft size={16} />
+          <ChevronLeft size={12} />
           Anterior
         </button>
-        <span className="text-sm text-gray-600 px-1">
+        <span className="px-1 text-sm text-gray-600 tabular-nums">
           Página {paginaAtual} de {totalPaginas}
         </span>
         <button
           type="button"
           onClick={() => onMudarPagina(paginaAtual + 1)}
           disabled={disabled || paginaAtual >= totalPaginas}
-          className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white"
+          className={BOTAO}
         >
           Seguinte
-          <ChevronRight size={16} />
+          <ChevronRight size={12} />
         </button>
       </div>
-    </div>
+    </nav>
   );
 }

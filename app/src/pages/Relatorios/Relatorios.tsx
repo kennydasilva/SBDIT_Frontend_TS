@@ -1,17 +1,55 @@
 import { useEffect, useState } from "react";
-import {
-  FileDown, FileSpreadsheet, BarChart3, PieChart as PieChartIcon, AlertTriangle, Loader2,
-  Building2, Users, Siren, ShieldCheck, RotateCcw,
-} from "../../components/icons";
+
+
+
+
+
+import { FileDown, FileSpreadsheet, BarChart3, PieChart as PieChartIcon, Loader2, Building2, Users, Siren, ShieldCheck, RotateCcw } from "../../components/icons";
+
+
+
+
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+
+
+
+
+
+import PageHeader from "../../components/app/PageHeader";
+import StatStrip from "../../components/app/StatStrip";
+import { ErroBloco } from "../../components/app/Lista";
+
+
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
+
+
 import { relatorioService, type FiltrosRelatorio, type RelatorioResumo } from "../../api/relatorioService";
+
+
+
+
+
 import { ESTADO_LABEL, TIPO_LABEL } from "../../utils/estadoDenuncia";
+
+
+
+
+
 import { mostrarErro } from "../../utils/mensagens";
-import {
-  PAGE, PAGE_TITLE, PAGE_SUBTITLE, CARD, SECTION_TITLE, INPUT, LABEL,
-  BUTTON_PRIMARY, BUTTON_SECONDARY, TABLE_HEAD_CELL, TABLE_ROW_HOVER,
-} from "../../utils/uiClasses";
+
+
+
+
+
+import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDARY, TABLE_HEAD_CELL, TABLE_ROW_HOVER } from "../../utils/uiClasses";
+
+
 
 // Um só azul em escala (do mais claro, ainda à espera, ao mais escuro,
 // concluída); cinzento para as fechadas sem seguimento.
@@ -44,23 +82,10 @@ const formatarMinutos = (min: number | null) => {
   return min < 60 ? `${Math.round(min)} min` : formatarHoras(min / 60);
 };
 
-function Indicador({ titulo, valor, nota }: { titulo: string; valor: string | number; nota?: string }) {
-  return (
-    <div className={`${CARD} p-5`}>
-      <p className="text-sm text-gray-500">{titulo}</p>
-      <p className="text-2xl font-semibold text-gray-900 mt-1">{valor}</p>
-      {nota && <p className="text-xs text-gray-400 mt-1.5">{nota}</p>}
-    </div>
-  );
-}
-
-function Seccao({ icon: Icon, titulo, children }: { icon: typeof BarChart3; titulo: string; children: React.ReactNode }) {
+function Seccao({ titulo, children }: { icon: typeof BarChart3; titulo: string; children: React.ReactNode }) {
   return (
     <div className={`${CARD} p-6`}>
-      <div className="flex items-center gap-2 mb-4">
-        <Icon className="text-blue-600" size={20} />
-        <h2 className={SECTION_TITLE}>{titulo}</h2>
-      </div>
+      <h2 className={`${SECTION_TITLE} mb-4`}>{titulo}</h2>
       {children}
     </div>
   );
@@ -129,24 +154,22 @@ export default function Relatorios() {
 
   return (
     <div className={PAGE}>
-      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
-        <div>
-          <h1 className={PAGE_TITLE}>Relatórios</h1>
-          <p className={PAGE_SUBTITLE}>
-            {ehSuperAdmin ? "Visão agregada das denúncias de todos os postos" : "Denúncias da jurisdição do seu posto"}
-          </p>
-        </div>
-        <div className="flex gap-3">
+      <PageHeader
+        titulo="Relatórios"
+        texto={ehSuperAdmin ? "As denúncias de todos os postos. Os filtros aplicam-se ao ecrã e aos ficheiros exportados." : "As denúncias da jurisdição do seu posto. Os filtros aplicam-se ao ecrã e aos ficheiros exportados."}
+        acoes={
+          <>
           <button className={BUTTON_SECONDARY} onClick={() => exportar("pdf")} disabled={!!aExportar}>
-            {aExportar === "pdf" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown size={18} />}
+            {aExportar === "pdf" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown size={14} />}
             Exportar PDF
           </button>
           <button className={BUTTON_PRIMARY} onClick={() => exportar("excel")} disabled={!!aExportar}>
-            {aExportar === "excel" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet size={18} />}
+            {aExportar === "excel" ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileSpreadsheet size={14} />}
             Exportar Excel
           </button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* Filtros: aplicam-se ao ecrã e às exportações */}
       <div className={`${CARD} p-4 mb-6`}>
@@ -187,37 +210,44 @@ export default function Relatorios() {
           </div>
         </div>
         {temFiltros && (
-          <button onClick={() => setFiltros({})} className="mt-3 inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline">
+          <button onClick={() => setFiltros({})} className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline">
             <RotateCcw size={14} /> Limpar filtros
           </button>
         )}
       </div>
 
       {loading && !resumo ? (
-        <div className="flex justify-center py-24">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <div className="space-y-6" role="status" aria-label="A carregar">
+          <div className="h-20 animate-pulse rounded-lg bg-gray-200" />
+          <div className="h-72 animate-pulse rounded-lg bg-gray-200" />
         </div>
       ) : error || !resumo ? (
-        <div className="text-center py-20">
-          <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <p className="text-rose-600">{error}</p>
-          <button onClick={carregar} className={`${BUTTON_PRIMARY} mt-4`}>Tentar novamente</button>
+        <div className={CARD}>
+          <ErroBloco mensagem={error ?? "Erro ao carregar o relatório"} onTentar={carregar} />
         </div>
       ) : (
         <div className={`space-y-6 transition-opacity ${loading ? "opacity-50" : ""}`}>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Indicador titulo="Total de denúncias" valor={resumo.total_denuncias} />
-            <Indicador titulo="Taxa de resolução" valor={`${resumo.taxa_resolucao}%`}
-              nota="Denúncias que já tiveram resposta (não pendentes nem só enviadas ao posto)" />
-            <Indicador titulo="Tempo médio de resposta" valor={formatarHoras(resumo.tempo_medio_resposta_horas)}
-              nota="Da criação até à última decisão" />
-          </div>
+          <StatStrip
+            itens={[
+              { rotulo: "Total de denúncias", valor: resumo.total_denuncias },
+              {
+                rotulo: "Taxa de resolução",
+                valor: `${resumo.taxa_resolucao}%`,
+                nota: "Denúncias que já tiveram resposta",
+              },
+              {
+                rotulo: "Tempo médio de resposta",
+                valor: formatarHoras(resumo.tempo_medio_resposta_horas),
+                nota: "Da criação até à última decisão",
+              },
+            ]}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Seccao icon={BarChart3} titulo="Denúncias por mês">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={porMes}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                   <Tooltip />
@@ -258,7 +288,7 @@ export default function Relatorios() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={porTipo} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
                   <YAxis dataKey="tipo" type="category" width={150} tick={{ fontSize: 12 }} />
                   <Tooltip />
@@ -288,32 +318,32 @@ export default function Relatorios() {
               ])}
               vazio="Nenhum agente decidiu denúncias com estes filtros"
             />
-            <p className="text-xs text-gray-400 mt-3">
+            <p className="text-xs text-gray-500 mt-3">
               O tempo até decidir só é medido nas decisões registadas a partir desta versão.
             </p>
           </Seccao>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Seccao icon={Siren} titulo="Acidentes">
-              <div className="grid grid-cols-2 gap-3">
+              <dl className="grid gap-x-8 sm:grid-cols-2">
                 <MiniIndicador titulo="Acidentes" valor={resumo.acidentes.total} />
                 <MiniIndicador titulo="Tempo médio até designar" valor={formatarMinutos(resumo.acidentes.tempo_medio_ate_designar_min)} />
                 <MiniIndicador titulo="À espera de agente" valor={resumo.acidentes.a_aguardar_agente} destaque={resumo.acidentes.a_aguardar_agente > 0} />
                 <MiniIndicador titulo="Com agente designado" valor={resumo.acidentes.com_agente} />
                 <MiniIndicador titulo="Fora das jurisdições" valor={resumo.acidentes.sem_posto} />
                 <MiniIndicador titulo="Reportes repetidos juntados" valor={resumo.acidentes.reportes_juntados} />
-              </div>
+              </dl>
             </Seccao>
 
             <Seccao icon={ShieldCheck} titulo="Qualidade das denúncias">
-              <div className="grid grid-cols-2 gap-3">
+              <dl className="grid gap-x-8 sm:grid-cols-2">
                 <MiniIndicador titulo="Rejeitadas pela análise" valor={resumo.qualidade.rejeitadas_ia} />
                 <MiniIndicador titulo="Taxa de rejeição automática" valor={`${resumo.qualidade.taxa_rejeicao_ia}%`} />
                 <MiniIndicador titulo="Vídeo ilegível" valor={resumo.qualidade.video_ilegivel} />
                 <MiniIndicador titulo="Testemunhas (mesma infração)" valor={resumo.qualidade.testemunhas} />
                 <MiniIndicador titulo="Vídeos semelhantes" valor={resumo.qualidade.videos_semelhantes} />
                 <MiniIndicador titulo="Possíveis falsas" valor={resumo.qualidade.possiveis_falsas} destaque={resumo.qualidade.possiveis_falsas > 0} />
-              </div>
+              </dl>
             </Seccao>
           </div>
         </div>
@@ -324,9 +354,9 @@ export default function Relatorios() {
 
 function MiniIndicador({ titulo, valor, destaque }: { titulo: string; valor: string | number; destaque?: boolean }) {
   return (
-    <div className={`rounded-md border p-3 ${destaque ? "border-blue-100 bg-blue-50" : "border-gray-200 bg-gray-50/60"}`}>
-      <p className="text-xs text-gray-500">{titulo}</p>
-      <p className={`text-lg font-semibold mt-0.5 ${destaque ? "text-blue-800" : "text-gray-900"}`}>{valor}</p>
+    <div className="flex items-baseline justify-between gap-4 border-b border-gray-200 py-2.5">
+      <dt className="text-sm text-gray-600">{titulo}</dt>
+      <dd className={`text-sm font-semibold tabular-nums ${destaque ? "rounded bg-blue-600 px-1.5 text-white" : "text-gray-900"}`}>{valor}</dd>
     </div>
   );
 }
