@@ -1,3 +1,4 @@
+import type { LucideIcon } from "../icons";
 import { Link } from "react-router-dom";
 
 // Blocos visuais partilhados pelas páginas públicas (Início, Guia, Sobre
@@ -9,13 +10,21 @@ export const BTN_PRIMARY =
 export const BTN_SECONDARY =
   "inline-flex items-center justify-center rounded-full border border-[#1E40AF] bg-white px-6 py-3 text-sm font-semibold text-[#1E40AF] transition-colors hover:bg-[#1E40AF] hover:text-white";
 export const TEXT_LINK = "font-semibold text-[#1E40AF] underline underline-offset-4 hover:no-underline";
-export const PANEL = "rounded-2xl bg-white shadow-xl shadow-[#1E40AF]/10 ring-1 ring-[#1E40AF]/10";
+export const PANEL = "rounded-3xl bg-white shadow-xl shadow-[#1E40AF]/10 ring-1 ring-[#1E40AF]/10";
+
+export function IconTile({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#1E40AF] text-white">
+      <Icon size={22} />
+    </span>
+  );
+}
 
 export function SectionTitle({ titulo, texto, id, centro }: { titulo: string; texto?: string; id?: string; centro?: boolean }) {
   return (
     <div id={id} className={`max-w-2xl scroll-mt-28 ${centro ? "mx-auto text-center" : ""}`}>
-      <h2 className="text-3xl font-bold tracking-tight text-[#1E40AF]">{titulo}</h2>
-      {texto && <p className="mt-3 text-[#1E40AF]/85">{texto}</p>}
+      <h2 className="text-3xl font-bold text-[#1E40AF]">{titulo}</h2>
+      {texto && <p className="mt-3 text-[#1E40AF]/80">{texto}</p>}
     </div>
   );
 }
@@ -27,7 +36,7 @@ export function Linhas({ itens }: { itens: { titulo: string; texto: React.ReactN
       {itens.map((i) => (
         <div key={i.titulo} className="grid gap-1 py-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:gap-8">
           <dt className="font-semibold text-[#1E40AF]">{i.titulo}</dt>
-          <dd className="text-[#1E40AF]/85">{i.texto}</dd>
+          <dd className="text-[#1E40AF]/80">{i.texto}</dd>
         </div>
       ))}
     </dl>
@@ -39,13 +48,13 @@ export const BTN_ON_BLUE =
 export const BTN_ON_BLUE_OUTLINE =
   "inline-flex items-center justify-center rounded-full border border-white/50 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10";
 
-// Topo das páginas interiores (Guia, Sobre nós): a mesma faixa clara do Início.
+// Topo das páginas interiores (Guia, Sobre nós): a mesma faixa azul do Início.
 export function PageHeader({ titulo, texto }: { titulo: string; texto: string }) {
   return (
-    <section className="relative bg-[#1E40AF]/[0.06]">
-      <div className={`${CONTAINER} relative pb-12 pt-32 lg:pb-14 lg:pt-36`}>
-        <h1 className="max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight text-[#1E40AF] sm:text-5xl">{titulo}</h1>
-        <p className="mt-4 max-w-2xl text-lg text-[#1E40AF]/85">{texto}</p>
+    <section className="relative bg-[#1E40AF]">
+      <div className={`${CONTAINER} relative pb-14 pt-32 lg:pb-16 lg:pt-36`}>
+        <h1 className="max-w-3xl text-4xl font-bold text-white sm:text-5xl">{titulo}</h1>
+        <p className="mt-4 max-w-2xl text-lg text-white/85">{texto}</p>
       </div>
     </section>
   );
@@ -55,7 +64,7 @@ export function PageHeader({ titulo, texto }: { titulo: string; texto: string })
 export function Fecho() {
   return (
     <section className={`${CONTAINER} pb-16 lg:pb-20`}>
-      <div className="relative overflow-hidden rounded-2xl bg-[#1E40AF] px-6 py-12 sm:px-12">
+      <div className="relative overflow-hidden rounded-[2rem] bg-[#1E40AF] px-6 py-12 sm:px-12">
           <div className="relative flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div className="max-w-xl">
             <h2 className="text-3xl font-bold text-white">Pronto para denunciar?</h2>
