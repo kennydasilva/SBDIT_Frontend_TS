@@ -1,25 +1,63 @@
 import { useRef, useState } from "react";
+
+
+
+
 import { useNavigate } from "react-router";
-import { Upload, X, CheckCircle, Loader2, ArrowLeft, ArrowRight } from "../../components/icons";
+
+
+
+
+import {
+  Upload, X, CheckCircle, Loader2, ArrowLeft, ArrowRight, ArrowLeftRight, Ban, Gauge, Siren, Video, MapPin, FileText,
+} from "../../components/icons";
+
+
+
+
 import { denunciaService } from "../../api/denunciaService";
+
+
+
+
 import { useAuth } from "../../hooks/useAuth";
+
+
+
+
 import { REGEX, MATRICULA_EXEMPLO, MATRICULA_INVALIDA, PROVINCIAS_MATRICULA } from "../../utils/validationSchemas";
+
+
+
+
 import LocationPicker from "../../components/LocationPicker";
 import PageHeader from "../../components/app/PageHeader";
-import Campo, { Dados } from "../../components/app/Campo";
+import Campo from "../../components/app/Campo";
 import { labelTipo } from "../../utils/estadoDenuncia";
-import {
-  PAGE, CARD, INPUT, TEXTAREA, BUTTON_PRIMARY, BUTTON_SECONDARY, ALERT_INFO, ALERT_SUCCESS, ICON_BUTTON_DANGER,
-} from "../../utils/uiClasses";
+
+
+
+
+import { PAGE, INPUT, TEXTAREA, BUTTON_PRIMARY, BUTTON_SECONDARY, ICON_BUTTON_DANGER } from "../../utils/uiClasses";
+
 import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
+
+
+
+
 
 // O que o cidadão pode denunciar, com o que cada tipo exige dele.
 const TIPOS = [
-  { valor: "CONTRAMAO", texto: "Veículo a circular no sentido contrário ao da via." },
-  { valor: "PARADO", texto: "Paragem ou estacionamento em local proibido. O vídeo deve mostrar o veículo parado pelo menos 10 segundos." },
-  { valor: "VELOCIDADE", texto: "Condução acima do limite da via. Filme com o telemóvel o mais parado possível." },
-  { valor: "ACIDENTE", texto: "Segue de imediato para o posto policial da zona. A matrícula e o ficheiro são opcionais." },
+  { valor: "CONTRAMAO", icon: ArrowLeftRight, texto: "Veículo a circular no sentido contrário ao da via." },
+  { valor: "PARADO", icon: Ban, texto: "Paragem ou estacionamento em local proibido. O vídeo deve mostrar o veículo parado pelo menos 10 segundos." },
+  { valor: "VELOCIDADE", icon: Gauge, texto: "Condução acima do limite da via. Filme com o telemóvel o mais parado possível." },
+  { valor: "ACIDENTE", icon: Siren, texto: "Segue de imediato para o posto policial da zona. A matrícula e o ficheiro são opcionais." },
 ];
+
+// Quadrado azul com ícone branco, como nas páginas públicas.
+const ICONE = "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white";
+const BOTAO = "!h-11 !rounded-xl !px-6";
+const CARTAO = "rounded-2xl bg-white shadow-lg shadow-blue-600/10 ring-1 ring-blue-600/10";
 
 const PASSOS = ["Tipo de ocorrência", "Veículo e prova", "Local e envio"];
 
@@ -198,6 +236,31 @@ export default function CriarDenuncia() {
     }
   };
 
+  // O que já foi preenchido: mostrado no painel lateral em todos os passos.
+  const resumo = [
+    {
+      icon: TIPOS.find((t) => t.valor === formData.tipoInfracao)?.icon ?? FileText,
+      rotulo: "Tipo de ocorrência",
+      valor: formData.tipoInfracao
+        ? labelTipo(formData.tipoInfracao) + (ehContramao && formData.sentidoPermitido ? `, sentido permitido: ${formData.sentidoPermitido.toLowerCase()}` : "")
+        : null,
+      vazio: "Por escolher",
+    },
+    {
+      icon: FileText,
+      rotulo: "Matrícula",
+      valor: formData.matricula.trim().toUpperCase() || null,
+      vazio: ehAcidente ? "Não indicada (opcional)" : "Por indicar",
+    },
+    {
+      icon: Video,
+      rotulo: ehAcidente ? "Fotografia ou vídeo" : "Vídeo",
+      valor: videoFile?.name ?? null,
+      vazio: ehAcidente ? "Sem ficheiro (opcional)" : "Por escolher",
+    },
+    { icon: MapPin, rotulo: "Local", valor: local?.endereco ?? null, vazio: "Por marcar no mapa" },
+  ];
+
   return (
     <div className={PAGE}>
       <PageHeader
@@ -205,36 +268,51 @@ export default function CriarDenuncia() {
         texto="Três passos: o que aconteceu, o veículo e a prova, e o local."
       />
 
-      <div className="max-w-3xl">
+      <div>
         {/* Progresso */}
-        <ol className="mb-4 grid grid-cols-3 gap-2" aria-label="Passos da denúncia">
+        <ol className={`${CARTAO} mb-5 flex items-center px-5 py-4 sm:px-8`} aria-label="Passos da denúncia">
           {PASSOS.map((nome, i) => {
             const feito = i < passo;
             const atual = i === passo;
             return (
-              <li key={nome} aria-current={atual ? "step" : undefined}>
+              <li key={nome} aria-current={atual ? "step" : undefined} className="flex flex-1 items-center last:flex-none">
                 <button
                   type="button"
                   onClick={() => feito && !isLoading && !showSuccess && setPasso(i)}
                   disabled={!feito || isLoading || showSuccess}
-                  className={`block w-full border-t-2 pt-2 text-left ${
-                    atual || feito ? "border-blue-600" : "border-gray-300"
-                  } ${feito ? "" : "!cursor-default"}`}
+                  className={`flex items-center gap-3 text-left ${feito ? "" : "!cursor-default"}`}
                 >
-                  <span className={`block text-xs ${atual || feito ? "text-blue-800" : "text-gray-500"}`}>
-                    Passo {i + 1} de {PASSOS.length}
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                      atual
+                        ? "bg-blue-600 text-white ring-4 ring-blue-600/15"
+                        : feito
+                          ? "bg-blue-600 text-white"
+                          : "bg-blue-50 text-blue-800"
+                    }`}
+                  >
+                    {feito ? <CheckCircle size={16} /> : i + 1}
                   </span>
-                  <span className={`block text-sm font-medium ${atual ? "text-gray-900" : feito ? "text-blue-800" : "text-gray-500"}`}>
-                    {nome}
+                  <span className="hidden sm:block">
+                    <span className="block text-xs text-gray-500">Passo {i + 1}</span>
+                    <span className={`block text-sm font-semibold ${atual || feito ? "text-blue-800" : "text-gray-500"}`}>
+                      {nome}
+                    </span>
                   </span>
                 </button>
+                {i < PASSOS.length - 1 && (
+                  <span className={`mx-3 h-0.5 flex-1 rounded-full sm:mx-5 ${feito ? "bg-blue-600" : "bg-blue-100"}`} aria-hidden />
+                )}
               </li>
             );
           })}
         </ol>
+        <p className="mb-3 text-sm font-semibold text-blue-800 sm:hidden">
+          Passo {passo + 1} de {PASSOS.length}: {PASSOS[passo]}
+        </p>
 
         {showSuccess && (
-          <div className={`${ALERT_SUCCESS} mb-4 flex items-start gap-3`} role="status">
+          <div className="mb-5 flex items-start gap-3 rounded-2xl bg-blue-600 p-5 text-sm text-white" role="status">
             <CheckCircle className="mt-0.5 shrink-0" size={16} />
             <div>
               <p className="font-semibold">Denúncia enviada.</p>
@@ -246,19 +324,23 @@ export default function CriarDenuncia() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} noValidate className={`${CARD} p-6`}>
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <form onSubmit={handleSubmit} noValidate className={`${CARTAO} p-6 sm:p-8`}>
           {passo === 0 && (
             <div className="space-y-6">
               <fieldset>
-                <legend className="text-base font-semibold text-gray-900">O que quer denunciar?</legend>
-                <div className="mt-3 divide-y divide-gray-200 overflow-hidden rounded-md border border-gray-300">
+                <legend className="text-lg font-bold text-blue-800">O que quer denunciar?</legend>
+                <p className="mt-1 text-sm text-gray-600">Escolha o tipo de ocorrência. Cada um pede coisas diferentes.</p>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   {TIPOS.map((t) => {
                     const escolhido = formData.tipoInfracao === t.valor;
                     return (
                       <label
                         key={t.valor}
-                        className={`flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors ${
-                          escolhido ? "bg-blue-50" : "hover:bg-gray-50"
+                        className={`relative flex cursor-pointer gap-4 rounded-2xl p-4 transition-all ${
+                          escolhido
+                            ? "bg-blue-50 ring-2 ring-blue-600"
+                            : "bg-white ring-1 ring-gray-200 hover:ring-blue-300 hover:shadow-md hover:shadow-blue-600/10"
                         }`}
                       >
                         <input
@@ -270,12 +352,17 @@ export default function CriarDenuncia() {
                             mudar("tipoInfracao", t.valor);
                             setFieldErrors({});
                           }}
-                          className="mt-1 h-4 w-4 shrink-0"
+                          className="peer sr-only"
                         />
-                        <span>
-                          <span className="block text-sm font-medium text-gray-900">{labelTipo(t.valor)}</span>
-                          <span className="block text-sm text-gray-600">{t.texto}</span>
+                        <span className={ICONE}>
+                          <t.icon size={20} />
                         </span>
+                        <span className="min-w-0 pr-6">
+                          <span className="block font-semibold text-gray-900">{labelTipo(t.valor)}</span>
+                          <span className="mt-0.5 block text-sm text-gray-600">{t.texto}</span>
+                        </span>
+                        {escolhido && <CheckCircle size={20} className="absolute right-4 top-4 text-blue-600" />}
+                        <span className="pointer-events-none absolute inset-0 rounded-2xl peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-blue-600" />
                       </label>
                     );
                   })}
@@ -284,41 +371,58 @@ export default function CriarDenuncia() {
               </fieldset>
 
               {ehContramao && (
-                <fieldset>
-                  <legend className="text-sm font-medium text-gray-800">Sentido permitido da via</legend>
-                  <p className="mt-1 text-xs text-gray-500">
+                <fieldset className="rounded-2xl bg-blue-50 p-5">
+                  <legend className="float-left w-full text-base font-bold text-blue-800">Sentido permitido da via</legend>
+                  <p className="clear-both pt-1 text-sm text-gray-600">
                     Visto no vídeo: para que lado devem circular os veículos nessa via.
                   </p>
-                  <div className="mt-2 flex gap-6">
-                    {["Esquerda", "Direita"].map((sentido) => (
-                      <label key={sentido} className="flex cursor-pointer items-center gap-2 text-sm text-gray-800">
-                        <input
-                          type="radio"
-                          name="sentidoPermitido"
-                          value={sentido}
-                          checked={formData.sentidoPermitido === sentido}
-                          onChange={() => mudar("sentidoPermitido", sentido)}
-                          className="h-4 w-4"
-                        />
-                        {sentido}
-                      </label>
-                    ))}
+                  <div className="mt-4 grid max-w-sm grid-cols-2 gap-3">
+                    {["Esquerda", "Direita"].map((sentido) => {
+                      const escolhido = formData.sentidoPermitido === sentido;
+                      return (
+                        <label
+                          key={sentido}
+                          className={`flex h-11 cursor-pointer items-center justify-center gap-2 rounded-xl text-sm font-semibold transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-blue-600 ${
+                            escolhido ? "bg-blue-600 text-white" : "bg-white text-blue-800 ring-1 ring-blue-200 hover:ring-blue-600"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="sentidoPermitido"
+                            value={sentido}
+                            checked={escolhido}
+                            onChange={() => mudar("sentidoPermitido", sentido)}
+                            className="sr-only"
+                          />
+                          {sentido === "Esquerda" ? <ArrowLeft size={14} /> : null}
+                          {sentido}
+                          {sentido === "Direita" ? <ArrowRight size={14} /> : null}
+                        </label>
+                      );
+                    })}
                   </div>
                   {fieldErrors.sentido && <p className="mt-1.5 text-xs font-medium text-rose-600">{fieldErrors.sentido}</p>}
                 </fieldset>
               )}
 
               {ehAcidente && (
-                <p className={ALERT_INFO}>
-                  O acidente é enviado directamente, por SMS, ao posto policial responsável pela zona
-                  marcada no mapa, que designa um agente para o local. Não passa por análise de vídeo.
+                <p className="flex gap-4 rounded-2xl bg-blue-600 p-5 text-sm text-white">
+                  <Siren size={22} className="mt-0.5 shrink-0" />
+                  <span>O acidente é enviado directamente, por SMS, ao posto policial responsável pela zona
+                  marcada no mapa, que designa um agente para o local. Não passa por análise de vídeo.</span>
                 </p>
               )}
             </div>
           )}
 
           {passo === 1 && (
-            <div className="space-y-5">
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-lg font-bold text-blue-800">O veículo e a prova</h2>
+                <p className="mt-1 text-sm text-gray-600">
+                  {ehAcidente ? "Num acidente, a matrícula e o ficheiro são opcionais." : "A matrícula e o vídeo são obrigatórios."}
+                </p>
+              </div>
               <Campo
                 rotulo="Matrícula do veículo"
                 opcional={ehAcidente}
@@ -345,8 +449,8 @@ export default function CriarDenuncia() {
                 {!videoFile ? (
                   <label
                     htmlFor="video-upload"
-                    className={`flex cursor-pointer flex-col items-center rounded-md border border-dashed px-6 py-8 text-center transition-colors hover:border-blue-600 hover:bg-blue-50 ${
-                      fieldErrors.ficheiro ? "border-rose-400" : "border-gray-400"
+                    className={`flex cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed bg-blue-50/60 px-6 py-10 text-center transition-colors hover:border-blue-600 hover:bg-blue-50 ${
+                      fieldErrors.ficheiro ? "border-rose-400" : "border-blue-300"
                     }`}
                   >
                     <input
@@ -356,16 +460,19 @@ export default function CriarDenuncia() {
                       onChange={handleVideoUpload}
                       className="sr-only"
                     />
-                    <Upload className="mb-3 text-blue-600" size={22} />
-                    <span className="text-sm font-medium text-gray-900">Escolher o ficheiro</span>
+                    <span className={`${ICONE} mb-4`}>
+                      {ehAcidente ? <Upload size={20} /> : <Video size={20} />}
+                    </span>
+                    <span className="font-semibold text-blue-800">Escolher o ficheiro</span>
                     <span className="mt-1 text-xs text-gray-500">
                       MP4, AVI ou MOV{ehAcidente && ", JPG ou PNG"}, até {VIDEO_MAX_SIZE_MB} MB
                     </span>
                   </label>
                 ) : (
-                  <div className="rounded-md border border-gray-300 p-3">
+                  <div className="rounded-2xl bg-blue-50 p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
+                      <span className={ICONE}><Video size={20} /></span>
+                      <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-gray-900">{videoFile.name}</p>
                         <p className="text-xs text-gray-500">{(videoFile.size / 1024 / 1024).toFixed(1)} MB</p>
                       </div>
@@ -381,9 +488,9 @@ export default function CriarDenuncia() {
                     </div>
 
                     {videoPreview && (ehImagem ? (
-                      <img src={videoPreview} alt="Pré-visualização" className="mt-3 max-h-80 w-full rounded bg-gray-900 object-contain" />
+                      <img src={videoPreview} alt="Pré-visualização" className="mt-4 max-h-80 w-full rounded-xl bg-gray-900 object-contain" />
                     ) : (
-                      <video src={videoPreview} controls className="mt-3 max-h-80 w-full rounded bg-gray-900" />
+                      <video src={videoPreview} controls className="mt-4 max-h-80 w-full rounded-xl bg-gray-900" />
                     ))}
                   </div>
                 )}
@@ -405,7 +512,10 @@ export default function CriarDenuncia() {
           {passo === 2 && (
             <div className="space-y-6">
               <div>
-                <p className="mb-1.5 text-sm font-medium text-gray-800">Onde aconteceu</p>
+                <h2 className="text-lg font-bold text-blue-800">Onde aconteceu</h2>
+                <p className="mb-4 mt-1 text-sm text-gray-600">
+                  Pesquise a rua ou clique no mapa. É pelo local que se encontra o posto policial responsável.
+                </p>
                 <LocationPicker
                   initialLat={local?.lat}
                   initialLng={local?.lng}
@@ -417,23 +527,29 @@ export default function CriarDenuncia() {
                 {fieldErrors.mapa && <p className="mt-1.5 text-xs font-medium text-rose-600">{fieldErrors.mapa}</p>}
               </div>
 
-              <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-                <h2 className="mb-3 text-sm font-semibold text-gray-900">Confirme antes de enviar</h2>
-                <Dados
-                  itens={[
-                    { rotulo: "Tipo", valor: labelTipo(formData.tipoInfracao) + (ehContramao ? ` (sentido permitido: ${formData.sentidoPermitido.toLowerCase()})` : "") },
-                    { rotulo: "Matrícula", valor: formData.matricula.trim().toUpperCase() || "Não indicada" },
-                    { rotulo: ehAcidente ? "Fotografia ou vídeo" : "Vídeo", valor: videoFile?.name ?? "Sem ficheiro" },
-                    { rotulo: "Local", valor: local?.endereco ?? "Por marcar no mapa" },
-                  ]}
-                />
+              {/* No telemóvel o resumo fica aqui; em ecrãs largos está sempre no painel lateral. */}
+              <div className="rounded-2xl bg-blue-50 p-5 lg:hidden">
+                <h2 className="text-base font-bold text-blue-800">Confirme antes de enviar</h2>
+                <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+                  {resumo.map((r) => (
+                    <li key={r.rotulo} className="flex min-w-0 items-start gap-3 rounded-xl bg-white p-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-600 text-white">
+                        <r.icon size={15} />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-xs text-gray-500">{r.rotulo}</span>
+                        <span className="block break-words text-sm font-semibold text-gray-900">{r.valor ?? r.vazio}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 pt-5">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-blue-100 pt-6">
             {passo === 0 ? (
-              <button type="button" onClick={() => navigate("/cidadao/dashboard")} disabled={isLoading} className={BUTTON_SECONDARY}>
+              <button type="button" onClick={() => navigate("/cidadao/dashboard")} disabled={isLoading} className={`${BUTTON_SECONDARY} ${BOTAO}`}>
                 Cancelar
               </button>
             ) : (
@@ -441,7 +557,7 @@ export default function CriarDenuncia() {
                 type="button"
                 onClick={() => { setFieldErrors({}); setPasso((p) => p - 1); }}
                 disabled={isLoading || showSuccess}
-                className={BUTTON_SECONDARY}
+                className={`${BUTTON_SECONDARY} ${BOTAO}`}
               >
                 <ArrowLeft size={12} />
                 Voltar
@@ -449,18 +565,65 @@ export default function CriarDenuncia() {
             )}
 
             {passo < PASSOS.length - 1 ? (
-              <button type="submit" className={BUTTON_PRIMARY}>
+              <button type="submit" className={`${BUTTON_PRIMARY} ${BOTAO}`}>
                 Continuar
                 <ArrowRight size={12} />
               </button>
             ) : (
-              <button type="submit" disabled={isLoading || showSuccess} className={BUTTON_PRIMARY}>
+              <button type="submit" disabled={isLoading || showSuccess} className={`${BUTTON_PRIMARY} ${BOTAO}`}>
                 {isLoading && <Loader2 size={14} className="animate-spin" />}
                 {isLoading ? "A enviar…" : "Enviar denúncia"}
               </button>
             )}
           </div>
         </form>
+
+        {/* Painel lateral: o resumo a preencher-se e o que é preciso */}
+        <aside className="hidden space-y-5 lg:sticky lg:top-6 lg:block">
+          <section className="rounded-2xl bg-blue-600 p-6 text-white shadow-lg shadow-blue-600/25">
+            <h2 className="text-lg font-bold">A sua denúncia</h2>
+            <p className="mt-1 text-sm text-blue-100">Vai-se preenchendo à medida que avança.</p>
+            <ul className="mt-5 space-y-3">
+              {resumo.map((r) => (
+                <li key={r.rotulo} className="flex min-w-0 items-start gap-3 rounded-xl bg-white/10 p-3">
+                  <span
+                    className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+                      r.valor ? "bg-white text-blue-800" : "bg-white/15 text-white"
+                    }`}
+                  >
+                    <r.icon size={15} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs text-blue-100">{r.rotulo}</span>
+                    <span className={`block break-words text-sm ${r.valor ? "font-semibold text-white" : "text-blue-100"}`}>
+                      {r.valor ?? r.vazio}
+                    </span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className={`${CARTAO} p-6`}>
+            <h2 className="text-base font-bold text-blue-800">Para denunciar precisa de</h2>
+            <ul className="mt-3 divide-y divide-blue-100">
+              {[
+                { t: "Um vídeo da infração", d: `MP4, AVI ou MOV, até ${VIDEO_MAX_SIZE_MB} MB.` },
+                { t: "A matrícula do veículo", d: `No formato ${MATRICULA_EXEMPLO.replace(/^Ex:\s*/, "")}.` },
+                { t: "O local onde aconteceu", d: "Marca-o no mapa, no último passo." },
+              ].map((x) => (
+                <li key={x.t} className="py-3">
+                  <p className="text-sm font-semibold text-gray-900">{x.t}</p>
+                  <p className="text-sm text-gray-600">{x.d}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="border-t border-blue-100 pt-3 text-sm text-gray-600">
+              Num acidente de viação basta o local.
+            </p>
+          </section>
+        </aside>
+        </div>
       </div>
     </div>
   );
