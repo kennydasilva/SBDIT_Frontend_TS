@@ -38,7 +38,7 @@ import { labelTipo } from "../../utils/estadoDenuncia";
 
 
 
-import { PAGE, INPUT, TEXTAREA, BUTTON_PRIMARY, BUTTON_SECONDARY, ICON_BUTTON_DANGER } from "../../utils/uiClasses";
+import { PAGE, INPUT, TEXTAREA, BUTTON_PRIMARY, BUTTON_SECONDARY, ICON_BUTTON_DANGER, PAINEL, ICONE_AZUL, BOTAO_GRANDE } from "../../utils/uiClasses";
 
 import { mostrarAviso, mostrarErro } from "../../utils/mensagens";
 
@@ -54,10 +54,6 @@ const TIPOS = [
   { valor: "ACIDENTE", icon: Siren, texto: "Segue de imediato para o posto policial da zona. A matrícula e o ficheiro são opcionais." },
 ];
 
-// Quadrado azul com ícone branco, como nas páginas públicas.
-const ICONE = "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white";
-const BOTAO = "!h-11 !rounded-xl !px-6";
-const CARTAO = "rounded-2xl bg-white shadow-lg shadow-blue-600/10 ring-1 ring-blue-600/10";
 
 const PASSOS = ["Tipo de ocorrência", "Veículo e prova", "Local e envio"];
 
@@ -270,7 +266,7 @@ export default function CriarDenuncia() {
 
       <div>
         {/* Progresso */}
-        <ol className={`${CARTAO} mb-5 flex items-center px-5 py-4 sm:px-8`} aria-label="Passos da denúncia">
+        <ol className={`${PAINEL} mb-5 flex items-center px-5 py-4 sm:px-8`} aria-label="Passos da denúncia">
           {PASSOS.map((nome, i) => {
             const feito = i < passo;
             const atual = i === passo;
@@ -325,7 +321,7 @@ export default function CriarDenuncia() {
         )}
 
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <form onSubmit={handleSubmit} noValidate className={`${CARTAO} p-6 sm:p-8`}>
+        <form onSubmit={handleSubmit} noValidate className={`${PAINEL} p-6 sm:p-8`}>
           {passo === 0 && (
             <div className="space-y-6">
               <fieldset>
@@ -354,7 +350,7 @@ export default function CriarDenuncia() {
                           }}
                           className="peer sr-only"
                         />
-                        <span className={ICONE}>
+                        <span className={ICONE_AZUL}>
                           <t.icon size={20} />
                         </span>
                         <span className="min-w-0 pr-6">
@@ -460,7 +456,7 @@ export default function CriarDenuncia() {
                       onChange={handleVideoUpload}
                       className="sr-only"
                     />
-                    <span className={`${ICONE} mb-4`}>
+                    <span className={`${ICONE_AZUL} mb-4`}>
                       {ehAcidente ? <Upload size={20} /> : <Video size={20} />}
                     </span>
                     <span className="font-semibold text-blue-800">Escolher o ficheiro</span>
@@ -471,7 +467,7 @@ export default function CriarDenuncia() {
                 ) : (
                   <div className="rounded-2xl bg-blue-50 p-4">
                     <div className="flex items-center justify-between gap-3">
-                      <span className={ICONE}><Video size={20} /></span>
+                      <span className={ICONE_AZUL}><Video size={20} /></span>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-gray-900">{videoFile.name}</p>
                         <p className="text-xs text-gray-500">{(videoFile.size / 1024 / 1024).toFixed(1)} MB</p>
@@ -549,7 +545,7 @@ export default function CriarDenuncia() {
 
           <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-blue-100 pt-6">
             {passo === 0 ? (
-              <button type="button" onClick={() => navigate("/cidadao/dashboard")} disabled={isLoading} className={`${BUTTON_SECONDARY} ${BOTAO}`}>
+              <button type="button" onClick={() => navigate("/cidadao/dashboard")} disabled={isLoading} className={`${BUTTON_SECONDARY} ${BOTAO_GRANDE}`}>
                 Cancelar
               </button>
             ) : (
@@ -557,7 +553,7 @@ export default function CriarDenuncia() {
                 type="button"
                 onClick={() => { setFieldErrors({}); setPasso((p) => p - 1); }}
                 disabled={isLoading || showSuccess}
-                className={`${BUTTON_SECONDARY} ${BOTAO}`}
+                className={`${BUTTON_SECONDARY} ${BOTAO_GRANDE}`}
               >
                 <ArrowLeft size={12} />
                 Voltar
@@ -565,12 +561,12 @@ export default function CriarDenuncia() {
             )}
 
             {passo < PASSOS.length - 1 ? (
-              <button type="submit" className={`${BUTTON_PRIMARY} ${BOTAO}`}>
+              <button type="submit" className={`${BUTTON_PRIMARY} ${BOTAO_GRANDE}`}>
                 Continuar
                 <ArrowRight size={12} />
               </button>
             ) : (
-              <button type="submit" disabled={isLoading || showSuccess} className={`${BUTTON_PRIMARY} ${BOTAO}`}>
+              <button type="submit" disabled={isLoading || showSuccess} className={`${BUTTON_PRIMARY} ${BOTAO_GRANDE}`}>
                 {isLoading && <Loader2 size={14} className="animate-spin" />}
                 {isLoading ? "A enviar…" : "Enviar denúncia"}
               </button>
@@ -604,7 +600,7 @@ export default function CriarDenuncia() {
             </ul>
           </section>
 
-          <section className={`${CARTAO} p-6`}>
+          <section className={`${PAINEL} p-6`}>
             <h2 className="text-base font-bold text-blue-800">Para denunciar precisa de</h2>
             <ul className="mt-3 divide-y divide-blue-100">
               {[

@@ -1,35 +1,32 @@
 import { useEffect, useState } from "react";
-
 import { useNavigate } from "react-router";
-
 import {
-  Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList, Link2,
+  Bell, BellOff, CheckCheck, Loader2, AlertTriangle, FileText, RefreshCw, Siren, ShieldCheck, ClipboardList, Link2, ChevronRight,
 } from "../../components/icons";
-
 import { useAuth } from "../../hooks/useAuth";
-
+import { useNotificacoesNaoLidas } from "../../hooks/useNotificacoesNaoLidas";
 import { notificacaoService, type Notificacao } from "../../api/notificacaoService";
-
 import EmptyState from "../../components/app/EmptyState";
 import { ErroBloco, Segmentos } from "../../components/app/Lista";
-
 import Paginacao from "../../components/Paginacao";
-import { CARD, BUTTON_SECONDARY, PAGE } from "../../utils/uiClasses";
+import { PAGE, PAINEL } from "../../utils/uiClasses";
+import { formatarData } from "../../utils/datas";
 import PageHeader from "../../components/app/PageHeader";
 import { formatarDataHora } from "../../utils/datas";
 
 
 const TAMANHO_PAGINA = 10;
 
-const ICONE_TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; cor: string }> = {
-  DENUNCIA_RECEBIDA: { icon: FileText, cor: "text-blue-600" },
-  ESTADO_ALTERADO: { icon: RefreshCw, cor: "text-blue-600" },
-  NOVA_PARA_REVISAO: { icon: ClipboardList, cor: "text-blue-600" },
-  ACIDENTE_REPORTADO: { icon: Siren, cor: "text-blue-600" },
-  AGENTE_DESIGNADO: { icon: ShieldCheck, cor: "text-blue-600" },
-  ANALISE_FALHOU: { icon: AlertTriangle, cor: "text-blue-600" },
-  DENUNCIA_RELACIONADA: { icon: Link2, cor: "text-blue-600" },
+const TIPO: Record<Notificacao["tipo"], { icon: typeof Bell; rotulo: string }> = {
+  DENUNCIA_RECEBIDA: { icon: FileText, rotulo: "Denúncia recebida" },
+  ESTADO_ALTERADO: { icon: RefreshCw, rotulo: "Mudança de estado" },
+  NOVA_PARA_REVISAO: { icon: ClipboardList, rotulo: "Nova para decidir" },
+  ACIDENTE_REPORTADO: { icon: Siren, rotulo: "Acidente reportado" },
+  AGENTE_DESIGNADO: { icon: ShieldCheck, rotulo: "Agente designado" },
+  ANALISE_FALHOU: { icon: AlertTriangle, rotulo: "Análise falhou" },
+  DENUNCIA_RELACIONADA: { icon: Link2, rotulo: "Denúncia relacionada" },
 };
+
 
 // Página onde abrir a denúncia a que a notificação se refere, conforme o
 // papel de quem a lê (cada papel vê as denúncias num sítio diferente).
@@ -115,86 +112,151 @@ export default function Notificacoes() {
   };
 
   const haNaoLidas = notificacoes.some((n) => !n.lida);
+  const porLer = useNotificacoesNaoLidas();
+
+  // Agrupadas por dia, pela ordem em que chegam (da mais recente para a mais antiga).
+  const porDia: { dia: string; itens: Notificacao[] }[] = [];
+  for (const n of notificacoes) {
+    const dia = formatarData(n.criada_em);
+    const grupo = porDia[porDia.length - 1];
+    if (grupo && grupo.dia === dia) grupo.itens.push(n);
+    else porDia.push({ dia, itens: [n] });
+  }
+  const tiposNaPagina = Array.from(new Set(notificacoes.map((n) => n.tipo)));
 
   return (
     <div className={PAGE}>
       <PageHeader
-        titulo="Notificações" texto="Avisos sobre as denúncias que lhe dizem respeito. Abra um aviso para ver a denúncia."
-        acoes={
-          <button
-            onClick={marcarTodas}
-            className={`${BUTTON_SECONDARY} whitespace-nowrap`}
-            disabled={aMarcarTodas || !haNaoLidas}
-          >
-            {aMarcarTodas ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCheck size={16} />}
-            Marcar todas como lidas
-          </button>
-        }
+        titulo="Notificações"
+        texto="Avisos sobre as denúncias que lhe dizem respeito. Abra um aviso para ver a denúncia."
       />
 
-      <div className="mb-4">
-        <Segmentos
-          rotulo="Filtrar notificações"
-          valor={soNaoLidas ? "por-ler" : "todas"}
-          onMudar={(v) => mudarFiltro(v === "por-ler")}
-          opcoes={[
-            { valor: "todas", rotulo: "Todas" },
-            { valor: "por-ler", rotulo: "Por ler" },
-          ]}
-        />
-      </div>
-
-      <div className={`${CARD} overflow-hidden`}>
-        {loading ? (
-          <div className="space-y-4 p-6" role="status" aria-label="A carregar">
-            {[0, 1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded bg-gray-200" />)}
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div className={`${PAINEL} overflow-hidden`}>
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 px-6 py-4">
+            <Segmentos
+              rotulo="Filtrar notificações"
+              valor={soNaoLidas ? "por-ler" : "todas"}
+              onMudar={(v) => mudarFiltro(v === "por-ler")}
+              opcoes={[
+                { valor: "todas", rotulo: "Todas" },
+                { valor: "por-ler", rotulo: "Por ler", contagem: porLer },
+              ]}
+            />
+            <p className="text-sm text-gray-600 tabular-nums">
+              {totalItens} {totalItens === 1 ? "notificação" : "notificações"}
+            </p>
           </div>
-        ) : error ? (
-          <ErroBloco mensagem={error} onTentar={() => carregar(paginaAtual, soNaoLidas)} />
-        ) : notificacoes.length === 0 ? (
-          <EmptyState
-            icon={BellOff}
-            titulo={soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
-            texto="É avisado aqui sempre que uma denúncia que lhe diz respeito muda de estado."
-          />
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {notificacoes.map((n) => {
-              const { icon: Icon, cor } = ICONE_TIPO[n.tipo] ?? { icon: Bell, cor: "text-gray-600" };
-              const temDestino = !!destino(user?.role, n);
 
-              return (
-                <li key={n.id}>
-                  <button
-                    onClick={() => abrir(n)}
-                    className={`w-full text-left flex gap-4 px-6 py-3.5 transition-colors hover:bg-gray-50 ${
-                      n.lida ? "" : "bg-blue-50"
-                    } ${temDestino || !n.lida ? "cursor-pointer" : "cursor-default"}`}
-                  >
-                    <Icon size={16} className={`mt-0.5 shrink-0 ${cor}`} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className={`text-sm ${n.lida ? "text-gray-700" : "font-semibold text-gray-900"}`}>
-                          {n.titulo}
-                        </p>
-                        {!n.lida && <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />}
-                      </div>
-                      <p className="text-sm text-gray-600 mt-0.5">{n.mensagem}</p>
-                      <p className="text-xs text-gray-500 mt-1">{formatarDataHora(n.criada_em)}</p>
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-        <Paginacao
-          paginaAtual={paginaAtual}
-          totalItens={totalItens}
-          tamanhoPagina={TAMANHO_PAGINA}
-          onMudarPagina={setPaginaAtual}
-          disabled={loading}
-        />
+          {loading ? (
+            <div className="space-y-4 p-6" role="status" aria-label="A carregar">
+              {[0, 1, 2].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-blue-50" />)}
+            </div>
+          ) : error ? (
+            <ErroBloco mensagem={error} onTentar={() => carregar(paginaAtual, soNaoLidas)} />
+          ) : notificacoes.length === 0 ? (
+            <EmptyState
+              icon={BellOff}
+              titulo={soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
+              texto="É avisado aqui sempre que uma denúncia que lhe diz respeito muda de estado."
+            />
+          ) : (
+            porDia.map((grupo) => (
+              <section key={grupo.dia}>
+                <h2 className="bg-blue-50 px-6 py-2 text-xs font-semibold text-blue-800">{grupo.dia}</h2>
+                <ul className="divide-y divide-blue-100">
+                  {grupo.itens.map((n) => {
+                    const { icon: Icon, rotulo } = TIPO[n.tipo] ?? { icon: Bell, rotulo: "Aviso" };
+                    const temDestino = !!destino(user?.role, n);
+
+                    return (
+                      <li key={n.id}>
+                        <button
+                          onClick={() => abrir(n)}
+                          className={`flex w-full items-start gap-4 px-6 py-4 text-left transition-colors hover:bg-blue-50/70 ${
+                            temDestino || !n.lida ? "cursor-pointer" : "!cursor-default"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                              n.lida ? "bg-blue-50 text-blue-600" : "bg-blue-600 text-white"
+                            }`}
+                          >
+                            <Icon size={18} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                              <span className={`text-sm ${n.lida ? "font-medium text-gray-800" : "font-bold text-gray-900"}`}>
+                                {n.titulo}
+                              </span>
+                              {!n.lida && (
+                                <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">Nova</span>
+                              )}
+                            </span>
+                            <span className="mt-1 block text-sm text-gray-600">{n.mensagem}</span>
+                            <span className="mt-2 flex flex-wrap items-center gap-x-3 text-xs text-gray-500">
+                              <span className="rounded-md bg-blue-50 px-2 py-0.5 font-medium text-blue-800">{rotulo}</span>
+                              {formatarDataHora(n.criada_em)}
+                            </span>
+                          </span>
+                          {temDestino && <ChevronRight size={14} className="mt-3.5 shrink-0 text-blue-600" />}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ))
+          )}
+          <Paginacao
+            paginaAtual={paginaAtual}
+            totalItens={totalItens}
+            tamanhoPagina={TAMANHO_PAGINA}
+            onMudarPagina={setPaginaAtual}
+            disabled={loading}
+          />
+        </div>
+
+        <aside className="space-y-5 lg:sticky lg:top-6">
+          <section className="rounded-2xl bg-blue-600 p-6 text-white shadow-lg shadow-blue-600/25">
+            <div className="flex items-center gap-4">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-blue-800">
+                <Bell size={20} />
+              </span>
+              <div>
+                <p className="text-3xl font-bold leading-none tabular-nums">{porLer}</p>
+                <p className="mt-1 text-sm text-blue-100">{porLer === 1 ? "notificação por ler" : "notificações por ler"}</p>
+              </div>
+            </div>
+            <button
+              onClick={marcarTodas}
+              disabled={aMarcarTodas || !haNaoLidas}
+              className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-blue-800 transition-colors hover:bg-blue-50 disabled:cursor-not-allowed disabled:bg-white/20 disabled:text-white/70"
+            >
+              {aMarcarTodas ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCheck size={14} />}
+              Marcar todas como lidas
+            </button>
+          </section>
+
+          {tiposNaPagina.length > 0 && (
+            <section className={`${PAINEL} p-6`}>
+              <h2 className="text-base font-bold text-blue-800">Tipos de aviso nesta página</h2>
+              <ul className="mt-4 space-y-3">
+                {tiposNaPagina.map((t) => {
+                  const { icon: Icon, rotulo } = TIPO[t] ?? { icon: Bell, rotulo: "Aviso" };
+                  return (
+                    <li key={t} className="flex items-center gap-3 text-sm font-medium text-gray-800">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                        <Icon size={15} />
+                      </span>
+                      {rotulo}
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          )}
+        </aside>
       </div>
     </div>
   );

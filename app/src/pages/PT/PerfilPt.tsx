@@ -4,11 +4,14 @@ import { ptService, type PTUserResponse } from "../../api/ptService";
 import { denunciaService } from "../../api/denunciaService";
 import { useAuth } from "../../hooks/useAuth";
 import PageHeader from "../../components/app/PageHeader";
-import { Dados, SeccaoFormulario } from "../../components/app/Campo";
+import { BlocoPerfil, CartaoIdentidade, GrelhaDados, Numeros } from "../../components/app/Perfil";
+import {
+  Archive, Calendar, CheckCircle2, ClipboardList, Gavel, KeyRound, Mail, Phone, Shield, User,
+} from "../../components/icons";
 import { PaginaEsqueleto } from "../../components/app/Carregando";
 import { ErroPagina } from "../../components/app/Lista";
 import { formatarData } from "../../utils/datas";
-import { PAGE, CARD, BUTTON_SECONDARY } from "../../utils/uiClasses";
+import { PAGE, BUTTON_SECONDARY, BOTAO_GRANDE } from "../../utils/uiClasses";
 
 // Perfil do agente: só de leitura. Os dados do agente são geridos pelo
 // Admin do posto; aqui o agente só altera a própria senha.
@@ -62,41 +65,51 @@ export default function PerfilPt() {
     <div className={PAGE}>
       <PageHeader titulo="Perfil" texto="Os seus dados de agente e a senha de acesso." />
 
-      <div className={`${CARD} max-w-4xl p-6`}>
-        <SeccaoFormulario
-          titulo="Identificação"
-          texto="Estes dados são geridos pelo administrador do seu posto. Se algum estiver errado, peça-lhe para o corrigir."
-        >
-          <Dados
-            itens={[
-              { rotulo: "Nome", valor: pt?.nome },
-              { rotulo: "N.º de agente", valor: pt?.numero_agente },
-              { rotulo: "Email", valor: pt?.email },
-              { rotulo: "Telemóvel", valor: pt?.numero },
-              { rotulo: "Registado em", valor: formatarData(pt?.data_registo) },
-            ]}
-          />
-        </SeccaoFormulario>
+      <div className="grid items-start gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
+        <CartaoIdentidade
+          nome={pt?.nome}
+          papel="Agente de trânsito"
+          email={pt?.email}
+          itens={[
+            { icon: Shield, rotulo: "N.º de agente", valor: pt?.numero_agente },
+            { icon: Calendar, rotulo: "Registado em", valor: formatarData(pt?.data_registo) },
+          ]}
+        />
 
-        {decisoes && (
-          <SeccaoFormulario titulo="Actividade" texto="As denúncias que já decidiu.">
-            <Dados
+        <div className="space-y-5">
+          {decisoes && (
+            <BlocoPerfil icon={Gavel} titulo="A minha actividade" texto="As denúncias que já decidiu.">
+              <Numeros
+                itens={[
+                  { icon: ClipboardList, rotulo: "Denúncias decididas", valor: decisoes.total },
+                  { icon: CheckCircle2, rotulo: "Aprovadas", valor: decisoes.aprovadas },
+                  { icon: Archive, rotulo: "Arquivadas", valor: decisoes.arquivadas },
+                ]}
+              />
+            </BlocoPerfil>
+          )}
+
+          <BlocoPerfil
+            icon={User}
+            titulo="Identificação"
+            texto="Estes dados são geridos pelo administrador do seu posto. Se algum estiver errado, peça-lhe para o corrigir."
+          >
+            <GrelhaDados
               itens={[
-                { rotulo: "Denúncias decididas", valor: String(decisoes.total) },
-                { rotulo: "Aprovadas", valor: String(decisoes.aprovadas) },
-                { rotulo: "Arquivadas", valor: String(decisoes.arquivadas) },
+                { icon: User, rotulo: "Nome completo", valor: pt?.nome },
+                { icon: Shield, rotulo: "N.º de agente", valor: pt?.numero_agente },
+                { icon: Mail, rotulo: "Email", valor: pt?.email },
+                { icon: Phone, rotulo: "Telemóvel", valor: pt?.numero },
               ]}
             />
-          </SeccaoFormulario>
-        )}
+          </BlocoPerfil>
 
-        <SeccaoFormulario titulo="Segurança" texto="Altere a senha com que entra no sistema.">
-          <div>
-            <button type="button" className={BUTTON_SECONDARY} onClick={() => setAAlterarSenha(true)}>
+          <BlocoPerfil icon={KeyRound} titulo="Segurança" texto="Altere a senha com que entra no sistema.">
+            <button type="button" className={`${BUTTON_SECONDARY} ${BOTAO_GRANDE}`} onClick={() => setAAlterarSenha(true)}>
               Alterar senha
             </button>
-          </div>
-        </SeccaoFormulario>
+          </BlocoPerfil>
+        </div>
       </div>
 
       {aAlterarSenha && <AlterarSenhaModal onFechar={() => setAAlterarSenha(false)} />}

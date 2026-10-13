@@ -5,6 +5,13 @@
 
 export const CARD =
   "bg-white rounded-lg border border-gray-200";
+// Linguagem visual das páginas públicas dentro da aplicação: painel de
+// cantos redondos com sombra azulada, quadrado azul com ícone branco e
+// botões maiores. Usada nos ecrãs do cidadão e nos perfis.
+export const PAINEL = "rounded-2xl bg-white shadow-lg shadow-blue-600/10 ring-1 ring-blue-600/10";
+export const ICONE_AZUL = "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-white";
+export const BOTAO_GRANDE = "!h-11 !rounded-xl !px-6";
+
 export const CARD_HOVER = `${CARD} hover:border-blue-600 transition-colors`;
 
 export const INPUT =
