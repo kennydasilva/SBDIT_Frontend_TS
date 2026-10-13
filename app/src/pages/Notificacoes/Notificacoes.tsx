@@ -132,8 +132,8 @@ export default function Notificacoes() {
       />
 
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <div className={`${PAINEL} overflow-hidden`}>
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-blue-100 px-6 py-4">
+        <div className="min-w-0">
+          <div className={`${PAINEL} flex flex-wrap items-center justify-between gap-3 px-5 py-3.5`}>
             <Segmentos
               rotulo="Filtrar notificações"
               valor={soNaoLidas ? "por-ler" : "todas"}
@@ -149,22 +149,31 @@ export default function Notificacoes() {
           </div>
 
           {loading ? (
-            <div className="space-y-4 p-6" role="status" aria-label="A carregar">
-              {[0, 1, 2].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-blue-50" />)}
+            <div className="mt-5 space-y-3" role="status" aria-label="A carregar">
+              {[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-blue-100/70" />)}
             </div>
           ) : error ? (
-            <ErroBloco mensagem={error} onTentar={() => carregar(paginaAtual, soNaoLidas)} />
+            <div className={`${PAINEL} mt-5`}>
+              <ErroBloco mensagem={error} onTentar={() => carregar(paginaAtual, soNaoLidas)} />
+            </div>
           ) : notificacoes.length === 0 ? (
-            <EmptyState
-              icon={BellOff}
-              titulo={soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
-              texto="É avisado aqui sempre que uma denúncia que lhe diz respeito muda de estado."
-            />
+            <div className={`${PAINEL} mt-5`}>
+              <EmptyState
+                icon={BellOff}
+                titulo={soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
+                texto="É avisado aqui sempre que uma denúncia que lhe diz respeito muda de estado."
+              />
+            </div>
           ) : (
             porDia.map((grupo) => (
-              <section key={grupo.dia}>
-                <h2 className="bg-blue-50 px-6 py-2 text-xs font-semibold text-blue-800">{grupo.dia}</h2>
-                <ul className="divide-y divide-blue-100">
+              <section key={grupo.dia} className="mt-6">
+                {/* Dia: rótulo com uma linha fina até ao fim */}
+                <h2 className="flex items-center gap-3 text-xs font-semibold text-blue-800">
+                  {grupo.dia}
+                  <span className="h-px flex-1 bg-blue-200" aria-hidden />
+                </h2>
+                {/* Cada aviso é um cartão separado; o não lido tem contorno azul cheio. */}
+                <ul className="mt-3 space-y-3">
                   {grupo.itens.map((n) => {
                     const { icon: Icon, rotulo } = TIPO[n.tipo] ?? { icon: Bell, rotulo: "Aviso" };
                     const temDestino = !!destino(user?.role, n);
@@ -173,33 +182,40 @@ export default function Notificacoes() {
                       <li key={n.id}>
                         <button
                           onClick={() => abrir(n)}
-                          className={`flex w-full items-start gap-4 px-6 py-4 text-left transition-colors hover:bg-blue-50/70 ${
-                            temDestino || !n.lida ? "cursor-pointer" : "!cursor-default"
-                          }`}
+                          className={`group flex w-full items-start gap-4 rounded-2xl p-5 text-left shadow-sm shadow-blue-600/5 transition-all duration-200 hover:shadow-lg hover:shadow-blue-600/15 ${
+                            n.lida
+                              ? "bg-white ring-1 ring-blue-200 hover:ring-blue-400"
+                              : "bg-blue-50 ring-2 ring-blue-600"
+                          } ${temDestino || !n.lida ? "cursor-pointer" : "!cursor-default"}`}
                         >
                           <span
-                            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
+                            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
                               n.lida ? "bg-blue-50 text-blue-600" : "bg-blue-600 text-white"
                             }`}
                           >
-                            <Icon size={18} />
+                            <Icon size={19} />
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                              <span className={`text-sm ${n.lida ? "font-medium text-gray-800" : "font-bold text-gray-900"}`}>
+                              <span className={`text-[15px] ${n.lida ? "font-semibold text-gray-800" : "font-bold text-gray-900"}`}>
                                 {n.titulo}
                               </span>
                               {!n.lida && (
                                 <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">Nova</span>
                               )}
                             </span>
-                            <span className="mt-1 block text-sm text-gray-600">{n.mensagem}</span>
-                            <span className="mt-2 flex flex-wrap items-center gap-x-3 text-xs text-gray-500">
-                              <span className="rounded-md bg-blue-50 px-2 py-0.5 font-medium text-blue-800">{rotulo}</span>
+                            <span className="mt-1.5 block text-sm leading-relaxed text-gray-600">{n.mensagem}</span>
+                            <span className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-blue-100 pt-3 text-xs text-gray-500">
+                              <span className={`rounded-md px-2 py-0.5 font-medium text-blue-800 ${n.lida ? "bg-blue-50" : "bg-white"}`}>{rotulo}</span>
                               {formatarDataHora(n.criada_em)}
+                              {temDestino && (
+                                <span className="ml-auto inline-flex items-center gap-1.5 font-semibold text-blue-600 group-hover:underline">
+                                  Abrir denúncia
+                                  <ChevronRight size={10} />
+                                </span>
+                              )}
                             </span>
                           </span>
-                          {temDestino && <ChevronRight size={14} className="mt-3.5 shrink-0 text-blue-600" />}
                         </button>
                       </li>
                     );
@@ -208,13 +224,18 @@ export default function Notificacoes() {
               </section>
             ))
           )}
-          <Paginacao
-            paginaAtual={paginaAtual}
-            totalItens={totalItens}
-            tamanhoPagina={TAMANHO_PAGINA}
-            onMudarPagina={setPaginaAtual}
-            disabled={loading}
-          />
+
+          {totalItens > TAMANHO_PAGINA && (
+            <div className={`${PAINEL} mt-5 overflow-hidden [&>nav]:border-t-0`}>
+              <Paginacao
+                paginaAtual={paginaAtual}
+                totalItens={totalItens}
+                tamanhoPagina={TAMANHO_PAGINA}
+                onMudarPagina={setPaginaAtual}
+                disabled={loading}
+              />
+            </div>
+          )}
         </div>
 
         <aside className="space-y-5 lg:sticky lg:top-6">
