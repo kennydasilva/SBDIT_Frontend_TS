@@ -10,6 +10,7 @@ export const ESTADO_LABEL: Record<string, string> = {
   ARQUIVADA: "Arquivada",
   ENCAMINHADA: "Enviada ao posto",
   EM_ATENDIMENTO: "Agente designado",
+  CONCLUIDA: "Concluída",
   DUVIDOSA: "Duvidosa",
 };
 
@@ -17,7 +18,7 @@ export const ESTADO_LABEL: Record<string, string> = {
 // estado tem sempre o rótulo escrito, por isso a cor reforça e não é a
 // única pista. Todos os pares texto/fundo têm contraste acima de 4,5:1.
 //  - âmbar: à espera;            - azul-céu: em curso;
-//  - verde: com seguimento;      - vermelho: rejeitada;
+//  - verde: aprovada ou acidente concluído;  - vermelho: rejeitada;
 //  - neutro: arquivada (fechada sem ser erro).
 const A_ESPERA = "bg-amber-100 text-amber-900 border-amber-200";
 const EM_CURSO = "bg-sky-100 text-sky-800 border-sky-200";
@@ -32,7 +33,8 @@ export const ESTADO_TONE: Record<string, string> = {
   REJEITADA: REJEITADA,
   ARQUIVADA: FECHADA,
   ENCAMINHADA: EM_CURSO,
-  EM_ATENDIMENTO: CONCLUIDA,
+  EM_ATENDIMENTO: EM_CURSO,
+  CONCLUIDA: CONCLUIDA,
   DUVIDOSA: A_ESPERA,
 };
 
@@ -47,6 +49,7 @@ export const labelEstado = (estado: string, tipo?: string) => {
   // Acidente ainda PENDENTE = o ponto não caiu em nenhuma jurisdição
   // registada, nenhum posto foi avisado.
   if (tipo === "ACIDENTE" && estado === "PENDENTE") return "Sem posto na zona";
+  if (tipo === "ACIDENTE" && estado === "CONCLUIDA") return "Concluído";
   return ESTADO_LABEL[estado] ?? estado;
 };
 

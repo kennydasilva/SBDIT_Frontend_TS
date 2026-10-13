@@ -50,6 +50,7 @@ const estados = [
   "ARQUIVADA",
   "ENCAMINHADA",
   "EM_ATENDIMENTO",
+  "CONCLUIDA",
   "DUVIDOSA",
 ];
 

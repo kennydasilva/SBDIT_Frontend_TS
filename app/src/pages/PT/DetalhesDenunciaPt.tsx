@@ -217,6 +217,8 @@ export default function DetalhesDenunciaPt() {
       <AcidenteDetalhe
         denuncia={denuncia}
         baseUrl={BASE_URL}
+        podeConcluir={user?.role === "PT" && denuncia.estado === "EM_ATENDIMENTO"}
+        onConcluido={carregarDenuncia}
         voltar={user?.role === "PT" ? { para: "/pt/dashboard", texto: "Voltar ao painel" } : voltar}
       />
     );

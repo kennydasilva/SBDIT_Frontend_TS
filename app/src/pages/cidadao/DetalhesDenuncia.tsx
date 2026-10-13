@@ -107,15 +107,22 @@ export default function DetalhesDenuncia() {
     {
       status: "Enviada ao posto responsável",
       data: null,
-      concluido: ["ENCAMINHADA", "EM_ATENDIMENTO"].includes(denuncia.estado),
+      concluido: ["ENCAMINHADA", "EM_ATENDIMENTO", "CONCLUIDA"].includes(denuncia.estado),
       icon: Siren,
       resultado: denuncia.estado === "PENDENTE" ? "PENDENTE" : undefined,
     },
     {
       status: "Agente designado para o local",
       data: null,
-      concluido: denuncia.estado === "EM_ATENDIMENTO",
+      concluido: ["EM_ATENDIMENTO", "CONCLUIDA"].includes(denuncia.estado),
       icon: Shield,
+      resultado: undefined,
+    },
+    {
+      status: "Acidente concluído pelo agente",
+      data: null,
+      concluido: denuncia.estado === "CONCLUIDA",
+      icon: CheckCircle,
       resultado: undefined,
     },
   ];

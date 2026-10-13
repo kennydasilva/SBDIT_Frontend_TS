@@ -22,7 +22,7 @@ import {
 const RECENTES = 3;
 
 // Estados em que a denúncia ainda está a ser tratada.
-const EM_CURSO = ["PENDENTE", "VALIDADA", "DUVIDOSA", "ENCAMINHADA"];
+const EM_CURSO = ["PENDENTE", "VALIDADA", "DUVIDOSA", "ENCAMINHADA", "EM_ATENDIMENTO"];
 
 export default function CidadaoDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -101,7 +101,7 @@ export default function CidadaoDashboard() {
           itens={[
             { icon: FileText, rotulo: "Denúncias enviadas", valor: total, para: "/cidadao/minhas-denuncias" },
             { icon: Clock, rotulo: "Em curso", valor: contar(EM_CURSO), nota: "À espera da análise ou da decisão" },
-            { icon: CheckCircle2, rotulo: "Aprovadas", valor: contar(["APROVADA", "EM_ATENDIMENTO"]), nota: "Com seguimento pelo posto" },
+            { icon: CheckCircle2, rotulo: "Resolvidas", valor: contar(["APROVADA", "CONCLUIDA"]), nota: "Aprovadas ou acidentes concluídos" },
             { icon: Archive, rotulo: "Sem seguimento", valor: contar(["REJEITADA", "ARQUIVADA"]), nota: "Rejeitadas ou arquivadas" },
           ]}
         />

@@ -178,8 +178,9 @@ export default function Acidentes() {
                     <td className="px-6 py-3.5 text-sm text-gray-600 max-w-xs">{a.descricao || "-"}</td>
                     <td className="px-6 py-3.5 text-sm whitespace-nowrap">
                       {a.pt_id ? (
-                        <span className={`${BADGE} ${STATUS_TONES.emerald}`}>
-                          {nomeAgente(a.pt_id)}
+                        <span className="flex flex-col items-start gap-1.5">
+                          <span className={`${BADGE} ${STATUS_TONES.blue}`}>{nomeAgente(a.pt_id)}</span>
+                          {a.estado === "CONCLUIDA" && <span className={`${BADGE} ${STATUS_TONES.emerald}`}>Concluído</span>}
                         </span>
                       ) : (
                         <span className={`${BADGE} ${STATUS_TONES.amber}`}>
@@ -188,7 +189,9 @@ export default function Acidentes() {
                       )}
                     </td>
                     <td className="px-6 py-3.5 text-sm">
-                      {agentes.length === 0 ? (
+                      {a.estado === "CONCLUIDA" ? (
+                        <span className="text-xs text-gray-600">O agente deu o acidente por concluído.</span>
+                      ) : agentes.length === 0 ? (
                         // Sem agentes no posto não há quem designar: em vez de
                         // um combobox vazio e desactivado (parecia avariado),
                         // diz porquê e leva a criar um agente.

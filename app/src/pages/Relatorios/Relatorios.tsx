@@ -58,7 +58,8 @@ const ESTADO_COR: Record<string, string> = {
   ENCAMINHADA: "#38BDF8",
   VALIDADA: "#0284C7",
   APROVADA: "#059669",
-  EM_ATENDIMENTO: "#34D399",
+  EM_ATENDIMENTO: "#7DD3FC",
+  CONCLUIDA: "#34D399",
   REJEITADA: "#E11D48",
   ARQUIVADA: "#8EA0D7",
 };
@@ -327,6 +328,7 @@ export default function Relatorios() {
                 <MiniIndicador titulo="Tempo médio até designar" valor={formatarMinutos(resumo.acidentes.tempo_medio_ate_designar_min)} />
                 <MiniIndicador titulo="À espera de agente" valor={resumo.acidentes.a_aguardar_agente} destaque={resumo.acidentes.a_aguardar_agente > 0} />
                 <MiniIndicador titulo="Com agente designado" valor={resumo.acidentes.com_agente} />
+                <MiniIndicador titulo="Concluídos" valor={resumo.acidentes.concluidos ?? 0} />
                 <MiniIndicador titulo="Fora das jurisdições" valor={resumo.acidentes.sem_posto} />
                 <MiniIndicador titulo="Reportes repetidos juntados" valor={resumo.acidentes.reportes_juntados} />
               </dl>

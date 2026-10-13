@@ -241,6 +241,20 @@ export const denunciaService = {
     },
 
 
+    // O agente designado dá o acidente por concluído (o backend confirma
+    // que é mesmo ele, a partir do token).
+    async concluirAcidente(denunciaId: number): Promise<{message:string; id:number}>{
+        try{
+            const response= await api.patch(`denuncias/pt/concluir-acidente/`, { denuncia_id: denunciaId });
+            return response.data;
+        }
+        catch(error){
+            console.error("Erro ao concluir o acidente:", error);
+            throw error;
+        }
+    },
+
+
     async listarRelacionadas(id: number): Promise<DenunciaTestemunha[]>{
         try{
             const response= await api.get<DenunciaTestemunha[]>(`denuncias/${id}/relacionadas/`);

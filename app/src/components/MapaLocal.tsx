@@ -12,7 +12,7 @@ interface MapaLocalProps {
   className?: string;
 }
 
-const AVISO = "flex h-full min-h-48 items-center justify-center gap-2 rounded-xl bg-blue-50 p-6 text-center text-sm text-blue-800";
+const AVISO = "flex min-h-48 items-center justify-center gap-2 rounded-xl bg-blue-50 p-6 text-center text-sm text-blue-800";
 
 // Mapa só de leitura com um marcador no local (ex.: onde aconteceu um
 // acidente). Mesmo "portão" do LocationPicker: o mapa só monta depois de

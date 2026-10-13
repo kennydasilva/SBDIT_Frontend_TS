@@ -1,16 +1,23 @@
-import { ArrowRight, Calendar, FileText, MapPin, Route, Siren, Users } from "../../components/icons";
+import { useState } from "react";
+import { ArrowRight, Calendar, CheckCircle, FileText, Loader2, MapPin, Route, Siren, Users } from "../../components/icons";
+import { denunciaService } from "../../api/denunciaService";
+import { mostrarErro, mostrarSucesso } from "../../utils/mensagens";
 import MapaLocal, { ligacoesMapa } from "../../components/MapaLocal";
 import PageHeader from "../../components/app/PageHeader";
 import EstadoBadge from "../../components/app/EstadoBadge";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
 import { formatarDataHora } from "../../utils/datas";
-import { PAGE, PAINEL, ICONE_AZUL, BUTTON_SECONDARY, ALERT_WARNING } from "../../utils/uiClasses";
+import { PAGE, PAINEL, ICONE_AZUL, BUTTON_PRIMARY, BUTTON_SECONDARY, ALERT_WARNING } from "../../utils/uiClasses";
 
 interface AcidenteDetalheProps {
   denuncia: DenunciaDetalhada;
   voltar: { para: string; texto: string };
   /** Endereço base dos ficheiros (foto ou vídeo do acidente). */
   baseUrl: string;
+  /** O agente designado pode dar o acidente por concluído. */
+  podeConcluir?: boolean;
+  /** Chamado depois de concluído, para recarregar o acidente. */
+  onConcluido?: () => void;
 }
 
 const EH_IMAGEM = /\.(jpe?g|png|webp)$/i;
@@ -18,7 +25,26 @@ const EH_IMAGEM = /\.(jpe?g|png|webp)$/i;
 // O que o agente designado (e o Admin, em consulta) vê de um acidente: onde
 // é e como lá chegar. O acidente não passa por análise de vídeo nem por
 // decisão do agente, por isso não há aqui formulário de decisão.
-export default function AcidenteDetalhe({ denuncia, voltar, baseUrl }: AcidenteDetalheProps) {
+export default function AcidenteDetalhe({ denuncia, voltar, baseUrl, podeConcluir, onConcluido }: AcidenteDetalheProps) {
+  // Concluir é definitivo: pede-se uma confirmação no próprio cartão.
+  const [aConfirmar, setAConfirmar] = useState(false);
+  const [aConcluir, setAConcluir] = useState(false);
+  const concluido = denuncia.estado === "CONCLUIDA";
+
+  const concluir = async () => {
+    try {
+      setAConcluir(true);
+      await denunciaService.concluirAcidente(denuncia.id);
+      mostrarSucesso("Acidente concluído.");
+      setAConfirmar(false);
+      onConcluido?.();
+    } catch (err) {
+      mostrarErro(err, "Não foi possível concluir o acidente");
+    } finally {
+      setAConcluir(false);
+    }
+  };
+
   const temPonto = denuncia.latitude != null && denuncia.longitude != null;
   const links = temPonto ? ligacoesMapa(Number(denuncia.latitude), Number(denuncia.longitude)) : null;
   const reportes = (denuncia.total_relacionadas ?? 0) + 1;
@@ -52,7 +78,7 @@ export default function AcidenteDetalhe({ denuncia, voltar, baseUrl }: AcidenteD
                 <Siren size={20} />
               </span>
               <div className="min-w-0">
-                <h2 className="text-lg font-bold">Dirija-se ao local</h2>
+                <h2 className="text-lg font-bold">{concluido ? "Local do acidente" : "Dirija-se ao local"}</h2>
                 <p className="mt-1 break-words text-sm text-blue-100">{denuncia.localizacao || "Veja o ponto no mapa."}</p>
               </div>
             </div>
@@ -73,6 +99,48 @@ export default function AcidenteDetalhe({ denuncia, voltar, baseUrl }: AcidenteD
               </p>
             )}
           </section>
+
+          {/* Fecho do acidente: sem isto ficava "com agente" para sempre */}
+          {concluido ? (
+            <section className="flex items-start gap-4 rounded-2xl bg-emerald-50 p-6 ring-1 ring-emerald-200">
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white">
+                <CheckCircle size={18} />
+              </span>
+              <div>
+                <h2 className="text-base font-bold text-emerald-900">Acidente concluído</h2>
+                <p className="mt-0.5 text-sm text-emerald-900">
+                  O agente designado esteve no local e deu o acidente por concluído.
+                </p>
+              </div>
+            </section>
+          ) : podeConcluir ? (
+            <section className={`${PAINEL} p-6`}>
+              <h2 className="text-base font-bold text-blue-800">Já tratou do acidente?</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                Depois de ter estado no local, conclua o acidente. Quem reportou e o administrador do posto são avisados.
+              </p>
+              {aConfirmar ? (
+                <div className="mt-4 rounded-xl bg-blue-50 p-4" role="alertdialog" aria-label="Confirmar a conclusão do acidente">
+                  <p className="text-sm font-semibold text-blue-800">Confirma que o acidente está tratado?</p>
+                  <p className="mt-0.5 text-sm text-gray-600">Depois de concluído não pode ser reaberto.</p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button type="button" onClick={concluir} disabled={aConcluir} className={BUTTON_PRIMARY}>
+                      {aConcluir ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                      Sim, concluir
+                    </button>
+                    <button type="button" onClick={() => setAConfirmar(false)} disabled={aConcluir} className={BUTTON_SECONDARY}>
+                      Ainda não
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setAConfirmar(true)} className={`${BUTTON_PRIMARY} mt-4 w-full`}>
+                  <CheckCircle size={14} />
+                  Concluir acidente
+                </button>
+              )}
+            </section>
+          ) : null}
 
           <section className={`${PAINEL} p-6`}>
             <h2 className="text-base font-bold text-blue-800">Dados do acidente</h2>

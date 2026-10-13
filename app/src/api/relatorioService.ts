@@ -41,6 +41,7 @@ export interface RelatorioResumo {
     sem_posto: number;
     a_aguardar_agente: number;
     com_agente: number;
+    concluidos: number;
     tempo_medio_ate_designar_min: number | null;
   };
   qualidade: {
