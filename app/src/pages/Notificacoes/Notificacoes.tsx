@@ -36,8 +36,8 @@ const destino = (role: string | undefined, n: Notificacao): string | null => {
     case "CIDADAO":
       return `/cidadao/denuncias/${n.denuncia_id}`;
     case "PT":
-      // O PT não tem ecrã de acidente: a designação traz o local na mensagem.
-      return n.tipo === "AGENTE_DESIGNADO" ? null : `/pt/denuncias/${n.denuncia_id}`;
+      // A designação para um acidente abre o acidente, com o local no mapa.
+      return `/pt/denuncias/${n.denuncia_id}`;
     case "ADMIN":
       // Acidentes têm ecrã próprio (é lá que se designa o agente).
       return n.tipo === "ACIDENTE_REPORTADO" ? "/admin/acidentes" : `/admin/denuncias/${n.denuncia_id}`;

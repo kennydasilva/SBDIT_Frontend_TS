@@ -20,6 +20,7 @@ import { PaginaEsqueleto } from "../../components/app/Carregando";
 
 
 import { useAuth } from "../../hooks/useAuth";
+import AcidenteDetalhe from "./AcidenteDetalhe";
 
 
 
@@ -206,6 +207,18 @@ export default function DetalhesDenunciaPt() {
       <div className={PAGE}>
         <div className={ALERT_ERROR}>{error ?? "Denúncia não encontrada."}</div>
       </div>
+    );
+  }
+
+  // Acidente: não há análise de vídeo nem decisão do agente; o que
+  // interessa é o local e o caminho para lá.
+  if (denuncia.tipo_infracao === "ACIDENTE") {
+    return (
+      <AcidenteDetalhe
+        denuncia={denuncia}
+        baseUrl={BASE_URL}
+        voltar={user?.role === "PT" ? { para: "/pt/dashboard", texto: "Voltar ao painel" } : voltar}
+      />
     );
   }
 

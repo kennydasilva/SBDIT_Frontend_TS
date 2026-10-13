@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ArrowRight, AlertTriangle, CheckCircle2, Archive, Clock, Gavel } from "../../components/icons";
+import { ArrowRight, AlertTriangle, CheckCircle2, Archive, Clock, Gavel, Siren, MapPin } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import PageHeader from "../../components/app/PageHeader";
@@ -55,6 +55,11 @@ export default function DashboardPt() {
 
   if (loading) return <PaginaEsqueleto />;
 
+  // Acidentes para que o Admin do posto designou este agente: não são
+  // decisões, por isso ficam fora das contagens e têm lugar próprio.
+  const acidentes = decididas.filter((d) => d.tipo_infracao === "ACIDENTE");
+  const acidentesAbertos = acidentes.filter((d) => d.estado === "EM_ATENDIMENTO");
+
   const aprovadas = decididas.filter((d) => d.estado === "APROVADA").length;
   const arquivadas = decididas.filter((d) => d.estado === "ARQUIVADA").length;
 
@@ -68,6 +73,43 @@ export default function DashboardPt() {
   return (
     <div className={PAGE}>
       <PageHeader titulo="Painel do agente" texto="As denúncias da jurisdição do seu posto que aguardam a sua decisão." />
+
+      {acidentesAbertos.length > 0 && (
+        <section className="mb-6 rounded-2xl bg-blue-600 p-6 text-white shadow-lg shadow-blue-600/25 sm:px-8">
+          <div className="flex items-start gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white text-blue-800">
+              <Siren size={20} />
+            </span>
+            <div className="min-w-0">
+              <h2 className="text-xl font-bold leading-snug">
+                {acidentesAbertos.length === 1
+                  ? "Foi designado para 1 acidente"
+                  : `Foi designado para ${acidentesAbertos.length} acidentes`}
+              </h2>
+              <p className="mt-1 text-sm text-blue-100">Abra o acidente para ver o local no mapa e o caminho para lá.</p>
+            </div>
+          </div>
+          <ul className="mt-5 space-y-3">
+            {acidentesAbertos.map((a) => (
+              <li key={a.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white/10 p-4">
+                <span className="flex min-w-0 items-start gap-3">
+                  <MapPin size={16} className="mt-0.5 shrink-0" />
+                  <span className="min-w-0">
+                    <span className="block break-words text-sm font-semibold">{a.localizacao || "Local por descrever"}</span>
+                    <span className="block text-xs text-blue-100">
+                      Acidente #{a.id} · reportado em {formatarDataHora(a.data_registo || a.data_captura)}
+                    </span>
+                  </span>
+                </span>
+                <Link to={`/pt/denuncias/${a.id}`} className={BOTAO_SOBRE_AZUL}>
+                  Ver o local
+                  <ArrowRight size={14} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {proxima ? (
         <Destaque
@@ -94,7 +136,7 @@ export default function DashboardPt() {
         className="mb-6"
         itens={[
           { icon: Clock, rotulo: "À espera de decisão", valor: totalFila, para: "/pt/denuncias" },
-          { icon: Gavel, rotulo: "Decididas por mim", valor: totalDecididas, para: "/pt/minhas-decisoes" },
+          { icon: Gavel, rotulo: "Decididas por mim", valor: Math.max(0, totalDecididas - acidentes.length), para: "/pt/minhas-decisoes" },
           { icon: CheckCircle2, rotulo: "Aprovadas", valor: aprovadas },
           { icon: Archive, rotulo: "Arquivadas", valor: arquivadas },
         ]}
