@@ -1,4 +1,4 @@
-import { labelEstado, labelEstadoCidadao, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstado, labelEstadoCidadao, toneEstado, toneEstadoCidadao } from "../../utils/estadoDenuncia";
 
 interface EstadoBadgeProps {
   estado: string;
@@ -13,7 +13,7 @@ export default function EstadoBadge({ estado, tipo, paraCidadao }: EstadoBadgePr
   const rotulo = paraCidadao ? labelEstadoCidadao(estado, tipo) : labelEstado(estado, tipo);
   return (
     <span
-      className={`inline-flex items-center whitespace-nowrap rounded border px-2 py-0.5 text-xs font-medium ${toneEstado(estado)}`}
+      className={`inline-flex items-center whitespace-nowrap rounded border px-2 py-0.5 text-xs font-medium ${paraCidadao ? toneEstadoCidadao(estado) : toneEstado(estado)}`}
     >
       {rotulo}
     </span>

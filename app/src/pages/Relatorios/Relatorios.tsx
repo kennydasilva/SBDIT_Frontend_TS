@@ -51,17 +51,16 @@ import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDA
 
 
 
-// Um só azul em escala (do mais claro, ainda à espera, ao mais escuro,
-// concluída); cinzento para as fechadas sem seguimento.
+// As mesmas cores de estado das etiquetas (utils/estadoDenuncia.ts).
 const ESTADO_COR: Record<string, string> = {
-  PENDENTE: "#D2D9EF",
-  DUVIDOSA: "#7DD3FC",
+  PENDENTE: "#F59E0B",
+  DUVIDOSA: "#FCD34D",
   ENCAMINHADA: "#38BDF8",
   VALIDADA: "#0284C7",
-  APROVADA: "#1E40AF",
-  EM_ATENDIMENTO: "#172F82",
-  REJEITADA: "#8EA0D7",
-  ARQUIVADA: "#BCC6E7",
+  APROVADA: "#059669",
+  EM_ATENDIMENTO: "#34D399",
+  REJEITADA: "#E11D48",
+  ARQUIVADA: "#8EA0D7",
 };
 
 const MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];

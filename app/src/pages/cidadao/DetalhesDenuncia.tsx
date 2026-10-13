@@ -33,7 +33,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 
 
-import { labelEstadoCidadao as labelEstado, labelTipo, toneEstado } from "../../utils/estadoDenuncia";
+import { labelEstadoCidadao as labelEstado, labelTipo, toneEstadoCidadao as toneEstado } from "../../utils/estadoDenuncia";
 
 
 

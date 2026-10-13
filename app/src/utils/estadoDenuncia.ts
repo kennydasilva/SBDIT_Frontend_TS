@@ -13,23 +13,27 @@ export const ESTADO_LABEL: Record<string, string> = {
   DUVIDOSA: "Duvidosa",
 };
 
-// Um só azul, distinguido pelo preenchimento (não pela cor):
-//  - contorno: ainda à espera;      - azul-céu: em curso (terceira cor do sistema);
-//  - cheio: concluída com seguimento; - cinzento: fechada sem seguimento.
-const A_ESPERA = "bg-white text-blue-800 border-blue-200";
+// Cores de estado convencionais (decisão do utilizador, 2026-10-13): cada
+// estado tem sempre o rótulo escrito, por isso a cor reforça e não é a
+// única pista. Todos os pares texto/fundo têm contraste acima de 4,5:1.
+//  - âmbar: à espera;            - azul-céu: em curso;
+//  - verde: com seguimento;      - vermelho: rejeitada;
+//  - neutro: arquivada (fechada sem ser erro).
+const A_ESPERA = "bg-amber-100 text-amber-900 border-amber-200";
 const EM_CURSO = "bg-sky-100 text-sky-800 border-sky-200";
-const CONCLUIDA = "bg-blue-600 text-white border-blue-600";
+const CONCLUIDA = "bg-emerald-100 text-emerald-800 border-emerald-200";
+const REJEITADA = "bg-rose-100 text-rose-800 border-rose-200";
 const FECHADA = "bg-gray-100 text-gray-600 border-gray-200";
 
 export const ESTADO_TONE: Record<string, string> = {
   PENDENTE: A_ESPERA,
   VALIDADA: EM_CURSO,
   APROVADA: CONCLUIDA,
-  REJEITADA: FECHADA,
+  REJEITADA: REJEITADA,
   ARQUIVADA: FECHADA,
   ENCAMINHADA: EM_CURSO,
   EM_ATENDIMENTO: CONCLUIDA,
-  DUVIDOSA: EM_CURSO,
+  DUVIDOSA: A_ESPERA,
 };
 
 export const TIPO_LABEL: Record<string, string> = {
@@ -50,6 +54,11 @@ export const labelEstado = (estado: string, tipo?: string) => {
 // jurisdição): para ele a denúncia está só "em verificação".
 export const labelEstadoCidadao = (estado: string, tipo?: string) =>
   estado === "DUVIDOSA" ? "Em verificação" : labelEstado(estado, tipo);
+
+// Para o cidadão a suspeita não é revelada: "Em verificação" tem a cor de
+// uma denúncia em curso, não a de um aviso.
+export const toneEstadoCidadao = (estado: string) =>
+  estado === "DUVIDOSA" ? EM_CURSO : toneEstado(estado);
 
 export const toneEstado = (estado: string) =>
   ESTADO_TONE[estado] ?? "bg-gray-100 text-gray-600 border-gray-200";
