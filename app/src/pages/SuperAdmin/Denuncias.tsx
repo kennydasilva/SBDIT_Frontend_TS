@@ -15,6 +15,7 @@ import {
   PAGE, TOOLBAR, CARD_ATTACHED, INPUT, LINK,
   TABLE_HEAD_CELL, TABLE_CELL, TABLE_CELL_STRONG, TABLE_ROW_HOVER,
 } from "../../utils/uiClasses";
+import { CheckCircle2, Clock, FileText, Gavel, XCircle } from "../../components/icons";
 
 const TAMANHO_PAGINA = 10;
 
@@ -77,11 +78,11 @@ export default function Denuncias() {
         <StatStrip
           className="mb-6"
           itens={[
-            { rotulo: "Total", valor: totalItens },
-            { rotulo: "À espera da análise", valor: n("PENDENTE") },
-            { rotulo: "À espera do agente", valor: n("VALIDADA") + n("DUVIDOSA") },
-            { rotulo: "Aprovadas", valor: n("APROVADA") },
-            { rotulo: "Rejeitadas ou arquivadas", valor: n("REJEITADA") + n("ARQUIVADA") },
+            { icon: FileText, rotulo: "Total", valor: totalItens },
+            { icon: Clock, rotulo: "À espera da análise", valor: n("PENDENTE") },
+            { icon: Gavel, rotulo: "À espera do agente", valor: n("VALIDADA") + n("DUVIDOSA") },
+            { icon: CheckCircle2, rotulo: "Aprovadas", valor: n("APROVADA") },
+            { icon: XCircle, rotulo: "Rejeitadas ou arquivadas", valor: n("REJEITADA") + n("ARQUIVADA") },
           ]}
         />
       )}
@@ -92,7 +93,7 @@ export default function Denuncias() {
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
           aria-label="Filtrar por estado"
-          className={`${INPUT} !h-9 sm:!w-56`}
+          className={`${INPUT} !h-10 sm:!w-56`}
         >
           <option value="Todos">Todos os estados</option>
           {Object.entries(ESTADO_LABEL).map(([estado, rotulo]) => (

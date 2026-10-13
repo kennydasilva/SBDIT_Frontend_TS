@@ -24,7 +24,7 @@ import { Link } from "react-router";
 
 
 
-import { ChevronRight } from "../../components/icons";
+import { ChevronRight, Archive, CheckCircle2, Gavel } from "../../components/icons";
 
 
 
@@ -178,9 +178,9 @@ export default function MinhasDecisoesPt() {
       <StatStrip
         className="mb-6"
         itens={[
-          { rotulo: "Decisões tomadas", valor: totalItens },
-          { rotulo: "Aprovadas nesta página", valor: aprovadas },
-          { rotulo: "Arquivadas nesta página", valor: arquivadas },
+          { icon: Gavel, rotulo: "Decisões tomadas", valor: totalItens },
+          { icon: CheckCircle2, rotulo: "Aprovadas nesta página", valor: aprovadas },
+          { icon: Archive, rotulo: "Arquivadas nesta página", valor: arquivadas },
         ]}
       />
 

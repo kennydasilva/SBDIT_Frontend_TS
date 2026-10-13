@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight } from "../../components/icons";
+import { ArrowRight, Building2, FileText, Shield, Users } from "../../components/icons";
 import api from "../../api/axios";
 import type { PaginatedResponse } from "../../api/types";
 import type { DenunciaDetalhada } from "../../api/denunciaService";
@@ -66,7 +66,7 @@ export default function Dashboard() {
   // O resumo devolve os estados já com o nome por extenso ou com a chave
   // do backend; mostra-se sempre o nome em português, do maior para o menor.
   const estados = Object.entries(porEstado)
-    .map(([chave, total]) => ({ rotulo: ESTADO_LABEL[chave] ?? chave, total }))
+    .map(([chave, total]) => ({ chave, rotulo: ESTADO_LABEL[chave] ?? chave, total }))
     .filter((e) => e.total > 0)
     .sort((a, b) => b.total - a.total);
   const maior = Math.max(1, ...estados.map((e) => e.total));
@@ -78,10 +78,10 @@ export default function Dashboard() {
       <StatStrip
         className="mb-6"
         itens={[
-          { rotulo: "Denúncias", valor: contagens.denuncias.toLocaleString("pt"), para: "/super-admin/denuncias" },
-          { rotulo: "Postos (administradores)", valor: contagens.admins.toLocaleString("pt"), para: "/super-admin/admins" },
-          { rotulo: "Agentes", valor: contagens.policiais.toLocaleString("pt"), para: "/super-admin/policiais" },
-          { rotulo: "Cidadãos", valor: contagens.cidadaos.toLocaleString("pt"), para: "/super-admin/cidadaos" },
+          { icon: FileText, rotulo: "Denúncias", valor: contagens.denuncias.toLocaleString("pt"), para: "/super-admin/denuncias" },
+          { icon: Building2, rotulo: "Postos (administradores)", valor: contagens.admins.toLocaleString("pt"), para: "/super-admin/admins" },
+          { icon: Shield, rotulo: "Agentes", valor: contagens.policiais.toLocaleString("pt"), para: "/super-admin/policiais" },
+          { icon: Users, rotulo: "Cidadãos", valor: contagens.cidadaos.toLocaleString("pt"), para: "/super-admin/cidadaos" },
         ]}
       />
 
@@ -135,14 +135,14 @@ export default function Dashboard() {
               <h2 className={CARD_TITLE}>Denúncias por estado</h2>
               <Link to="/super-admin/relatorios" className={`${LINK} text-sm`}>Relatórios</Link>
             </div>
-            <ul className="space-y-3 px-6 py-5">
+            <ul className="space-y-4 px-6 py-5">
               {estados.map((e) => (
                 <li key={e.rotulo}>
-                  <div className="flex items-baseline justify-between gap-3 text-sm">
-                    <span className="text-gray-700">{e.rotulo}</span>
-                    <span className="font-semibold text-gray-900 tabular-nums">{e.total}</span>
+                  <div className="flex items-center justify-between gap-3 text-sm">
+                    <EstadoBadge estado={e.chave} />
+                    <span className="font-bold text-blue-800 tabular-nums">{e.total}</span>
                   </div>
-                  <div className="mt-1.5 h-1.5 rounded-full bg-gray-100" aria-hidden>
+                  <div className="mt-2 h-2 rounded-full bg-blue-50" aria-hidden>
                     <div className="h-full rounded-full bg-blue-600" style={{ width: `${(e.total / maior) * 100}%` }} />
                   </div>
                 </li>

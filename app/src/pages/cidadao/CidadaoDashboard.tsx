@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, FileText, Plus } from "../../components/icons";
+import { ArrowRight, FileText, Plus, Archive, CheckCircle2, Clock } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import { cidadaoService, type RankingEntry } from "../../api/cidadaoService";
@@ -99,10 +99,10 @@ export default function CidadaoDashboard() {
         <StatStrip
           className="mb-6"
           itens={[
-            { rotulo: "Denúncias enviadas", valor: total, para: "/cidadao/minhas-denuncias" },
-            { rotulo: "Em curso", valor: contar(EM_CURSO), nota: "À espera da análise ou da decisão" },
-            { rotulo: "Aprovadas", valor: contar(["APROVADA", "EM_ATENDIMENTO"]), nota: "Com seguimento pelo posto" },
-            { rotulo: "Sem seguimento", valor: contar(["REJEITADA", "ARQUIVADA"]), nota: "Rejeitadas ou arquivadas" },
+            { icon: FileText, rotulo: "Denúncias enviadas", valor: total, para: "/cidadao/minhas-denuncias" },
+            { icon: Clock, rotulo: "Em curso", valor: contar(EM_CURSO), nota: "À espera da análise ou da decisão" },
+            { icon: CheckCircle2, rotulo: "Aprovadas", valor: contar(["APROVADA", "EM_ATENDIMENTO"]), nota: "Com seguimento pelo posto" },
+            { icon: Archive, rotulo: "Sem seguimento", valor: contar(["REJEITADA", "ARQUIVADA"]), nota: "Rejeitadas ou arquivadas" },
           ]}
         />
       )}

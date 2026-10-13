@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 
 
-import { FileDown, FileSpreadsheet, BarChart3, PieChart as PieChartIcon, Loader2, Building2, Users, Siren, ShieldCheck, RotateCcw } from "../../components/icons";
+import { FileDown, FileSpreadsheet, BarChart3, PieChart as PieChartIcon, Loader2, Building2, Users, Siren, ShieldCheck, RotateCcw, CheckCircle2, Clock, FileText } from "../../components/icons";
 
 
 
@@ -228,14 +228,12 @@ export default function Relatorios() {
         <div className={`space-y-6 transition-opacity ${loading ? "opacity-50" : ""}`}>
           <StatStrip
             itens={[
-              { rotulo: "Total de denúncias", valor: resumo.total_denuncias },
-              {
-                rotulo: "Taxa de resolução",
+              { icon: FileText, rotulo: "Total de denúncias", valor: resumo.total_denuncias },
+              { icon: CheckCircle2, rotulo: "Taxa de resolução",
                 valor: `${resumo.taxa_resolucao}%`,
                 nota: "Denúncias que já tiveram resposta",
               },
-              {
-                rotulo: "Tempo médio de resposta",
+              { icon: Clock, rotulo: "Tempo médio de resposta",
                 valor: formatarHoras(resumo.tempo_medio_resposta_horas),
                 nota: "Da criação até à última decisão",
               },

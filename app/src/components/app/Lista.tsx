@@ -22,7 +22,7 @@ export function CampoPesquisa({ valor, onMudar, rotulo, className = "" }: CampoP
         onChange={(e) => onMudar(e.target.value)}
         placeholder={rotulo}
         aria-label={rotulo}
-        className="h-9 w-full rounded-md border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+        className="h-10 w-full rounded-xl border border-gray-300 bg-white pl-9 pr-3 text-sm text-gray-900 placeholder:text-gray-500 focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-600/20"
       />
     </div>
   );
@@ -39,7 +39,7 @@ interface SegmentosProps<T extends string> {
 // Escolha entre poucas opções, num só controlo com divisórias.
 export function Segmentos<T extends string>({ opcoes, valor, onMudar, rotulo }: SegmentosProps<T>) {
   return (
-    <div role="group" aria-label={rotulo} className="inline-flex max-w-full overflow-x-auto rounded-md border border-gray-300 bg-white">
+    <div role="group" aria-label={rotulo} className="inline-flex max-w-full overflow-x-auto rounded-xl border border-gray-300 bg-white">
       {opcoes.map((o) => {
         const ativo = o.valor === valor;
         return (
@@ -48,7 +48,7 @@ export function Segmentos<T extends string>({ opcoes, valor, onMudar, rotulo }: 
             type="button"
             aria-pressed={ativo}
             onClick={() => onMudar(o.valor)}
-            className={`h-9 shrink-0 border-l border-gray-300 px-3 text-sm font-medium transition-colors first:border-l-0 ${
+            className={`h-10 shrink-0 border-l border-gray-300 px-3 text-sm font-medium transition-colors first:border-l-0 ${
               ativo ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-50"
             }`}
           >
@@ -83,7 +83,7 @@ export function ErroBloco({ mensagem, onTentar }: { mensagem: string; onTentar?:
 export function ErroPagina({ mensagem, onTentar }: { mensagem: string; onTentar?: () => void }) {
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div className="rounded-2xl bg-white shadow-lg shadow-blue-600/10 ring-1 ring-blue-600/10">
         <ErroBloco mensagem={mensagem} onTentar={onTentar} />
       </div>
     </div>

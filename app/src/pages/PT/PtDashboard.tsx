@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ArrowRight, AlertTriangle, CheckCircle2 } from "../../components/icons";
+import { ArrowRight, AlertTriangle, CheckCircle2, Archive, Clock, Gavel } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
 import PageHeader from "../../components/app/PageHeader";
@@ -93,10 +93,10 @@ export default function DashboardPt() {
       <StatStrip
         className="mb-6"
         itens={[
-          { rotulo: "À espera de decisão", valor: totalFila, para: "/pt/denuncias" },
-          { rotulo: "Decididas por mim", valor: totalDecididas, para: "/pt/minhas-decisoes" },
-          { rotulo: "Aprovadas", valor: aprovadas },
-          { rotulo: "Arquivadas", valor: arquivadas },
+          { icon: Clock, rotulo: "À espera de decisão", valor: totalFila, para: "/pt/denuncias" },
+          { icon: Gavel, rotulo: "Decididas por mim", valor: totalDecididas, para: "/pt/minhas-decisoes" },
+          { icon: CheckCircle2, rotulo: "Aprovadas", valor: aprovadas },
+          { icon: Archive, rotulo: "Arquivadas", valor: arquivadas },
         ]}
       />
 

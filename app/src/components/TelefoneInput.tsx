@@ -26,7 +26,7 @@ interface Props {
 export default function TelefoneInput({ value, onChange, disabled, name, autoComplete, id, ...aria }: Props) {
   return (
     <div className="flex">
-      <span className="inline-flex items-center h-10 px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600 select-none">
+      <span className="inline-flex items-center h-11 px-3.5 rounded-l-xl border border-r-0 border-gray-300 bg-gray-50 text-sm text-gray-600 select-none">
         {INDICATIVO}
       </span>
       <input

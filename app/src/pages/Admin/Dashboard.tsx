@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { ArrowRight, CheckCircle2 } from "../../components/icons";
+import { ArrowRight, CheckCircle2, ClipboardList, Shield, Siren } from "../../components/icons";
 import { useAuth } from "../../hooks/useAuth";
 import { ptService } from "../../api/ptService";
 import { denunciaService, type DenunciaDetalhada } from "../../api/denunciaService";
@@ -98,9 +98,9 @@ export default function Dashboard() {
       <StatStrip
         className="mb-6"
         itens={[
-          { rotulo: "Acidentes por designar", valor: acidentes.porDesignar, para: "/admin/acidentes" },
-          { rotulo: "Acidentes reportados", valor: acidentes.total, para: "/admin/acidentes" },
-          { rotulo: "Agentes do posto", valor: totalPoliciais, para: "/admin/policiais" },
+          { icon: Siren, rotulo: "Acidentes por designar", valor: acidentes.porDesignar, para: "/admin/acidentes" },
+          { icon: ClipboardList, rotulo: "Acidentes reportados", valor: acidentes.total, para: "/admin/acidentes" },
+          { icon: Shield, rotulo: "Agentes do posto", valor: totalPoliciais, para: "/admin/policiais" },
         ]}
       />
 

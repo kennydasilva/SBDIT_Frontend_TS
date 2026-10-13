@@ -116,7 +116,7 @@ export default function MinhasDenuncias() {
           value={selectedEstado}
           onChange={(e) => setSelectedEstado(e.target.value)}
           aria-label="Filtrar por estado"
-          className={`${INPUT} !h-9 sm:!w-56`}
+          className={`${INPUT} !h-10 sm:!w-56`}
         >
           {estados.map((estado) => (
             <option key={estado} value={estado}>

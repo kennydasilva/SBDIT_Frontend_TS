@@ -307,7 +307,7 @@ export default function Admins() {
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap text-sm text-gray-500">{formatarDataHora(admin.dataCriacao)}</td>
                     <td className="px-6 py-3.5 whitespace-nowrap">
-                      <span className={`${BADGE} ${admin.status === "Ativo" ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
+                      <span className={`${BADGE} ${admin.status === "Inativo" ? "bg-gray-100 text-gray-600" : "bg-emerald-100 text-emerald-800"}`}>
                         {admin.status || "Ativo"}
                       </span>
                     </td>

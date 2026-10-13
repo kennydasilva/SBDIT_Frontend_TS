@@ -35,7 +35,7 @@ import { mensagemDeErro } from "../../utils/mensagens";
 
 
 
-import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BADGE, BUTTON_PRIMARY, BUTTON_SECONDARY, ALERT_ERROR, TEXTAREA, ALERT_INFO } from "../../utils/uiClasses";
+import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BADGE, BUTTON_PRIMARY, BUTTON_SECONDARY, ALERT_ERROR, TEXTAREA, ALERT_INFO, ALERT_WARNING } from "../../utils/uiClasses";
 
 import { REGEX } from "../../utils/validationSchemas";
 
@@ -372,7 +372,7 @@ export default function DetalhesDenunciaPt() {
 
           {/* Mesmo vídeo declarado noutro local: provável denúncia falsa */}
           {denuncia?.localizacao_contraditoria && (
-            <div className={ALERT_INFO}>
+            <div className={ALERT_WARNING}>
               <p className="font-semibold mb-1 flex items-center gap-2"><AlertTriangle size={16} /> Possível denúncia falsa — declarada noutra jurisdição</p>
               <p>
                 O vídeo é igual ao da denúncia #{denuncia.video_semelhante_a_id}, mas os locais declarados não batem certo:

@@ -134,7 +134,7 @@ export default function Cidadaos() {
                       {formatarData(cidadao.data_registo)}
                     </td>
                     <td className="px-6 py-3.5 whitespace-nowrap">
-                      <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-blue-50 text-blue-800" : "bg-gray-100 text-gray-500"}`}>
+                      <span className={`${BADGE} ${cidadao.ativo !== false ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
                         {cidadao.ativo !== false ? "Ativo" : "Banido"}
                       </span>
                     </td>

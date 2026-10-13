@@ -124,7 +124,7 @@ export default function DenunciasPt() {
           value={filtroTipo}
           onChange={(e) => setFiltroTipo(e.target.value)}
           aria-label="Filtrar por tipo de infração"
-          className={`${INPUT} !h-9 sm:!w-56`}
+          className={`${INPUT} !h-10 sm:!w-56`}
         >
           <option value="">Todos os tipos</option>
           {Object.entries(TIPO_LABEL)

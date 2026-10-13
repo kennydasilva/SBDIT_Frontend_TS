@@ -77,7 +77,7 @@ export default function Policiais() {
           value={filterAdmin}
           onChange={(e) => setFilterAdmin(e.target.value)}
           aria-label="Filtrar por posto"
-          className={`${INPUT} !h-9 sm:!w-64`}
+          className={`${INPUT} !h-10 sm:!w-64`}
         >
           <option value="Todos">Todos os postos</option>
           {admins.map(id => (

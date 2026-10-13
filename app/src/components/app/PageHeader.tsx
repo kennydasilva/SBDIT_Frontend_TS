@@ -27,7 +27,7 @@ export default function PageHeader({ titulo, texto, acoes, voltar }: PageHeaderP
       )}
       <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold leading-tight tracking-tight text-blue-800">{titulo}</h1>
+          <h1 className="text-2xl font-bold leading-tight tracking-tight text-blue-800">{titulo}</h1>
           {texto && <p className="mt-1 max-w-[70ch] text-sm text-gray-600">{texto}</p>}
         </div>
         {acoes && <div className="flex shrink-0 flex-wrap items-center gap-2">{acoes}</div>}
