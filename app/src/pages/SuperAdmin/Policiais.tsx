@@ -70,7 +70,7 @@ export default function Policiais() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Agentes de trânsito</h1>
@@ -107,7 +107,7 @@ export default function Policiais() {
       <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className={TABLE_HEAD_CELL}>ID</th>
               <th className={TABLE_HEAD_CELL}>Número do Agente</th>
               <th className={TABLE_HEAD_CELL}>Nome</th>
@@ -116,7 +116,7 @@ export default function Policiais() {
               <th className={TABLE_HEAD_CELL}>Admin Responsável</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-200">
             {filteredPoliciais.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-8 text-center text-gray-500">

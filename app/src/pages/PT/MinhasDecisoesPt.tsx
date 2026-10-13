@@ -87,7 +87,7 @@ export default function MinhasDecisoesPt() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
+                <tr className="border-b border-gray-200 bg-gray-50">
                   <th className={TABLE_HEAD_CELL}>#</th>
                   <th className={TABLE_HEAD_CELL}>Matrícula</th>
                   <th className={TABLE_HEAD_CELL}>Tipo</th>
@@ -97,7 +97,7 @@ export default function MinhasDecisoesPt() {
                   <th className={TABLE_HEAD_CELL}></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-200">
                 {loading ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-10 text-center">

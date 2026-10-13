@@ -230,7 +230,7 @@ export default function MapaCobertura({ apiKey }: { apiKey: string }) {
                   <li key={p.admin_id}>
                     <button
                       onClick={() => alternar(p.admin_id)}
-                      className={`w-full text-left flex items-start gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-gray-50 ${oculto ? "opacity-40" : ""}`}
+                      className={`w-full text-left flex items-start gap-3 rounded-md px-3 py-2 transition-colors hover:bg-gray-50 ${oculto ? "opacity-40" : ""}`}
                     >
                       <span className="w-3 h-3 rounded-full mt-1 shrink-0" style={{ background: corDe.get(p.admin_id) }} />
                       <span className="min-w-0">

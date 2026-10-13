@@ -108,7 +108,7 @@ export default function Acidentes() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Acidentes de Viação</h1>
         <p className="text-gray-500 mt-1">
@@ -118,7 +118,7 @@ export default function Acidentes() {
 
       {mensagem && (
         <div
-          className={`mb-6 rounded-2xl border p-4 flex items-center gap-3 ${
+          className={`mb-6 rounded-lg border p-4 flex items-center gap-3 ${
             mensagem.tipo === "ok"
               ? "border-blue-100 bg-blue-50 text-blue-800"
               : "border-rose-100 bg-rose-50 text-rose-800"
@@ -130,7 +130,7 @@ export default function Acidentes() {
       )}
 
       {agentes.length === 0 && (
-        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+        <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
           O seu posto ainda não tem agentes registados.{" "}
           <Link to="/admin/policiais" className="font-medium underline">Crie um agente</Link> para o poder designar aos acidentes.
         </div>
@@ -139,7 +139,7 @@ export default function Acidentes() {
       <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className={TABLE_HEAD_CELL}>#</th>
               <th className={TABLE_HEAD_CELL}>Data</th>
               <th className={TABLE_HEAD_CELL}>Local</th>
@@ -148,7 +148,7 @@ export default function Acidentes() {
               <th className={TABLE_HEAD_CELL}>Designar</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-200">
             {acidentes.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-10 text-center text-gray-500">

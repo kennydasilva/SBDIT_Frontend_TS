@@ -66,7 +66,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
         <p className="text-gray-500 mt-1">Visão geral do sistema</p>
@@ -83,7 +83,7 @@ export default function Dashboard() {
                   <p className="text-gray-500 text-sm font-medium">{stat.label}</p>
                   <p className="text-3xl font-semibold text-gray-900 mt-1.5">{stat.value.toLocaleString()}</p>
                 </div>
-                <div className={`${stat.bg} ${stat.fg} p-3 rounded-xl`}>
+                <div className={`${stat.bg} ${stat.fg} p-3 rounded-md`}>
                   <Icon size={22} strokeWidth={1.75} />
                 </div>
               </div>
@@ -94,7 +94,7 @@ export default function Dashboard() {
 
       {/* Denuncias Recentes */}
       <div className={CARD}>
-        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-base font-semibold text-gray-900">Denúncias Recentes</h2>
           <Link
             to="/super-admin/denuncias"
@@ -107,14 +107,14 @@ export default function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
+              <tr className="border-b border-gray-200 bg-gray-50">
                 <th className={TABLE_HEAD_CELL}>Matrícula</th>
                 <th className={TABLE_HEAD_CELL}>Tipo</th>
                 <th className={TABLE_HEAD_CELL}>Localização</th>
                 <th className={TABLE_HEAD_CELL}>Estado</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {recentes.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-10 text-center text-sm text-gray-400">

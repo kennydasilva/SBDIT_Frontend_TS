@@ -139,7 +139,7 @@ export default function DetalhesDenuncia() {
           </p>
         </div>
         <span
-          className={`px-4 py-2 rounded-full text-sm font-medium border ${toneEstado(
+          className={`px-4 py-2 rounded text-sm font-medium border ${toneEstado(
             denuncia.estado
           )}`}
         >
@@ -443,7 +443,7 @@ export default function DetalhesDenuncia() {
                         </p>
                         {item.resultado && (
                           <span
-                            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium border ${toneEstado(
+                            className={`inline-block mt-2 px-3 py-1 rounded text-xs font-medium border ${toneEstado(
                               item.resultado
                             )}`}
                           >

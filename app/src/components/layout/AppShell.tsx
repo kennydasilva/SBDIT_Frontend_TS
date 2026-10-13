@@ -106,7 +106,7 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-colors ${
+                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm transition-colors ${
                   ativo ? "bg-white/15 text-white font-medium" : "text-blue-100 hover:bg-white/10"
                 }`}
               >
@@ -134,7 +134,7 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
           </div>
           <button
             onClick={handleLogout}
-            className="mt-1 flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm text-blue-100 hover:bg-white/10 transition-colors w-full"
+            className="mt-1 flex items-center gap-3 px-3.5 py-2.5 rounded-md text-sm text-blue-100 hover:bg-white/10 transition-colors w-full"
           >
             <LogOut size={19} />
             <span>Sair</span>

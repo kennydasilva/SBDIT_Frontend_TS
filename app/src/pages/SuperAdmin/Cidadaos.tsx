@@ -79,7 +79,7 @@ export default function Cidadaos() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Gestão de Cidadãos</h1>
@@ -103,7 +103,7 @@ export default function Cidadaos() {
       <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className={TABLE_HEAD_CELL}>ID</th>
               <th className={TABLE_HEAD_CELL}>Nome</th>
               <th className={TABLE_HEAD_CELL}>Email</th>
@@ -113,7 +113,7 @@ export default function Cidadaos() {
               <th className={TABLE_HEAD_CELL}>Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-200">
             {filteredCidadaos.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-6 py-8 text-center text-gray-500">

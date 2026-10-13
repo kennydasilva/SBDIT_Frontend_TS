@@ -210,14 +210,14 @@ export default function PTs() {
       <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className={TABLE_HEAD_CELL}>Nome</th>
               <th className={TABLE_HEAD_CELL}>Email</th>
               <th className={TABLE_HEAD_CELL}>N.º de agente</th>
               <th className={`${TABLE_HEAD_CELL} text-right`}>Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-200">
             {loading ? (
               <tr>
                 <td colSpan={4} className="px-6 py-10 text-center">

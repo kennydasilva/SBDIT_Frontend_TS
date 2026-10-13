@@ -213,15 +213,15 @@ export default function DetalhesDenunciaPt() {
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Matrícula</p>
+                <p className="text-xs font-medium text-gray-500">Matrícula</p>
                 <p className="font-medium text-gray-900">{denuncia?.matricula}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tipo de Infração</p>
+                <p className="text-xs font-medium text-gray-500">Tipo de Infração</p>
                 <p className="font-medium text-gray-900">{labelTipo(denuncia?.tipo_infracao ?? "")}</p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</p>
+                <p className="text-xs font-medium text-gray-500">Estado</p>
                 <span className={`${BADGE} ${toneEstado(denuncia?.estado ?? "")} mt-1`}>
                   {labelEstado(denuncia?.estado ?? "", denuncia?.tipo_infracao)}
                 </span>
@@ -229,7 +229,7 @@ export default function DetalhesDenunciaPt() {
               <div className="flex items-start gap-2">
                 <MapPin size={16} className="text-gray-400 mt-1" />
                 <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Localização</p>
+                  <p className="text-xs font-medium text-gray-500">Localização</p>
                   <p className="font-medium text-gray-900">
                     {denuncia?.localizacao}
                   </p>
@@ -237,14 +237,14 @@ export default function DetalhesDenunciaPt() {
               </div>
               {denuncia?.sentido_direccao && (
                 <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Sentido</p>
+                  <p className="text-xs font-medium text-gray-500">Sentido</p>
                   <p className="font-medium text-gray-900">{denuncia?.sentido_direccao}</p>
                 </div>
               )}
               <div className="flex items-start gap-2">
                 <Calendar size={16} className="text-gray-400 mt-1" />
                 <div>
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Data</p>
+                  <p className="text-xs font-medium text-gray-500">Data</p>
                   <p className="font-medium text-gray-900">
                     {denuncia?.data_captura}
                   </p>
@@ -260,13 +260,13 @@ export default function DetalhesDenunciaPt() {
             </h2>
             <div className="space-y-3">
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Infração Detectada</p>
+                <p className="text-xs font-medium text-gray-500">Infração Detectada</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.infracao_detectada ? "Sim" : "Não"}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Confiança</p>
+                <p className="text-xs font-medium text-gray-500">Confiança</p>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 bg-gray-200 rounded-full h-2">
                     <div
@@ -281,13 +281,13 @@ export default function DetalhesDenunciaPt() {
                 </div>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Código Legal Sugerido</p>
+                <p className="text-xs font-medium text-gray-500">Código Legal Sugerido</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.codigo_legal}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Data da Análise</p>
+                <p className="text-xs font-medium text-gray-500">Data da Análise</p>
                 <p className="font-medium text-gray-900">
                   {denuncia?.data_analise}
                 </p>
@@ -419,22 +419,22 @@ export default function DetalhesDenunciaPt() {
 
               <div className="space-y-6">
                 {testemunhas.map((t) => (
-                  <div key={t.id} className="border border-gray-100 rounded-lg p-4">
+                  <div key={t.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-3">
                       <p className="text-sm font-medium text-gray-900">
                         Denúncia #{t.id} <span className="text-gray-400 font-normal">· {t.data_registo}</span>
                         {t.video_semelhante_a_id && (
-                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                          <span className="ml-2 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800">
                             vídeo semelhante ao da #{t.video_semelhante_a_id}
                           </span>
                         )}
                         {t.localizacao_contraditoria && (
-                          <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-800">
+                          <span className="ml-2 px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-800">
                             local contraditório: {t.localizacao}
                           </span>
                         )}
                       </p>
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium border ${toneEstado(t.estado)}`}>
+                      <span className={`px-2.5 py-1 rounded text-xs font-medium border ${toneEstado(t.estado)}`}>
                         {labelEstado(t.estado)}
                       </span>
                     </div>

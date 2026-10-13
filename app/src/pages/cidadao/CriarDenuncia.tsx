@@ -198,7 +198,7 @@ export default function CriarDenuncia() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Criar Denúncia</h1>
@@ -209,7 +209,7 @@ export default function CriarDenuncia() {
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
+        <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
           <CheckCircle className="text-blue-800 shrink-0" size={24} />
           <div>
             <p className="text-blue-800 font-medium">
@@ -271,7 +271,7 @@ export default function CriarDenuncia() {
           </div>
 
           {ehAcidente && (
-            <div className="mb-6 p-4 rounded-2xl border border-blue-200 bg-blue-50 flex gap-3">
+            <div className="mb-6 p-4 rounded-lg border border-blue-200 bg-blue-50 flex gap-3">
               <Siren className="text-blue-800 shrink-0" size={22} />
               <p className="text-sm text-blue-800">
                 O acidente é enviado directamente, por SMS, ao posto policial responsável pela zona
@@ -282,7 +282,7 @@ export default function CriarDenuncia() {
 
           {/* Sentido Permitido - Apenas se Contramão */}
           {formData.tipoInfracao === "Contramão" && (
-            <div className="mb-6 p-4 rounded-2xl border border-blue-100 bg-blue-50">
+            <div className="mb-6 p-4 rounded-lg border border-blue-100 bg-blue-50">
               <label className={`${LABEL} mb-3`}>
                 Sentido Permitido da Via *
               </label>
@@ -355,7 +355,7 @@ export default function CriarDenuncia() {
             </label>
 
             {!videoFile ? (
-              <div className="rounded-2xl border-2 border-dashed border-gray-200 p-8 text-center hover:border-blue-400 transition-colors">
+              <div className="rounded-lg border-2 border-dashed border-gray-200 p-8 text-center hover:border-blue-400 transition-colors">
                 <input
                   type="file"
                   id="video-upload"
@@ -378,10 +378,10 @@ export default function CriarDenuncia() {
                 </label>
               </div>
             ) : (
-              <div className="rounded-2xl border border-gray-200 p-4">
+              <div className="rounded-lg border border-gray-200 p-4">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-blue-50 rounded-md flex items-center justify-center">
                       <Upload className="text-blue-600" size={24} />
                     </div>
                     <div>
@@ -406,13 +406,13 @@ export default function CriarDenuncia() {
                   <img
                     src={videoPreview}
                     alt="Pré-visualização"
-                    className="w-full rounded-xl"
+                    className="w-full rounded-md"
                   />
                 ) : (
                   <video
                     src={videoPreview}
                     controls
-                    className="w-full rounded-xl"
+                    className="w-full rounded-md"
                   />
                 ))}
               </div>

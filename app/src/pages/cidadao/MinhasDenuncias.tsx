@@ -115,7 +115,7 @@ export default function MinhasDenuncias() {
       <div className={`${CARD} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="border-b border-gray-100">
+            <thead className="border-b border-gray-200">
               <tr>
                 <th className={TABLE_HEAD_CELL}>
                   ID
@@ -137,7 +137,7 @@ export default function MinhasDenuncias() {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center">
@@ -171,7 +171,7 @@ export default function MinhasDenuncias() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${toneEstado(
+                        className={`px-3 py-1 rounded text-xs font-medium border ${toneEstado(
                           denuncia.estado
                         )}`}
                       >

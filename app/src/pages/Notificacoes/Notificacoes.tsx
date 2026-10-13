@@ -106,7 +106,7 @@ export default function Notificacoes() {
   const haNaoLidas = notificacoes.some((n) => !n.lida);
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Notificações</h1>
@@ -130,7 +130,7 @@ export default function Notificacoes() {
           <button
             key={f.label}
             onClick={() => mudarFiltro(f.valor)}
-            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-1.5 rounded text-sm font-medium transition-colors ${
               soNaoLidas === f.valor
                 ? "bg-blue-600 text-white"
                 : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
@@ -160,7 +160,7 @@ export default function Notificacoes() {
             {soNaoLidas ? "Não tem notificações por ler" : "Ainda não tem notificações"}
           </div>
         ) : (
-          <ul className="divide-y divide-gray-50">
+          <ul className="divide-y divide-gray-200">
             {notificacoes.map((n) => {
               const { icon: Icon, cor } = ICONE_TIPO[n.tipo] ?? { icon: Bell, cor: "bg-gray-100 text-gray-600" };
               const temDestino = !!destino(user?.role, n);
@@ -173,7 +173,7 @@ export default function Notificacoes() {
                       n.lida ? "" : "bg-blue-50/40"
                     } ${temDestino || !n.lida ? "cursor-pointer" : "cursor-default"}`}
                   >
-                    <div className={`${cor} p-2.5 rounded-xl h-fit shrink-0`}>
+                    <div className={`${cor} p-2.5 rounded-md h-fit shrink-0`}>
                       <Icon size={18} />
                     </div>
                     <div className="flex-1 min-w-0">

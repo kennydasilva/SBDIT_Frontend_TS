@@ -99,7 +99,7 @@ export default function Denuncias() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Denúncias</h1>
@@ -150,7 +150,7 @@ export default function Denuncias() {
           </div>
         ) : (
           filteredDenuncias.map((denuncia) => (
-            <div key={denuncia.id} className={`${CARD} p-6 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200`}>
+            <div key={denuncia.id} className={`${CARD} p-6 hover:border-blue-600 transition-colors`}>
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
                   <h3 className="text-base font-semibold text-gray-900 mb-1">

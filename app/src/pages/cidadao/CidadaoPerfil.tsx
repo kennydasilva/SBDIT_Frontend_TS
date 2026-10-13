@@ -118,7 +118,7 @@ export default function CidadaoPerfil() {
   ];
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Meu Perfil</h1>
@@ -129,7 +129,7 @@ export default function CidadaoPerfil() {
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
+        <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 flex items-center gap-3">
           <Save className="text-blue-800 shrink-0" size={24} />
           <p className="text-blue-800 font-medium">
             Perfil atualizado com sucesso!
@@ -157,7 +157,7 @@ export default function CidadaoPerfil() {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0"
+                  className="flex justify-between items-center py-2 border-b border-gray-200 last:border-0"
                 >
                   <span className="text-sm text-gray-600">{stat.label}</span>
                   <span className="text-lg font-semibold text-gray-900">
@@ -250,7 +250,7 @@ export default function CidadaoPerfil() {
 
               {/* Botões */}
               {isEditing && (
-                <div className="flex gap-4 justify-end mt-6 pt-6 border-t border-gray-100">
+                <div className="flex gap-4 justify-end mt-6 pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}

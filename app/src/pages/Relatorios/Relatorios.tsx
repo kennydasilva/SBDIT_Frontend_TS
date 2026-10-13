@@ -324,7 +324,7 @@ export default function Relatorios() {
 
 function MiniIndicador({ titulo, valor, destaque }: { titulo: string; valor: string | number; destaque?: boolean }) {
   return (
-    <div className={`rounded-xl border p-3 ${destaque ? "border-blue-100 bg-blue-50" : "border-gray-100 bg-gray-50/60"}`}>
+    <div className={`rounded-md border p-3 ${destaque ? "border-blue-100 bg-blue-50" : "border-gray-200 bg-gray-50/60"}`}>
       <p className="text-xs text-gray-500">{titulo}</p>
       <p className={`text-lg font-semibold mt-0.5 ${destaque ? "text-blue-800" : "text-gray-900"}`}>{valor}</p>
     </div>
@@ -340,11 +340,11 @@ function Tabela({ cabecalho, linhas, vazio = "Sem dados para estes filtros" }: {
     <div className="overflow-x-auto -mx-6">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-gray-100">
+          <tr className="border-b border-gray-200 bg-gray-50">
             {cabecalho.map((c) => <th key={c} className={TABLE_HEAD_CELL}>{c}</th>)}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-50">
+        <tbody className="divide-y divide-gray-200">
           {linhas.length === 0 ? (
             <tr><td colSpan={cabecalho.length} className="px-6 py-8 text-center text-sm text-gray-500">{vazio}</td></tr>
           ) : (

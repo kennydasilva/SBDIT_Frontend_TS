@@ -123,7 +123,7 @@ export default function Jurisdicoes() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Jurisdições dos Postos</h1>
         <p className="text-gray-500 mt-1">
@@ -201,7 +201,7 @@ export default function Jurisdicoes() {
           )}
 
           <div className={`${CARD} overflow-hidden`}>
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-gray-200 flex items-center gap-2">
               <MapPinned size={18} className="text-gray-500" />
               <h2 className="font-semibold text-gray-900">Vias atribuídas ({vias.length})</h2>
               {vias.some((v) => v.area_km2 != null) && (
@@ -221,7 +221,7 @@ export default function Jurisdicoes() {
             ) : vias.length === 0 ? (
               <p className="p-6 text-center text-gray-500">Nenhuma via atribuída a este posto ainda.</p>
             ) : (
-              <ul className="divide-y divide-gray-50">
+              <ul className="divide-y divide-gray-200">
                 {vias.map((v) => (
                   <li key={v.id} className="flex items-center justify-between px-6 py-3">
                     <span className="text-sm text-gray-900">
@@ -434,7 +434,7 @@ function PesquisaJurisdicao({
       </div>
 
       {(vias.length > 0 || bairros.length > 0) && (
-        <ul className="mt-2 rounded-xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
+        <ul className="mt-2 rounded-md border border-gray-200 divide-y divide-gray-200 overflow-hidden">
           {bairros.map((b) => {
             const chave = `${b.osm_type}-${b.osm_id}`;
             return (
@@ -516,7 +516,7 @@ function PesquisaJurisdicao({
       )}
 
       {bairroSelecionado && (
-        <div className="mt-4 rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+        <div className="mt-4 rounded-md border border-blue-100 bg-blue-50/40 p-4">
           <p className="text-sm font-medium text-gray-900 mb-3">{bairroSelecionado.nome}</p>
 
           {carregandoVias ? (

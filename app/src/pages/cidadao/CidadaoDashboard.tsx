@@ -129,7 +129,7 @@ export default function CidadaoDashboard() {
 
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Dashboard</h1>
@@ -143,7 +143,7 @@ export default function CidadaoDashboard() {
           return (
             <div
               key={stat.label}
-              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]"
+              className="bg-white rounded-lg p-6 border border-gray-200 "
             >
               <div className="flex items-center justify-between">
                 <div>
@@ -152,7 +152,7 @@ export default function CidadaoDashboard() {
                     {stat.value}
                   </p>
                 </div>
-                <div className={`${stat.bg} ${stat.fg} p-3 rounded-xl`}>
+                <div className={`${stat.bg} ${stat.fg} p-3 rounded-md`}>
                   <Icon size={22} strokeWidth={1.75} />
                 </div>
               </div>
@@ -162,8 +162,8 @@ export default function CidadaoDashboard() {
       </div>
 
       {/* Recent Denuncias */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-        <div className="px-6 py-5 border-b border-gray-100 flex justify-between items-center">
+      <div className="bg-white rounded-lg border border-gray-200 ">
+        <div className="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
           <h2 className="text-base font-semibold text-gray-900">
             Denúncias Recentes
           </h2>
@@ -178,25 +178,25 @@ export default function CidadaoDashboard() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">
+              <tr className="border-b border-gray-200 bg-gray-50">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
                   ID
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
                   Matrícula
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
                   Tipo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
                   Data
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wide">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">
                   Estado
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-gray-200">
               {denuncias.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-10 text-center text-sm text-gray-400">
@@ -220,7 +220,7 @@ export default function CidadaoDashboard() {
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${toneEstado(
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium ${toneEstado(
                           denuncia.estado
                         )}`}
                       >
@@ -238,8 +238,8 @@ export default function CidadaoDashboard() {
 
       {/* Ranking de Cidadãos */}
       {ranking.length > 0 && (
-        <div className="mt-6 bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
-          <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2.5">
+        <div className="mt-6 bg-white rounded-lg border border-gray-200 ">
+          <div className="px-6 py-5 border-b border-gray-200 flex items-center gap-2.5">
             <div className="bg-blue-50 text-blue-800 p-2 rounded-lg">
               <Trophy size={18} strokeWidth={1.75} />
             </div>
@@ -250,7 +250,7 @@ export default function CidadaoDashboard() {
           <p className="px-6 pt-4 text-sm text-gray-400">
             Ranking anónimo — cada cidadão só reconhece o seu próprio código.
           </p>
-          <div className="divide-y divide-gray-50">
+          <div className="divide-y divide-gray-200">
             {ranking.map((entrada) => {
               const souEu = meuCodigo !== null && entrada.codigo === meuCodigo;
               return (
@@ -287,9 +287,9 @@ export default function CidadaoDashboard() {
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
         <Link
           to="/cidadao/criar-denuncia"
-          className="group bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-6 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          className="group bg-white rounded-lg border border-gray-200  p-6 flex items-center gap-4 hover:border-blue-600 transition-colors"
         >
-          <div className="p-3 rounded-xl bg-blue-600 text-white group-hover:bg-blue-700 transition-colors">
+          <div className="p-3 rounded-md bg-blue-600 text-white group-hover:bg-blue-700 transition-colors">
             <FileText size={22} strokeWidth={1.75} />
           </div>
           <div>
@@ -302,9 +302,9 @@ export default function CidadaoDashboard() {
 
         <Link
           to="/cidadao/minhas-denuncias"
-          className="group bg-white rounded-2xl border border-gray-100 shadow-[0_1px_2px_rgba(16,24,40,0.04)] p-6 flex items-center gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200"
+          className="group bg-white rounded-lg border border-gray-200  p-6 flex items-center gap-4 hover:border-blue-600 transition-colors"
         >
-          <div className="p-3 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
+          <div className="p-3 rounded-md bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
             <ClipboardList size={22} strokeWidth={1.75} />
           </div>
           <div>

@@ -127,7 +127,7 @@ export default function Configuracoes() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50/50 min-h-full">
+    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-blue-800 tracking-tight">Configurações</h1>
@@ -147,7 +147,7 @@ export default function Configuracoes() {
         </button>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
+      <div className="mb-6 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800">
         <strong>Público</strong> = seguro para expor ao browser (ex: chave JS do Google Maps,
         protegida por restrição de domínio na Google Cloud Console). Nunca marques como
         pública uma credencial de servidor (ex: API Secret da MozeSMS).
@@ -156,7 +156,7 @@ export default function Configuracoes() {
       <div className={`${CARD} overflow-hidden`}>
         <table className="w-full">
           <thead>
-            <tr className="border-b border-gray-100">
+            <tr className="border-b border-gray-200 bg-gray-50">
               <th className={TABLE_HEAD_CELL}>Chave</th>
               <th className={TABLE_HEAD_CELL}>Valor</th>
               <th className={TABLE_HEAD_CELL}>Descrição</th>
@@ -164,7 +164,7 @@ export default function Configuracoes() {
               <th className={TABLE_HEAD_CELL}>Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-50">
+          <tbody className="divide-y divide-gray-200">
             {configs.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
