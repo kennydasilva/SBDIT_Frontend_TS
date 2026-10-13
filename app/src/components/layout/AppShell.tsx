@@ -63,7 +63,8 @@ export default function AppShell({ subtitulo, menuItems, nome, carregando }: App
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    // Sair leva à página inicial pública, não ao ecrã de login.
+    navigate("/");
   };
 
   const nomeVisivel = nome || user?.email || "";
