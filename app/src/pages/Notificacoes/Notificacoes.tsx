@@ -210,7 +210,7 @@ export default function Notificacoes() {
                               {formatarDataHora(n.criada_em)}
                               {temDestino && (
                                 <span className="ml-auto inline-flex items-center gap-1.5 font-semibold text-blue-600 group-hover:underline">
-                                  Abrir denúncia
+                                  {n.tipo === "AGENTE_DESIGNADO" ? "Ver o local do acidente" : n.tipo === "ACIDENTE_REPORTADO" ? "Abrir acidente" : "Abrir denúncia"}
                                   <ChevronRight size={10} />
                                 </span>
                               )}
