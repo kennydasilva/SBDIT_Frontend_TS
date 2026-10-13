@@ -201,7 +201,7 @@ export default function Notificacoes() {
                                 {n.titulo}
                               </span>
                               {!n.lida && (
-                                <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[11px] font-semibold text-white">Nova</span>
+                                <span className="rounded-full bg-sky-700 px-2 py-0.5 text-[11px] font-semibold text-white">Nova</span>
                               )}
                             </span>
                             <span className="mt-1.5 block text-sm leading-relaxed text-gray-600">{n.mensagem}</span>

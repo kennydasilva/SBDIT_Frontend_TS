@@ -14,10 +14,10 @@ export const ESTADO_LABEL: Record<string, string> = {
 };
 
 // Um só azul, distinguido pelo preenchimento (não pela cor):
-//  - contorno: ainda à espera;      - fundo claro: em curso;
+//  - contorno: ainda à espera;      - azul-céu: em curso (terceira cor do sistema);
 //  - cheio: concluída com seguimento; - cinzento: fechada sem seguimento.
 const A_ESPERA = "bg-white text-blue-800 border-blue-200";
-const EM_CURSO = "bg-blue-50 text-blue-800 border-blue-100";
+const EM_CURSO = "bg-sky-100 text-sky-800 border-sky-200";
 const CONCLUIDA = "bg-blue-600 text-white border-blue-600";
 const FECHADA = "bg-gray-100 text-gray-600 border-gray-200";
 

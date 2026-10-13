@@ -55,13 +55,13 @@ import { PAGE, CARD, SECTION_TITLE, INPUT, LABEL, BUTTON_PRIMARY, BUTTON_SECONDA
 // concluída); cinzento para as fechadas sem seguimento.
 const ESTADO_COR: Record<string, string> = {
   PENDENTE: "#D2D9EF",
-  DUVIDOSA: "#A5B3DF",
-  ENCAMINHADA: "#788CCF",
-  VALIDADA: "#4B66BF",
+  DUVIDOSA: "#7DD3FC",
+  ENCAMINHADA: "#38BDF8",
+  VALIDADA: "#0284C7",
   APROVADA: "#1E40AF",
   EM_ATENDIMENTO: "#172F82",
-  REJEITADA: "#9CA3AF",
-  ARQUIVADA: "#D1D5DB",
+  REJEITADA: "#8EA0D7",
+  ARQUIVADA: "#BCC6E7",
 };
 
 const MESES_ABREV = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -147,7 +147,7 @@ export default function Relatorios() {
   const porMes = resumo?.por_mes.map((m) => ({ mes: formatarMes(m.mes), total: m.total })) ?? [];
   const porEstado = Object.entries(resumo?.por_estado ?? {})
     .filter(([, total]) => total > 0)
-    .map(([estado, total]) => ({ name: ESTADO_LABEL[estado] ?? estado, value: total, color: ESTADO_COR[estado] ?? "#9CA3AF" }));
+    .map(([estado, total]) => ({ name: ESTADO_LABEL[estado] ?? estado, value: total, color: ESTADO_COR[estado] ?? "#8EA0D7" }));
   const porTipo = Object.entries(resumo?.por_tipo_infracao ?? {})
     .filter(([, total]) => total > 0)
     .map(([tipo, total]) => ({ tipo: TIPO_LABEL[tipo] ?? tipo, total }));
@@ -247,7 +247,7 @@ export default function Relatorios() {
             <Seccao icon={BarChart3} titulo="Denúncias por mês">
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart data={porMes}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#DAE0F2" />
                   <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                   <Tooltip />
@@ -288,7 +288,7 @@ export default function Relatorios() {
             ) : (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={porTipo} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#DAE0F2" />
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 12 }} />
                   <YAxis dataKey="tipo" type="category" width={150} tick={{ fontSize: 12 }} />
                   <Tooltip />

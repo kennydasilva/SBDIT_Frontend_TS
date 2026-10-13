@@ -39,7 +39,7 @@ export const ICON_CHIP = (bg: string, fg: string) => `${bg} ${fg} p-2.5 rounded-
 // preenchimento (as chaves são os nomes antigos, usados nas páginas).
 export const STATUS_TONES: Record<string, string> = {
   amber: "bg-white text-blue-800 ring-1 ring-inset ring-blue-200", // à espera
-  blue: "bg-blue-50 text-blue-800", // em curso
+  blue: "bg-sky-100 text-sky-800", // em curso (azul-céu)
   emerald: "bg-blue-600 text-white", // concluído
   rose: "bg-gray-100 text-gray-600", // fechado sem seguimento
   gray: "bg-gray-100 text-gray-600",
@@ -75,7 +75,7 @@ export const CARD_TITLE = "text-base font-semibold text-gray-900";
 export const ALERT_ERROR = "rounded-md border border-rose-100 bg-rose-50 p-4 text-sm text-rose-800";
 export const ALERT_SUCCESS = "rounded-md border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800";
 export const ALERT_WARNING = "rounded-md border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800";
-export const ALERT_INFO = "rounded-md border border-blue-100 bg-blue-50 p-4 text-sm text-blue-800";
+export const ALERT_INFO = "rounded-md border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900";
 
 export const LINK = "text-blue-600 hover:text-blue-700 hover:underline font-medium";
 

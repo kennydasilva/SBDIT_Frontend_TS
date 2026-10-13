@@ -156,10 +156,10 @@ export default function DashboardPt() {
           <div className="mt-5">
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={porTipo}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                <XAxis dataKey="tipo" tick={{ fontSize: 12, fill: "#4b5563" }} axisLine={{ stroke: "#e5e7eb" }} tickLine={false} />
-                <YAxis tick={{ fontSize: 12, fill: "#4b5563" }} axisLine={false} tickLine={false} allowDecimals={false} width={28} />
-                <Tooltip cursor={{ fill: "#f9fafb" }} contentStyle={{ borderRadius: 6, border: "1px solid #e5e7eb", fontSize: 13 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#DAE0F2" vertical={false} />
+                <XAxis dataKey="tipo" tick={{ fontSize: 12, fill: "#405DBB" }} axisLine={{ stroke: "#DAE0F2" }} tickLine={false} />
+                <YAxis tick={{ fontSize: 12, fill: "#405DBB" }} axisLine={false} tickLine={false} allowDecimals={false} width={28} />
+                <Tooltip cursor={{ fill: "#F6F7FC" }} contentStyle={{ borderRadius: 6, border: "1px solid #DAE0F2", fontSize: 13 }} />
                 <Bar dataKey="quantidade" name="Decisões" fill="#1E40AF" radius={[3, 3, 0, 0]} maxBarSize={72} />
               </BarChart>
             </ResponsiveContainer>
